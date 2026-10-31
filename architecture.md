@@ -59,9 +59,7 @@ The system enforces strict architectural separation between legal-domain orchest
 flowchart TD
     subgraph UI["Agent & Developer Interface Layer"]
         CLI["CLI Commands & CI/CD Runners"]
-        Skill1["Skill: generating-court-documents<br/>(Synthetic Scenario Presets)"]
-        Skill2["Skill: assembling-court-binders<br/>(Two-Pass Compilation Engine)"]
-        Skill3["Skill: validating-court-binders<br/>(20 Court Quality Gates)"]
+        Skill["Unified Skill: managing-court-binders<br/>(Modes: generate | assemble | validate | all)"]
     end
 
     subgraph Domain["bc-court-binder Domain Layer"]
@@ -86,43 +84,35 @@ flowchart TD
         Organize["pdfcraft-organize (L4 Page Tree, MediaBox & InitialView)"]
     end
 
-    Skill1 --> Manifest
+    Skill --> Manifest
     Manifest --> FolioEngine
     FolioEngine --> TableGen
-    TableGen --> Skill2
-    Skill2 --> Integration
+    TableGen --> Skill
+    Skill --> Integration
     Integration --> CoreEngine
-    Skill2 --> Skill3
-    Skill3 --> SpatialAudit
-    Skill3 --> EntropyAudit
+    Skill --> SpatialAudit
+    Skill --> EntropyAudit
 ```
 
 ---
 
-## ⚙️ 3. The 3 Agent Skills Specifications
+## ⚙️ 3. Unified Agent Skill Specification (`managing-court-binders`)
 
-### 3.1 Skill 1: `generating-court-documents`
-* **Purpose:** Generates authentic, multi-page synthetic input filings for automated testing and CI verification.
-* **Matter Presets:**
-  * `discovery` (Default): Commercial contract dispute under Rule 7-1 (Notice of Application, Response, Affidavit #1 with Exhibits A & B, Draft Order, Legal Authority).
-  * `amendment`: Pleadings amendment under Rule 6-1 with redlined proposed amended pleading as Exhibit A.
-  * `family`: Interim child and spousal support application under Family Rule 10-6 with corporate registry and tax notices as exhibits.
-* **Output:** `inputs/<preset>/manifest.json` and substantive `.txt` / `.pdf` filings.
+The repository encapsulates court binder operations in a single multi-mode APM domain skill: **`managing-court-binders`**.
 
-### 3.2 Skill 2: `assembling-court-binders`
-* **Purpose:** Executes the automated 9-step synthesis in two-pass mode.
-* **Execution Architecture:**
-  1. **Pass 1 (Folio & Page Geometry Probe):** Ingests all substantive filings, computes exact page counts, and builds the dynamic foliation map.
-  2. **Pass 2 (Document & Stream Synthesis):**
-     * Item 1: Form 22 / Form 30.001 Style of Cause Title Page.
-     * Item 2: Columnar Legal Index Table with TAB, DOCUMENT, DATE, and PAGE columns.
-     * Top-Center Folios: Stamped in $15\text{ pt}$ Bold Arial/Helvetica ($x \approx 290\text{ pt}, y \approx 760\text{ pt}$).
-     * Digital Page Labels: `/PageLabels` configured so Cover and Index are unnumbered (`None`), and Tab 1 starts at decimal `1`.
-     * Initial View: Forces `/PageMode /UseOutlines` so the bookmarks navigation sidebar expands by default.
-     * Invisible Rectangle Links: `/Border [0 0 0]`, `/H /N`, and universal `/A << /S /GoTo /D [target R /FitH 792] >>` actions.
-     * Size Governance: Ensures output is optimized and strictly under $50.0\text{ MB}$.
-
-### 3.3 Skill 3: `validating-court-binders`
+### 3.1 Operational Modes:
+1. **Mode: `generate`**
+   * Generates authentic, multi-page synthetic filings and `manifest.json` across matter types (`discovery`, `amendment`, `family`).
+   * Includes prompt library for LLM drafting ([`generate_bc_chambers_filings_prompt.md`](.apm/skills/managing-court-binders/references/prompts/generate_bc_chambers_filings_prompt.md)).
+2. **Mode: `assemble`**
+   * Executes the automated 9-step synthesis in two-pass mode.
+   * Generates Form 22 Style of Cause Title Page and 4-column Index table (`TAB`, `DOCUMENT`, `FILED DATE`, `PAGE`).
+   * Stamps $15\text{ pt}$ Bold folios at top-center ($Y \approx 765\text{ pt}$), sets `/PageLabels`, and injects `/Border [0 0 0]` invisible rectangle hyperlinks.
+3. **Mode: `validate`**
+   * Evaluates the PDF against the 20 statutory court quality gates.
+   * Enforces spatial margin bounding boxes, Shannon character entropy ($H \ge 3.0$), and the 50 MB CSO limit.
+4. **Mode: `all`**
+   * Closed-loop automation combining generation, assembly, and compliance auditing in one step.
 * **Purpose:** Automated QA gatekeeper verifying candidate binders against statutory court rules before electronic submission.
 * **3-Tier Severity System:**
   * `HARD_STOP`: Fatal court rejections (e.g. unencrypted violation, missing Title Page, folios in footers instead of top-center, missing Index, size > 50 MB).

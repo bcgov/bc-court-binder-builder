@@ -12,19 +12,26 @@ From repository root:
 # 1. Install dependencies
 pip install -r requirements.txt
 
-# 2. Skill 1: Generate a new set of chambers filings
-python3 .apm/skills/generating-court-documents/scripts/generating_court_documents.py \
-  --output-dir inputs/04-creditor-execution \
+# 2. Run closed-loop generation, compilation, and compliance audit:
+python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py --mode all
+
+# 3. Or run discrete operational modes:
+# Generate input filings
+python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py \
+  --mode generate \
+  --inputs inputs/04-creditor-execution \
   --matter-type discovery
 
-# 3. Skill 2: Assemble into an electronic court binder
-python3 .apm/skills/assembling-court-binders/scripts/assembling_court_binders.py \
+# Assemble into an electronic court binder
+python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py \
+  --mode assemble \
   --inputs inputs/04-creditor-execution \
   --output output/04-creditor-execution/Application_Record_Creditor_Execution.pdf
 
-# 4. Skill 3: Pre-flight audit against the 20 BC Court quality gates
-python3 .apm/skills/validating-court-binders/scripts/validating_court_binders.py \
-  --file output/04-creditor-execution/Application_Record_Creditor_Execution.pdf
+# Pre-flight audit against the 20 BC Court quality gates
+python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py \
+  --mode validate \
+  --output output/04-creditor-execution/Application_Record_Creditor_Execution.pdf
 ```
 
 ---

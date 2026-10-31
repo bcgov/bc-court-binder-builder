@@ -64,38 +64,44 @@ cargo run
 
 ## 3. Agent Tool & Skill Execution Workflows
 
-Agents must use the modular `.apm/skills` scripts to generate, assemble, and validate binders headlessly:
+Agents must use the unified `.apm/skills/managing-court-binders` skill to generate, assemble, and validate binders headlessly:
 
 ```mermaid
 flowchart LR
-    G["generating-court-documents<br/>(inputs/)"] --> A["assembling-court-binders<br/>(output/*.pdf)"]
-    A --> V["validating-court-binders<br/>(20 Gates)"]
+    G["managing-court-binders<br/>(--mode generate)"] --> A["managing-court-binders<br/>(--mode assemble)"]
+    A --> V["managing-court-binders<br/>(--mode validate)"]
     V -->|20/20 PASS| S["Approved for CSO"]
 ```
 
-### Step 1: Synthesize Input Filings (If generating a test case)
+### Full Closed-Loop Lifecycle (Single Command):
 ```bash
-python3 .apm/skills/generating-court-documents/scripts/generating_court_documents.py \
-  --output-dir inputs/01-commercial-discovery \
-  --matter-type discovery
+python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py --mode all
 ```
 
-### Step 2: Assemble the Electronic Court Binder
+### Discrete Operational Steps:
 ```bash
-python3 .apm/skills/assembling-court-binders/scripts/assembling_court_binders.py \
+# Step 1: Synthesize input filings (if generating test case)
+python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py \
+  --mode generate \
+  --inputs inputs/01-commercial-discovery \
+  --matter-type discovery
+
+# Step 2: Assemble the electronic court binder
+python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py \
+  --mode assemble \
   --inputs inputs/01-commercial-discovery \
   --output output/01-commercial-discovery/Application_Record.pdf
-```
 
-### Step 3: Run the Pre-Flight Compliance Gate Audit
-```bash
-python3 .apm/skills/validating-court-binders/scripts/validating_court_binders.py \
-  --file output/01-commercial-discovery/Application_Record.pdf
+# Step 3: Run the pre-flight compliance gate audit
+python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py \
+  --mode validate \
+  --output output/01-commercial-discovery/Application_Record.pdf
 ```
 To obtain structured machine-readable JSON for agent receipt verification:
 ```bash
-python3 .apm/skills/validating-court-binders/scripts/validating_court_binders.py \
-  --file output/01-commercial-discovery/Application_Record.pdf \
+python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py \
+  --mode validate \
+  --output output/01-commercial-discovery/Application_Record.pdf \
   --json
 ```
 

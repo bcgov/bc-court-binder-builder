@@ -2,7 +2,7 @@
 
 This document consolidates all official practice directions, filing guidelines, and administrative rules governing electronic court records in the British Columbia Supreme Court and Court of Appeal.
 
-All source PDFs reside in [](pdfs/).
+
 
 ---
 
@@ -16,7 +16,7 @@ All source PDFs reside in [](pdfs/).
 ---
 
 ## 1. Practice Direction 72 (PD-72) — Electronic Application Records
-*Source PDF: [](pdfs/PD-72_Electronic_Application_Records.pdf)*
+
 
 Effective Date: March 31, 2026
 Number: PD - 72
@@ -261,7 +261,7 @@ Page 5 of 5
 ---
 
 ## 2. Practice Direction 73 (PD-73) — Virtual Chambers
-*Source PDF: [](pdfs/PD-73_Virtual_Chambers.pdf)*
+
 
 Effective Date: March 31, 2026
 Updated Date: October 1, 2026
@@ -637,7 +637,7 @@ Page 9 of 9
 ---
 
 ## 3. CSO Guide to Submitting Application Records
-*Source PDF: [](pdfs/InstructionsForUsersForApplicationRecords.pdf)*
+
 
 GUIDE TO SUBMITTING
 APPLICATION RECORDS
@@ -1125,7 +1125,7 @@ If you have questions about virtual chambers, please contact CSO Support.
 ---
 
 ## 4. BCCA Civil Rule 27 Completion Instructions (Books of Authorities)
-*Source PDF: [](pdfs/e_completion_instructions_book_of_authorities.pdf)*
+
 
 COURT OF APPEAL FOR BRITISH COLUMBIA
 
@@ -1379,7 +1379,7 @@ www.bccourts.ca/Court_of_Appeal/
 ---
 
 ## 5. Associate Judges Sitting Schedule 2026
-*Source PDF: [](pdfs/ASSOCIATE_JUDGES_VIRTUAL_CHAMBERS_SITTING_SCHEDULE_2026.pdf)*
+
 
 ASSOCIATE JUDGES VIRTUAL CHAMBERS SITTING SCHEDULE 2026
 Please note: To be eligible for Virtual Chambers, matters must originate outside of Vancouver

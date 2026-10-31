@@ -1,13 +1,13 @@
 # Supreme Court of British Columbia — PDF Instructions Library (Guides 01–13)
 
 *Source: [BC Supreme Court Practice and Procedure](https://www.bccourts.ca/supreme_court/practice_and_procedure/pdf_instructions.aspx)*  
-*All original source PDFs reside in [](pdfs/).*
+
 
 This document consolidates all 13 official instructional PDF guides issued by the Supreme Court of British Columbia for preparing electronic court documents, application records, and books of authorities.
 
 ---
 
-## 📄 What is Portable Document Format (PDF)?
+## What is Portable Document Format PDF
 
 Portable Document Format (PDF) was created to present and exchange documents reliably — independent of software, hardware, or operating system.
 
@@ -20,28 +20,29 @@ The PDF is an open standard, maintained by the International Organization for St
 
 ---
 
-## 📑 Table of Contents
+## Contents
 
-| # | Guide Title | Target Requirement | Source PDF |
-| :-: | :--- | :--- | :--- |
-| **01** | [Creating Single PDF from Multiple Documents](#guide-01-creating-single-pdf-from-multiple-documents) | Standardized Procedure | [](pdfs/Creating_Single_PDF_From_Multiple_Documents_Final.pdf) |
-| **02** | [Inserting Index & Table of Contents](#guide-02-inserting-index-and-table-of-contents) | Standardized Procedure | [](pdfs/Inserting_Index_and_Table_of_Contents_Final.pdf) |
-| **03** | [Adding a Bookmark to a PDF Document](#guide-03-adding-bookmark-to-pdf-document) | Standardized Procedure | [](pdfs/Adding_Bookmark_to_PDF_Document_Final.pdf) |
-| **04** | [Organizing Bookmarks in PDF (Exhibit Sub-Bookmarks)](#guide-04-organizing-bookmarks-in-pdf) | Standardized Procedure | [](pdfs/Organizing_Bookmarks_in_PDF_Final.pdf) |
-| **05** | [Show Bookmarks Automatically (Initial View /PageMode /UseOutlines)](#guide-05-show-bookmarks-automatically) | Standardized Procedure | [](pdfs/Show_Bookmarks_Automatically_Final.pdf) |
-| **06** | [Internally Hyperlinking to Another Location / Document](#guide-06-internally-hyperlinking-to-another-file) | Standardized Procedure | [](pdfs/Internally_Hyperlinking_to_Another_File_Final.pdf) |
-| **07** | [Adding Hyperlink to a Website](#guide-07-adding-hyperlink-to-a-website) | Standardized Procedure | [](pdfs/Adding_Hyperlink_to_a_Website_Final.pdf) |
-| **08** | [Adding, Editing & Removing Hyperlinks in Word](#guide-08-adding-editing-removing-hyperlinks-in-a-word-document) | Standardized Procedure | [](pdfs/Adding_Editing_Removing_Hyperlinks_in_a_Word_Document_Final.pdf) |
-| **09** | [Adding Page Numbering (Top-Center 14–16 pt Bold Arial)](#guide-09-adding-page-numbering-in-pdf-documents) | Standardized Procedure | [](pdfs/Adding_Page_Numbering_in_PDF_Documents_Final.pdf) |
-| **10** | [Updating Page Numbers for Searching in Acrobat (/PageLabels)](#guide-10-updating-page-numbers-for-searching-in-acrobat) | Standardized Procedure | [](pdfs/Updating_Page_Numbers_for_Searching_in_Acrobat_Final.pdf) |
-| **11** | [Optical Character Recognition (OCR) - Recognize Text](#guide-11-ocr-recognize-text-in-pdf-document) | Standardized Procedure | [](pdfs/OCR_Recognize_Text_in_PDF_Document_Final.pdf) |
-| **12** | [Check the Size of your PDF Document](#guide-12-check-the-size-of-pdf-document) | Standardized Procedure | [](pdfs/Check_the_Size_of_PDF_Document_Final.pdf) |
-| **13** | [Reduce the Size of a PDF Document](#guide-13-reduce-the-size-of-pdf-document) | Standardized Procedure | [](pdfs/Reduce_the_Size_of_PDF_Document_Final.pdf) |
+- [What is Portable Document Format PDF](#what-is-portable-document-format-pdf)
+- [Guide 01: Creating Single PDF from Multiple Documents](#guide-01-creating-single-pdf-from-multiple-documents)
+- [Guide 02: Inserting Index and Table of Contents](#guide-02-inserting-index-and-table-of-contents)
+- [Guide 03: Adding a Bookmark to a PDF Document](#guide-03-adding-a-bookmark-to-a-pdf-document)
+- [Guide 04: Organizing Bookmarks in PDF](#guide-04-organizing-bookmarks-in-pdf)
+- [Guide 05: Show Bookmarks Automatically](#guide-05-show-bookmarks-automatically)
+- [Guide 06: Internally Hyperlinking to Another Location](#guide-06-internally-hyperlinking-to-another-location)
+- [Guide 07: Adding Hyperlink to a Website](#guide-07-adding-hyperlink-to-a-website)
+- [Guide 08: Adding Editing and Removing Hyperlinks in Word](#guide-08-adding-editing-and-removing-hyperlinks-in-word)
+- [Guide 09: Adding Page Numbering](#guide-09-adding-page-numbering)
+- [Guide 10: Updating Page Numbers for Searching in Acrobat](#guide-10-updating-page-numbers-for-searching-in-acrobat)
+- [Guide 11: Optical Character Recognition OCR](#guide-11-optical-character-recognition-ocr)
+- [Guide 12: Check the Size of your PDF Document](#guide-12-check-the-size-of-your-pdf-document)
+- [Guide 13: Reduce the Size of a PDF Document](#guide-13-reduce-the-size-of-a-pdf-document)
+
+---
 
 ---
 
 ## Guide 01: Creating Single PDF from Multiple Documents
-*Source PDF: [](pdfs/Creating_Single_PDF_From_Multiple_Documents_Final.pdf)*
+*Source PDF: *
 
 CREATING SINGLE PDF FROM MULTIPLE DOCUMENTS
 NOTE: There are several methods of creating single PDF from multiple documents and this is just one of them. The instructions are intended only as a general
@@ -102,8 +103,8 @@ combining files into a single PDF it is best to delete any page numbers and then
 
 ---
 
-## Guide 02: Inserting Index & Table of Contents
-*Source PDF: [](pdfs/Inserting_Index_and_Table_of_Contents_Final.pdf)*
+## Guide 02: Inserting Index and Table of Contents
+*Source PDF: *
 
 INSERTING AN INDEX AND COVER PAGE
 INTO A COMBINED PDF DOCUMENT
@@ -141,7 +142,7 @@ Then choose First from the Page menu. Click OK.
 ---
 
 ## Guide 03: Adding a Bookmark to a PDF Document
-*Source PDF: [](pdfs/Adding_Bookmark_to_PDF_Document_Final.pdf)*
+*Source PDF: *
 
 ADDING A BOOKMARK TO A PDF DOCUMENT
 NOTE: There are several methods of adding a bookmark to your PDF document and this is just one of them. The instructions are intended only as a general
@@ -161,8 +162,8 @@ rename it as you wish.
 
 ---
 
-## Guide 04: Organizing Bookmarks in PDF (Exhibit Sub-Bookmarks)
-*Source PDF: [](pdfs/Organizing_Bookmarks_in_PDF_Final.pdf)*
+## Guide 04: Organizing Bookmarks in PDF
+*Source PDF: *
 
 ORGANIZING BOOKMARKS IN PDF
 NOTE: There are several methods of organizing bookmarks in a PDF document and this is just one of them. The instructions are intended only as a general
@@ -189,8 +190,8 @@ Release
 
 ---
 
-## Guide 05: Show Bookmarks Automatically (Initial View /PageMode /UseOutlines)
-*Source PDF: [](pdfs/Show_Bookmarks_Automatically_Final.pdf)*
+## Guide 05: Show Bookmarks Automatically
+*Source PDF: *
 
 SHOW BOOKMARKS AUTOMATICALLY
 NOTE: There are several methods to show the bookmarks automatically when a PDF document is opened and this is just one of them. The instructions are
@@ -209,8 +210,8 @@ Navigation Tab dropdown menu and then click OK.
 
 ---
 
-## Guide 06: Internally Hyperlinking to Another Location / Document
-*Source PDF: [](pdfs/Internally_Hyperlinking_to_Another_File_Final.pdf)*
+## Guide 06: Internally Hyperlinking to Another Location
+*Source PDF: *
 
 INTERNALLY HYPERLINKING TO ANOTHER FILE
 NOTE: There are several methods of internally hyperlinking to another file on your PDF document and this is just one of them. The instructions are intended only
@@ -241,7 +242,7 @@ screen while you scroll or look for another file. Once you find the particular p
 ---
 
 ## Guide 07: Adding Hyperlink to a Website
-*Source PDF: [](pdfs/Adding_Hyperlink_to_a_Website_Final.pdf)*
+*Source PDF: *
 
 ADDING HYPERLINK TO A WEBSITE
 NOTE: There are several methods of adding a hyperlink to your PDF document and this is just one of them. The instructions are intended only as a general
@@ -272,8 +273,8 @@ popup box will appear with the URL you entered in step 6.
 
 ---
 
-## Guide 08: Adding, Editing & Removing Hyperlinks in Word
-*Source PDF: [](pdfs/Adding_Editing_Removing_Hyperlinks_in_a_Word_Document_Final.pdf)*
+## Guide 08: Adding Editing and Removing Hyperlinks in Word
+*Source PDF: *
 
 ADDING, EDITING AND REMOVING
 HYPERLINKS IN A WORD DOCUMENT
@@ -311,8 +312,8 @@ To remove a hyperlink, Right-click the hyperlink and select Remove Hyperlink fro
 
 ---
 
-## Guide 09: Adding Page Numbering (Top-Center 14–16 pt Bold Arial)
-*Source PDF: [](pdfs/Adding_Page_Numbering_in_PDF_Documents_Final.pdf)*
+## Guide 09: Adding Page Numbering
+*Source PDF: *
 
 ADDING PAGE NUMBERING IN PDF DOCUMENTS
 Last updated: August 18, 2025
@@ -374,8 +375,8 @@ bar), then clicking on the Header & Footer toolbar, and choosing Update …
 
 ---
 
-## Guide 10: Updating Page Numbers for Searching in Acrobat (/PageLabels)
-*Source PDF: [](pdfs/Updating_Page_Numbers_for_Searching_in_Acrobat_Final.pdf)*
+## Guide 10: Updating Page Numbers for Searching in Acrobat
+*Source PDF: *
 
 UPDATING PAGE NUMBERS WITH PAGE LABELS
 FOR SEARCHING IN ACROBAT
@@ -420,8 +421,8 @@ To choose at which number to begin page numbering, type the number into the “S
 
 ---
 
-## Guide 11: Optical Character Recognition (OCR) - Recognize Text
-*Source PDF: [](pdfs/OCR_Recognize_Text_in_PDF_Document_Final.pdf)*
+## Guide 11: Optical Character Recognition OCR
+*Source PDF: *
 
 OPTICAL CHARACTER RECOGNITION (OCR)
 RECOGNIZE TEXT IN SCANNED PDF DOCUMENTS
@@ -443,7 +444,7 @@ as scanned paper documents, PDF files or images captured by a digital camera int
 ---
 
 ## Guide 12: Check the Size of your PDF Document
-*Source PDF: [](pdfs/Check_the_Size_of_PDF_Document_Final.pdf)*
+*Source PDF: *
 
 CHECK THE SIZE OF YOUR PDF DOCUMENT
 NOTE: There are several methods for checking the size of a PDF document and this is just one of them. The instructions are intended only as a general description
@@ -460,7 +461,7 @@ section.
 ---
 
 ## Guide 13: Reduce the Size of a PDF Document
-*Source PDF: [](pdfs/Reduce_the_Size_of_PDF_Document_Final.pdf)*
+*Source PDF: *
 
 REDUCE THE SIZE OF A PDF DOCUMENT
 NOTE: There are several methods of reducing the size of a PDF document and this is just one of them. The instructions are intended only as a general description

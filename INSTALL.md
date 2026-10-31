@@ -48,24 +48,31 @@ pip install -r requirements.txt
 > ```
 > *(Or from local source if developing side-by-side: `pip install ../pdfcraft/sdks/python`). If no native wheel is installed, the pipeline operates 100% out of the box using built-in vector serialization.*
 
-### Step 4: Verify Installation & Run Skills Right Away
+### Step 4: Verify Installation & Run Skill Right Away
 
-Every fresh clone can immediately run the 3 skills out of the box:
+Every fresh clone can immediately run the unified `managing-court-binders` skill out of the box:
 
 ```bash
-# Skill 1: Generate a fresh set of input filings (discovery | amendment | family)
-python3 .apm/skills/generating-court-documents/scripts/generating_court_documents.py \
-  --output-dir inputs/01-commercial-discovery \
+# Option A: Run the complete closed-loop lifecycle in one command
+python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py --mode all
+
+# Option B: Run individual steps as needed
+# 1. Generate a fresh set of input filings (discovery | amendment | family)
+python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py \
+  --mode generate \
+  --inputs inputs/01-commercial-discovery \
   --matter-type discovery
 
-# Skill 2: Assemble the input documents into a compliant court binder
-python3 .apm/skills/assembling-court-binders/scripts/assembling_court_binders.py \
+# 2. Assemble the input documents into a compliant court binder
+python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py \
+  --mode assemble \
   --inputs inputs/01-commercial-discovery \
   --output output/01-commercial-discovery/Application_Record.pdf
 
-# Skill 3: Audit against the 20 statutory BC Court quality gates
-python3 .apm/skills/validating-court-binders/scripts/validating_court_binders.py \
-  --file output/01-commercial-discovery/Application_Record.pdf
+# 3. Audit against the 20 statutory BC Court quality gates
+python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py \
+  --mode validate \
+  --output output/01-commercial-discovery/Application_Record.pdf
 ```
 Expected output:
 ```text
@@ -105,12 +112,7 @@ pip install -r requirements.txt
 
 ### Step 4: Verify Installation
 ```powershell
-python .apm\skills\assembling-court-binders\scripts\assembling_court_binders.py `
-  --inputs inputs\01-commercial-discovery `
-  --output output\01-commercial-discovery\Application_Record.pdf
-
-python .apm\skills\validating-court-binders\scripts\validating_court_binders.py `
-  --file output\01-commercial-discovery\Application_Record.pdf
+python .apm\skills\managing-court-binders\scripts\managing_court_binders.py --mode all
 ```
 
 ---
@@ -127,10 +129,8 @@ source .venv/bin/activate
 pip install --upgrade pip
 pip install -r requirements.txt
 
-# Run assembly and pre-flight validation
-python3 .apm/skills/assembling-court-binders/scripts/assembling_court_binders.py \
-  --inputs inputs/01-commercial-discovery \
-  --output output/01-commercial-discovery/Application_Record.pdf
+# Run full end-to-end assembly and pre-flight validation
+python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py --mode all
 ```
 
 ---

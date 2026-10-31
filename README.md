@@ -34,14 +34,13 @@ For a comprehensive breakdown of the institutional, operational, and economic dr
 
 ---
 
-## 🤖 Modular Agent Skills (`.apm/skills/`)
+## 🤖 Consolidated Agent Skill (`.apm/skills/managing-court-binders`)
 
-This repository includes self-contained APM agent skills for building and auditing court binders:
+This repository provides an APM-compliant, multi-mode domain skill for court binder operations:
 
-| Skill | Path | Description |
+| Skill | Path | Operational Modes |
 | :--- | :--- | :--- |
-| **`assembling-court-binders`** | [`.apm/skills/assembling-court-binders/`](.apm/skills/assembling-court-binders) | Executes the automated 9-step compilation, two-pass folios, bookmarks, and hyperlinked Index table. |
-| **`validating-court-binders`** | [`.apm/skills/validating-court-binders/`](.apm/skills/validating-court-binders) | Audits any PDF binder against the complete 20 BC Court quality gates (exits 0 on 100% compliance). |
+| **`managing-court-binders`** | [`.apm/skills/managing-court-binders/`](.apm/skills/managing-court-binders) | • `generate`: Ingests or creates synthetic chambers filings<br/>• `assemble`: Compiles two-pass folios, index, and links<br/>• `validate`: Audits against 20 statutory quality gates<br/>• `all`: Full closed-loop execution |
 
 ---
 
@@ -79,14 +78,20 @@ Every assembled binder is audited against 20 deterministic rules:
 # Install dependencies
 pip install -r requirements.txt
 
+# Option A: Run the complete closed-loop lifecycle in one command
+python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py --mode all
+
+# Option B: Run individual steps as needed
 # 1. Assemble an electronic court binder from input filings
-python3 .apm/skills/assembling-court-binders/scripts/assembling_court_binders.py \
+python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py \
+  --mode assemble \
   --inputs inputs/01-commercial-discovery \
   --output output/01-commercial-discovery/Application_Record.pdf
 
 # 2. Audit against the 20 BC Court compliance gates
-python3 .apm/skills/validating-court-binders/scripts/validating_court_binders.py \
-  --file output/01-commercial-discovery/Application_Record.pdf
+python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py \
+  --mode validate \
+  --output output/01-commercial-discovery/Application_Record.pdf
 ```
 
 ### 2. Rust Pipeline (Native `pdfcraft-sdk` Reference Engine)

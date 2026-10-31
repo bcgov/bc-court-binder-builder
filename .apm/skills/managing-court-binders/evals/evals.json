@@ -1,0 +1,26 @@
+[
+  {
+    "query": "I need help compiling a court application record under PD-72",
+    "should_trigger": true
+  },
+  {
+    "query": "Can you assemble the commercial discovery filings into a court binder?",
+    "should_trigger": true
+  },
+  {
+    "query": "Audit this application record PDF against the 20 BC court quality gates",
+    "should_trigger": true
+  },
+  {
+    "query": "Generate synthetic chambers filings for testing our binder builder",
+    "should_trigger": true
+  },
+  {
+    "query": "What is the capital of France?",
+    "should_trigger": false
+  },
+  {
+    "query": "How do I boil an egg?",
+    "should_trigger": false
+  }
+]

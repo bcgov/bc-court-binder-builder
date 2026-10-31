@@ -1,13 +1,23 @@
 # Professional Litigation Paralegal Workflow (Video Analysis & Transcript)
 
 *Source: 20-Year Vancouver Senior Litigation Paralegal Video Demonstration ()*  
-*Visual observation notes and screenshots are cataloged in [](video-screenshots/).*
+
 
 ---
 
-## 🏛️ Executive Summary
+## Contents
+
+- [Executive Summary](#executive-summary)
+- [Timestamped Video Transcript](#timestamped-video-transcript)
+- [The 9-Step Standard Procedure](#the-9-step-standard-procedure)
+
+---
+
+## Executive Summary
 
 This workflow documents standard law firm procedure for assembling a British Columbia Supreme Court chambers application record under Practice Direction 72 (PD-72) and Court Services Online (CSO) rules.
+
+## The 9-Step Standard Procedure
 
 In standard manual Adobe Acrobat practice, a senior paralegal performs a **9-step process taking 45–90 minutes per filing**:
 1. Manual file naming and ordering
@@ -24,7 +34,7 @@ Our automated  engine performs this complete synthesis deterministically in **un
 
 ---
 
-## 🎥 Timestamped Video Transcript
+## Timestamped Video Transcript
 
 - **[00:07]** Hi, my name is Karen.
 - **[00:08]** I am a paralegal in the Vancouver area

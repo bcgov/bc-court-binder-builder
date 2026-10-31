@@ -1,28 +1,17 @@
 # Guide to Submitting Application Records Using Court Services Online (CSO)
 **Source:** British Columbia Ministry of Attorney General & Supreme Court of British Columbia (April 2026)
 
-<!-- PAGE 1 -->
-1  
- 
- 
- 
- 
- 
-APRIL 2026 
- 
-GUIDE TO SUBMITTING 
-APPLICATION RECORDS 
-USING CSO 
+## Contents
 
-<!-- PAGE 2 -->
-2  
-Table of Contents 
-INTRODUCTION ........................................................................................................................................................... 3 
-SCOPE ........................................................................................................................................................................... 3 
-Associate Judges Chambers Pilot Project (commenced August 2022)- Submission of electronic Application 
-Records ............................................................................................................................................................. 3 
-Virtual Chambers List (commencing September 8, 2025) .................................................................................... 3 
-Can I submit an electronic Application Record for any hearing? .................................................. 3 
+- [Introduction & Scope](#introduction--scope)
+- [Eligible Hearings](#eligible-hearings)
+- [Application Record Requirements](#application-record-requirements)
+- [Submitting via Court Services Online (CSO)](#submitting-via-court-services-online-cso)
+- [Troubleshooting & Support](#troubleshooting--support)
+
+---
+
+ 
 Can applications in foreclosure proceedings be set on the virtual chambers list? .................... 4 
 Is there a cost to submit an Application Record via CSO? ............................................................... 4 
 Is there a size limit for Application Records? .................................................................................. 4 
@@ -46,7 +35,9 @@ Who should I contact if I have questions about virtual chambers? ...............
 <!-- PAGE 3 -->
 3  
 APPLICATION RECORDS 
-INTRODUCTION 
+## Introduction & Scope
+
+### Introduction
  
 On August 15, 2022, the Associate Judges Chambers Pilot Project commenced and 
 provided the means for parties to submit chambers application records 
@@ -77,7 +68,9 @@ application for a proceeding filed in the New Westminster registry can be set on
 the virtual chambers list. 
 • Electronic Application Records only 
  
-Can I submit an electronic Application Record for any hearing? 
+## Eligible Hearings
+
+### Application Eligibility
  
 Application Records can be submitted electronically using Court Services Online; 
 however, only for applications which are 30 minutes or less and set before an 
@@ -127,6 +120,8 @@ Step 11 of the submission process.
 
 <!-- PAGE 5 -->
 5  
+## Submitting via Court Services Online (CSO)
+
 How do I submit an electronic Application Record? 
  
 Once you have prepared your electronic application record in accordance with the 
@@ -254,7 +249,9 @@ size file which you can select from the Select Large File drop down list.
 14  
  
  
-Are there specific requirements for the Application Record? 
+## Application Record Requirements
+
+### Specific Requirements
  
 As per the Practice Directive -72 the requirements for putting together an application record 
 are as follows: 
@@ -409,7 +406,9 @@ be placed on the hearing list.
 recorded, and the registry will be checking for compliance with the 
 Supreme Court Civil and Family Rules. 
  
-Who should I contact if I have issues submitting my Application Record? 
+## Troubleshooting & Support
+
+### Support Contacts
  
 You would contact Courts.CSO@gov.bc.ca 
  
