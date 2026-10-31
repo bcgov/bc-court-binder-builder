@@ -1,0 +1,11 @@
+# Ignore local court documents, affidavits, scanned briefs, and templates
+*.pdf
+*.docx
+*.doc
+*.rtf
+*.png
+*.jpg
+*.jpeg
+*.tiff
+*.zip
+!README.md

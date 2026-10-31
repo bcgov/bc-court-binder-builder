@@ -1,0 +1,110 @@
+SYNTHETIC TEST FIXTURE - all parties, counsel, addresses and figures are fictional. Not for filing.
+
+FORM 33 (RULE 8-1 (9))
+
+No. NW-250981
+New Westminster Registry
+
+IN THE SUPREME COURT OF BRITISH COLUMBIA
+
+BETWEEN:
+    APEX STRUCTURES CORP.
+                                                                    PLAINTIFF / APPLICANT
+AND:
+    CASCADE GENERAL CONTRACTING LTD.
+                                                                    DEFENDANT / RESPONDENT
+AND:
+    PRO-TECH ROOFING SYSTEMS INC.
+                                                                    PROPOSED ADDED DEFENDANT / RESPONDENT
+
+APPLICATION RESPONSE
+
+Application response of: The Defendant, Cascade General Contracting Ltd. (the "Defendant"), and the
+Proposed Added Defendant, Pro-Tech Roofing Systems Inc. ("Pro-Tech") (together, the "Respondents")
+
+PART 1: ORDERS CONSENTED TO
+
+The Respondents consent to the order granting the Plaintiff leave to amend the Notice of Civil Claim
+in respect of the particulars of the Prime Contract and the Project description only, being paragraphs
+1 and 2 of the Proposed Amended Claim. Consent is given without admission of any allegation.
+
+PART 2: ORDERS OPPOSED
+
+The Respondents oppose the granting of the orders sought in paragraphs 2, 3 and 4 of Part 1 of the
+Notice of Application, being the addition of Pro-Tech as a defendant, and the directions for service and
+responsive pleadings that depend on that addition.
+
+PART 3: ORDERS ON TERMS
+
+In the alternative, if leave is granted to add Pro-Tech, the Respondents propose that:
+(a) the Plaintiff pay the costs of the application thrown away, in any event of the cause;
+(b) the time for Pro-Tech to file a Response to Civil Claim run from the date of service of the
+    Amended Notice of Civil Claim, with an extension of forty-five (45) days from the date of this
+    application's disposition; and
+(c) the Plaintiff particularize the allegations against Pro-Tech in a further amended pleading within
+    fourteen (14) days, identifying each act of negligence and the specific roof components alleged to
+    be defective.
+
+PART 4: FACTUAL BASIS
+
+1. The Plaintiff's claim was first pleaded on March 4, 2026, and the Defendant's Response to Civil Claim
+   was filed on April 6, 2026. The Plaintiff has known of the water ingress since at least July 2025 and
+   gave written notice of it to the Defendant on July 9, 2025. The Plaintiff therefore knew, or ought to
+   have known, the material facts of its claim against the roofing contractor no later than that date.
+
+2. The Plaintiff's proposed claim against Pro-Tech is based on an engineering inspection dated
+   September 22, 2026, that the Plaintiff obtained more than fourteen (14) months after the water ingress
+   was first documented. The inspection does not identify any new defect; it re-states a condition the
+   Plaintiff had documented since 2025.
+
+3. Pro-Tech did not design the building envelope and did not select the roof drainage layout. Those
+   functions were performed by the architect and mechanical engineer engaged under the Prime Contract.
+   The Proposed Amended Claim does not plead any particular act or omission by Pro-Tech that is distinct
+   from the Defendant's subcontract scope.
+
+4. Adding Pro-Tech at this stage would require Pro-Tech to investigate, retain its own engineering
+   consultant, and respond to a claim that was not part of the original proceeding. Pro-Tech has no
+   prior opportunity to preserve its own site records from the period of installation, which closed
+   more than eighteen (18) months ago.
+
+5. Under Supreme Court Civil Rule 6-2 the new party's presence must be necessary for the court to
+   adjudicate the questions effectively and completely. The existing claim against the Defendant, as
+   subcontractor-supervisor, can be determined without Pro-Tech being a party. The Plaintiff can pursue
+   Pro-Tech in a separate action if it wishes, and the Respondents do not accept that a separate action
+   would be a duplication.
+
+PART 5: LEGAL BASIS
+
+1. Supreme Court Civil Rule 6-1(1): leave to amend is not granted where the amendment is not properly
+   particularized, discloses no reasonable claim, or would cause prejudice that cannot be compensated for
+   by costs or by an adjournment.
+
+2. Limitation Act, S.B.C. 2012, c. 13: the Plaintiff's knowledge of the material facts is the relevant
+   date for the basic limitation period under section 6, and the Plaintiff's claim against Pro-Tech is
+   out of time if the Plaintiff knew of the defect in 2025, and no later discoverability date is
+   available on the evidence. The Respondents rely on the two-year basic period under section 6 and
+   the discoverability provisions of section 8, and say the Plaintiff's own correspondence fixes the
+   knowledge date.
+
+3. Supreme Court Civil Rule 6-2 (adding parties): the joinder must be necessary, not merely convenient.
+
+4. Practice Direction 73 (Virtual Chambers).
+
+5. Chaston Construction Corp. v. Henderson Land, 2002 BCCA 357 (cited by the Plaintiff). The Respondents
+   say the principle of liberal amendment is not a license to add a party whose limitation defence is
+   apparent on the face of the record, and the authority tab in the Application Record is unverified.
+
+PART 6: MATERIAL TO BE RELIED ON
+
+1. Affidavit #1 of Dana Whitcomb (Pro-Tech), sworn November 14, 2026 (to be filed).
+2. Affidavit #1 of Robert Lindqvist, sworn November 14, 2026 (to be filed).
+3. The Notice of Civil Claim filed March 4, 2026, and the Response to Civil Claim filed April 6, 2026.
+4. The July 9, 2025 notice letter from the Plaintiff to the Defendant.
+
+The Respondents estimate that the application will take twenty (20) minutes.
+
+Dated: November 17, 2026
+
+                                                        _____________________________________________
+                                                        Robert Lindqvist, Counsel for the Defendant
+                                                        Dana Okafor, Counsel for the Proposed Added Defendant

@@ -1,0 +1,69 @@
+{
+  "court": "SUPREME COURT OF BRITISH COLUMBIA",
+  "registry": "Victoria",
+  "file_number": "FL-260482",
+  "plaintiff": "ELEANOR VANCE",
+  "plaintiff_role": "Claimant / Applicant",
+  "defendant": "ARTHUR VANCE",
+  "defendant_role": "Respondent",
+  "matter_title": "Interim Child Support, Section 7 Expenses & Corporate Financial Disclosure",
+  "application_date": "December 4, 2026 at 9:45 AM",
+  "time_estimate": "25 minutes (Associate Judge Chambers, PD-72 / PD-73)",
+  "judge_type": "Associate Judge",
+  "hearing_format": "Virtual Chambers (PD-73 via Microsoft Teams)",
+  "counsel_applicant": "Sarah Jenkins, Bar No. 54321 | Jenkins Family Law Group, 810 Fort Street, Victoria, BC",
+  "counsel_respondent": "Robert Sterling, Bar No. 98765 | Sterling Barristers, 1002 Wharf Street, Victoria, BC",
+  "documents": [
+    {
+      "item_num": 1,
+      "filename": "01_Notice_of_Application.pdf",
+      "title": "Item 1 - Notice of Application (Form F31 - Supreme Court Family Rule 10-6)",
+      "short_title": "Tab 1 - Notice of Application (Child & Spousal Support)",
+      "page_count": 4,
+      "exhibits": []
+    },
+    {
+      "item_num": 2,
+      "filename": "02_Application_Response.pdf",
+      "title": "Item 2 - Application Response of Arthur Vance (Form F32 - Family Rule 10-6(9))",
+      "short_title": "Tab 2 - Application Response of Arthur Vance",
+      "page_count": 3,
+      "exhibits": []
+    },
+    {
+      "item_num": 3,
+      "filename": "03_Affidavit_1_Eleanor_Vance.pdf",
+      "title": "Item 3 - Affidavit #1 of Eleanor Vance sworn November 18, 2026",
+      "short_title": "Tab 3 - Affidavit #1 of Eleanor Vance",
+      "page_count": 4,
+      "exhibits": [
+        {
+          "letter": "Exhibit A",
+          "description": "Vance Holdings Ltd. Corporate Registry Search & Notice of Articles",
+          "rel_page": 2
+        },
+        {
+          "letter": "Exhibit B",
+          "description": "CRA Notice of Assessment & Children's Special Expenses Schedule",
+          "rel_page": 3
+        }
+      ]
+    },
+    {
+      "item_num": 4,
+      "filename": "04_Draft_Order.pdf",
+      "title": "Item 4 - Draft Order Made After Application (Form F33 - Family Rule 13-1)",
+      "short_title": "Tab 4 - Draft Order",
+      "page_count": 3,
+      "exhibits": []
+    },
+    {
+      "item_num": 5,
+      "filename": "05_Authority_Kowalewich_v_Kowalewich.pdf",
+      "title": "Item 5 - Kowalewich v. Kowalewich, 2001 BCCA 450 (Corporate Income Imputation)",
+      "short_title": "Tab 5 - Kowalewich v. Kowalewich, 2001 BCCA 450",
+      "page_count": 3,
+      "exhibits": []
+    }
+  ]
+}

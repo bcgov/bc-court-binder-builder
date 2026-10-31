@@ -1,0 +1,55 @@
+SYNTHETIC TEST FIXTURE - all parties, counsel, addresses and figures are fictional. Not for filing.
+
+No. NW-250981
+New Westminster Registry
+
+IN THE SUPREME COURT OF BRITISH COLUMBIA
+
+BETWEEN:
+
+    APEX STRUCTURES CORP.
+                                                                    PLAINTIFF / APPLICANT
+AND:
+
+    CASCADE GENERAL CONTRACTING LTD.
+                                                                    DEFENDANT / RESPONDENT
+
+AND:
+
+    PRO-TECH ROOFING SYSTEMS INC.
+                                                                    PROPOSED ADDED DEFENDANT / RESPONDENT
+
+====================================================================================================
+                                       APPLICATION RECORD
+====================================================================================================
+
+Application of the Plaintiff, Apex Structures Corp., for an Order granting leave to amend the Notice
+of Civil Claim pursuant to Supreme Court Civil Rule 6-1(1), and for an Order adding Pro-Tech Roofing
+Systems Inc. as a defendant pursuant to Supreme Court Civil Rule 6-2.
+
+Hearing Date:     November 26, 2026
+Time:             9:30 AM (Chambers List)
+Time Estimate:    30 minutes
+Presiding:        Associate Judge in Chambers (Virtual Chambers pursuant to Practice Direction 73)
+
+====================================================================================================
+NAME AND CONTACT DETAILS OF COUNSEL:
+
+Counsel for the Plaintiff (Applicant):
+Priya Anand, Bar No. 31207
+ANAND LITIGATION GROUP
+Suite 900 - 13450 102nd Avenue, Surrey, BC V3T 0H1
+Tel: (604) 555-0310 | Email: panand@anandlitigation.example
+
+Counsel for the Defendant Cascade General Contracting Ltd. (Respondent):
+Robert Lindqvist, Bar No. 40918
+LINDQVIST HARTWELL LLP
+Suite 1500 - 1055 West Georgia Street, Vancouver, BC V6E 3P3
+Tel: (604) 555-0420 | Email: rlindqvist@lhllp.example
+
+Counsel for the Proposed Added Defendant Pro-Tech Roofing Systems Inc. (Respondent):
+Dana Okafor, Bar No. 52764
+OKAFOR & WYNN
+Suite 400 - 2 Lonsdale Avenue, North Vancouver, BC V7M 2G3
+Tel: (604) 555-0530 | Email: dokafor@okaforwynn.example
+====================================================================================================

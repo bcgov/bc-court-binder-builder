@@ -1,0 +1,5 @@
+target/
+output/
+inputs/*.pdf
+inputs/manifest.json
+Cargo.lock

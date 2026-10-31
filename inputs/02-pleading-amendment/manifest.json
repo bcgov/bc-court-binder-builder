@@ -1,0 +1,66 @@
+{
+  "_synthetic_fixture": "All parties, counsel, addresses and figures are fictional. Not for filing.",
+  "court": "Supreme Court of British Columbia",
+  "registry": "New Westminster",
+  "file_number": "NW-250981",
+  "matter_type": "Pleading Amendment and Joinder (Civil Rules 6-1 and 6-2)",
+  "plaintiff": "Apex Structures Corp.",
+  "defendant": "Cascade General Contracting Ltd.",
+  "proposed_added_defendant": "Pro-Tech Roofing Systems Inc.",
+  "application_date": "November 26, 2026",
+  "application_time": "9:30 AM",
+  "time_estimate": "30 minutes",
+  "documents": [
+    {
+      "item_num": 1,
+      "filename": "01_Notice_of_Application.pdf",
+      "title": "Notice of Application filed November 2, 2026",
+      "short_title": "01. Notice of Application",
+      "page_count": 6,
+      "exhibits": []
+    },
+    {
+      "item_num": 2,
+      "filename": "02_Application_Response.pdf",
+      "title": "Application Response of Defendant and Proposed Added Defendant dated November 17, 2026",
+      "short_title": "02. Application Response",
+      "page_count": 5,
+      "exhibits": []
+    },
+    {
+      "item_num": 3,
+      "filename": "03_Affidavit_1_Marcus_Tremblay.pdf",
+      "title": "Affidavit #1 of Marcus Tremblay sworn November 2, 2026",
+      "short_title": "03. Affidavit #1 of Marcus Tremblay",
+      "page_count": 8,
+      "exhibits": [
+        {
+          "letter": "Exhibit A",
+          "description": "Proposed Amended Notice of Civil Claim",
+          "rel_page": 3
+        },
+        {
+          "letter": "Exhibit B",
+          "description": "Engineering Inspection Report, Coastal Building Science Ltd., dated September 22, 2026",
+          "rel_page": 4
+        }
+      ]
+    },
+    {
+      "item_num": 4,
+      "filename": "04_Draft_Order.pdf",
+      "title": "Draft Form of Order granting leave to amend and adding Pro-Tech Roofing Systems Inc.",
+      "short_title": "04. Draft Order",
+      "page_count": 3,
+      "exhibits": []
+    },
+    {
+      "item_num": 5,
+      "filename": "05_Authority_Chaston_Construction.pdf",
+      "title": "Tab 5 - Chaston Construction Corp. v. Henderson Land, 2002 BCCA 357 (citation UNVERIFIED)",
+      "short_title": "Tab 5 - Chaston Construction (unverified)",
+      "page_count": 2,
+      "exhibits": []
+    }
+  ]
+}

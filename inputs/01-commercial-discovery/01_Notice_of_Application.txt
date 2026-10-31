@@ -1,0 +1,93 @@
+                                                    No. S-268841
+                                                    Vancouver Registry
+
+          IN THE SUPREME COURT OF BRITISH COLUMBIA
+
+BETWEEN:
+                 PACIFIC RIM HOLDINGS LTD.                      PLAINTIFF
+AND:
+                 NORTH SHORE LOGISTICS INC.                     DEFENDANT
+
+
+                                FORM 32 (RULE 8-1(4))
+                                NOTICE OF APPLICATION
+
+Name(s) of applicant(s): Pacific Rim Holdings Ltd. (Plaintiff)
+
+To: North Shore Logistics Inc. (Defendant)
+And to: Its solicitor of record, Kendra T. MacIntyre, Coastline Business Law Group
+
+TAKE NOTICE that an application will be made by the applicant to the presiding 
+Associate Judge in Chambers via Microsoft Teams video appearance on November 19, 2026, 
+at 9:45 AM, for the order(s) set out in Part 1 below.
+
+
+Part 1: ORDERS SOUGHT
+
+1. Pursuant to Supreme Court Civil Rule 7-1(11), the defendant, North Shore 
+   Logistics Inc., within fourteen (14) days of the date of this Order, prepare, 
+   verify by affidavit, and serve upon the plaintiff an amended/supplementary 
+   List of Documents listing all documents that are or have been in its possession 
+   or control relating to the actual monthly inventory volume calculations and third-party 
+   pallet throughput records for the period between January 1, 2025, and June 30, 2026.
+
+2. Pursuant to Supreme Court Civil Rule 7-1(18), the defendant produce for the 
+   inspection of the plaintiff unredacted copies of the Internal Quarterly Operations 
+   and Logistics Audit Reports prepared for the board of directors of North Shore 
+   Logistics Inc. for Q1 2025 through Q2 2026 inclusive.
+
+3. The costs of this application be awarded to the plaintiff in any event of the cause.
+
+
+Part 2: FACTUAL BASIS
+
+1. On October 14, 2024, the plaintiff and defendant executed a written Master Commercial 
+   Warehousing & Logistics Agreement (the "Agreement"), under which the defendant agreed 
+   to provide dedicated temperature-controlled storage and priority freight handling at 
+   its Richmond terminal.
+
+2. Clause 14.2 of the Agreement stipulates that warehousing fees payable by the plaintiff 
+   are tied directly to verifiable pallet throughput thresholds, verified through monthly 
+   third-party freight audits.
+
+3. In this action, the plaintiff claims damages of $438,200.00 for systematic fee 
+   overcharges and breach of the minimum available square footage covenant during the 
+   18-month operating window between January 1, 2025, and June 30, 2026.
+
+4. On August 18, 2026, the defendant delivered its initial List of Documents under Rule 7-1(1). 
+   The list omitted all internal operations throughput logs and redacted the entirety 
+   of its Quarterly Audit Reports on the ground of alleged "commercial sensitivity."
+
+5. The defendant has refused, upon formal written demand delivered September 22, 2026, 
+   to provide unredacted copies or supplement its List of Documents, despite these records 
+   being directly material to the threshold inventory metrics in dispute.
+
+
+Part 3: LEGAL BASIS
+
+1. Supreme Court Civil Rules, B.C. Reg. 168/2009, Rules 7-1(1), 7-1(11), 7-1(18), 
+   7-1(20), and 8-1.
+2. The documents sought are directly material to proving whether the defendant possessed 
+   the capacity it billed to the plaintiff and whether pallet calculations were inflated.
+3. A claim of "commercial sensitivity" or competitive discomfort is not a recognized 
+   ground of legal privilege under BC law: Kalin v. Campbell, 2014 BCCA 441 at paras 24-28.
+4. The relief sought is proportionate within the meaning of Rule 1-3, as the production 
+   requires no burdensome creation of new material, but merely unredacting and listing 
+   discrete, existing operational records.
+
+
+Part 4: MATERIAL TO BE RELIED ON
+
+1. Affidavit #1 of Eleanor Vance, made October 14, 2026.
+2. Pleadings filed herein.
+3. Kalin v. Campbell, 2014 BCCA 441.
+
+The applicant estimates that the application will take 30 minutes.
+
+This matter is within the jurisdiction of an Associate Judge.
+
+Dated: October 15, 2026.
+
+                                                ___________________________________
+                                                Marcus A. Sterling
+                                                Counsel for the Plaintiff

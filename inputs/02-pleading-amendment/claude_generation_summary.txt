@@ -1,0 +1,22 @@
+I wrote the Option B pleading-amendment set to `poc/court-binder/inputs/02-pleading-amendment/`: seven text files and a `manifest.json`. The manifest parses as valid JSON. I did not run the repo's generator script or the binder assembler, so the set has not been fed through the pipeline yet.
+
+**Files**
+- `manifest.json`: same structure as the `01-commercial-discovery` manifest, with five documents and the affidavit's two exhibits.
+- `000_Application_Record_Title_Page.txt`: New Westminster No. NW-250981, hearing November 26, 2026 at 9:30 AM, 30 minutes, Virtual Chambers under PD-73.
+- `001_Application_Record_Index.txt`
+- `01_Notice_of_Application.txt`: Form 32, eight factual paragraphs, grounds under Rules 6-1(1) and 6-2.
+- `02_Application_Response.txt`: Form 33, opposing the joinder on prejudice and limitation, with consent to the particulars-only amendment.
+- `03_Affidavit_1_Marcus_Tremblay.txt`: Form 109 with a BC commissioner jurat and blank signature and stamp fields. Exhibit A is the proposed amended claim, and Exhibit B is an engineering inspection report.
+- `04_Draft_Order.txt`: Form 35, granting leave and adding Pro-Tech.
+- `05_Authority_Chaston_Construction.txt`: placeholder, see below.
+
+**Decisions you should check**
+- **Chaston is marked unverified, not reproduced.** I can't confirm that *Chaston Construction Corp. v. Henderson Land, 2002 BCCA 357* exists or says what the request implies. The tab has the citation and a paraphrase of the liberal-amendment principle, flagged for verification on CanLII, with no quotations or pinpoints. The Notice and Response cite it with the same qualifier. Please confirm the citation before any use.
+- **Synthetic banner.** Each file starts with a line saying it is a fictional test fixture, not for filing. Remove it only if the output will never leave the test pipeline.
+- **Caption.** Cascade is the existing defendant and Pro-Tech is shown as a "proposed added defendant," since the application is to add it.
+- **Rule and form numbers** are as you specified (6-1, 6-2, 8-1, 13-1, 22-2, and so on). I did not check them against the current Supreme Court Civil Rules, and the Limitation Act references (ss. 6, 8, 21) need the same check.
+- **Page counts** in the manifest are estimates from line counts (about 55 lines per page), not from rendered PDFs.
+
+**Not touched**
+- `claude_generation_summary.txt` was already in the directory, empty. I left it alone.
+- The `.txt` files are the source; the `01` set has PDFs alongside its text. Rendering these to PDF is still to do.

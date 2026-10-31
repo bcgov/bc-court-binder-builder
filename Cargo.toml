@@ -1,0 +1,13 @@
+[package]
+name = "bc-court-binder"
+version = "0.1.0"
+edition = "2024"
+description = "BC Court of Appeal & Supreme Court Electronic Application Record Builder & Validator"
+
+[dependencies]
+pdfcraft-sdk = { git = "https://github.com/richfrem/pdfcraft", branch = "main" }
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+
+# Local override when working side-by-side with local pdfcraft clone:
+[patch."https://github.com/richfrem/pdfcraft"]
+pdfcraft-sdk = { path = "../pdfcraft/crates/sdk" }

@@ -1,0 +1,82 @@
+Indexed as: Kalin v. Campbell
+Cited as: 2014 BCCA 441
+Docket: CA041782
+
+COURT OF APPEAL FOR BRITISH COLUMBIA
+
+Between:
+                               Walter Kalin
+                                                                      Appellant
+                                                                     (Plaintiff)
+And
+                        Robert Campbell and 
+                 Pacific Rim Transport Corporation
+                                                                    Respondents
+                                                                   (Defendants)
+
+Before: The Honourable Chief Justice Bauman
+        The Honourable Madam Justice Bennett
+        The Honourable Mr. Justice Willcock
+
+Heard: September 23, 2014
+Judgment Delivered: December 3, 2014
+
+Counsel:
+D.G. Cowper, Q.C. and K.R. Burnett for the Appellant
+P.G. Voorn for the Respondents
+
+On appeal from: An order of the Supreme Court of British Columbia, dated 
+April 14, 2014 (Kalin v. Campbell, 2014 BCSC 620).
+
+.............................................................................
+HEADNOTE / SUMMARY:
+Practice — Civil procedure — Pre-trial document production — Rule 7-1 — 
+Commercial sensitivity — Redactions — Proportionality.
+
+The plaintiff appealed an interlocutory order denying unredacted production 
+of quarterly operational reports and corporate management metrics. The chambers 
+judge held that the documents contained proprietary competitive data and that 
+disclosure was not proportionate under Rule 1-3.
+
+Held: Appeal allowed. Commercial embarrassment or sensitivity does not constitute 
+a recognised ground of privilege under the Supreme Court Civil Rules. Where 
+documents are directly relevant to proving or disproving an allegation raised in 
+the pleadings, they must be produced in unredacted form unless protected by legal 
+professional or litigation privilege. If proprietary interests require protection, 
+the appropriate mechanism is a confidentiality undertaking or protective order, 
+not unilateral concealment.
+.............................................................................
+
+REASONS FOR JUDGMENT OF THE HONOURABLE MR. JUSTICE WILLCOCK:
+
+[24] The starting point under Supreme Court Civil Rule 7-1 is the obligation of 
+a party to list and produce every document in its possession or control that could 
+be used at trial to prove or disprove a material fact. The scope of production 
+remains anchored in the issues defined by the pleadings.
+
+[25] In the present case, the respondent justified extensive redactions to its 
+management records on the basis that the redacted sections contained proprietary 
+cost allocations and internal revenue margins that it wished to shield from a commercial 
+competitor.
+
+[26] With respect, commercial sensitivity is not privilege. While the court will 
+be vigilant to prevent the discovery process from degenerating into abusive fishing 
+expeditions designed to extract trade secrets, a party cannot unilaterally redact 
+relevant portions of documents simply because disclosure would cause commercial 
+discomfort or disclose financial calculations.
+
+[27] As this Court emphasized in Biehl v. Strang, 2011 BCCA 215, proportionality 
+under Rule 1-3 informs how discovery is conducted, but it does not extinguish the 
+right of a litigant to inspect the core evidentiary foundation upon which the 
+adverse party's billing or accounting formulas depend.
+
+[28] If the records contain genuine trade secrets alongside material facts, the 
+proper procedure is to seek a tailored confidentiality agreement or a protective 
+order under Rule 7-1(18), restricting disclosure to counsel and designated experts. 
+It was an error in principle to deny production altogether.
+
+[29] The appeal is allowed with costs. The respondent is ordered to deliver 
+unredacted copies of the disputed quarterly management reports within 14 days.
+
+[BAUMAN C.J.B.C.: I agree.]
+[BENNETT J.A.: I agree.]

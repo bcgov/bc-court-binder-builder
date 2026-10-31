@@ -1,0 +1,178 @@
+SYNTHETIC TEST FIXTURE - all parties, counsel, addresses and figures are fictional. Not for filing.
+
+FORM 109 (RULE 22-2 (2))
+
+No. NW-250981
+New Westminster Registry
+
+IN THE SUPREME COURT OF BRITISH COLUMBIA
+
+BETWEEN:
+    APEX STRUCTURES CORP.
+                                                                    PLAINTIFF / APPLICANT
+AND:
+    CASCADE GENERAL CONTRACTING LTD.
+                                                                    DEFENDANT / RESPONDENT
+AND:
+    PRO-TECH ROOFING SYSTEMS INC.
+                                                                    PROPOSED ADDED DEFENDANT / RESPONDENT
+
+AFFIDAVIT #1 OF MARCUS TREMBLAY
+
+I, Marcus Tremblay, Project Manager, of Suite 1800 - 1075 West Georgia Street, in the City of Vancouver,
+in the Province of British Columbia, SWEAR (OR AFFIRM) THAT:
+
+1. I am the Project Manager of the Plaintiff, Apex Structures Corp. ("Apex"), and as such I have personal
+   knowledge of the facts and matters deposed to in this affidavit, except where stated to be based on
+   information and belief, in which case I believe those facts and matters to be true.
+
+2. Apex was the owner and developer of the four-storey commercial building at 4418 Kingsway, Burnaby,
+   British Columbia (the "Project"). Apex retained the Defendant, Cascade General Contracting Ltd.
+   ("Cascade"), as general contractor under a written construction contract dated June 3, 2024 (the
+   "Prime Contract").
+
+3. Cascade subcontracted the roofing work to the Proposed Added Defendant, Pro-Tech Roofing Systems Inc.
+   ("Pro-Tech") under a subcontract dated August 19, 2024. Now produced and shown to me and marked as
+   Exhibit "A" to this my affidavit is the proposed Amended Notice of Civil Claim, which Apex seeks leave
+   to file and which adds Pro-Tech as a defendant (the "Proposed Amended Claim").
+
+4. Substantial performance of the Project was certified on March 28, 2025. Following that date, Apex's
+   tenants and building operators reported water entering the roof assembly along the north and east
+   elevations.
+
+5. On July 9, 2025, I sent a written notice to Cascade describing the water ingress and requesting
+   remediation under the warranty in the Prime Contract. Cascade responded by directing Apex to contact
+   Pro-Tech as the installer of the roof assembly. I did so, and Pro-Tech attended once in August 2025 to
+   apply a temporary sealant at the north parapet. The water ingress did not stop.
+
+6. In September 2025, Apex retained Coastal Building Science Ltd. to investigate the roof assembly. The
+   firm's inspection was delayed until September 2026 because of the scheduling of the tenant fit-out work
+   and the need to obtain access to the occupied suites. A copy of the inspection report dated
+   September 22, 2026, is now produced and shown to me and marked as Exhibit "B" to this my affidavit
+   (the "Engineering Report").
+
+7. The Engineering Report identifies two probable causes of the water ingress: (a) inadequate membrane
+   lap detailing at the north and east parapet terminations, and (b) undersized roof drains that do not
+   meet the design flow for the roof area. In the Engineering Report's opinion, both conditions are
+   consistent with installation and design deficiencies in the roof assembly, and the report does not
+   attribute either condition to tenant alterations.
+
+8. Apex did not know, before receiving the Engineering Report, which party was responsible for the design
+   of the roof drainage layout, or whether the drain sizing was a design or installation issue. Apex
+   believes that the identification of those responsibilities could not reasonably have been made until
+   the Engineering Report was completed.
+
+9. Apex has incurred repair and remediation costs of approximately $412,000 to date in respect of the
+   water damage, insulation replacement, and tenant fit-out restoration. Those costs continue to accrue,
+   and the Engineering Report recommends that the drainage system be replaced in full.
+
+10. I am advised by counsel, and I verily believe, that the proposed amendments do not introduce a new
+    cause of action against Cascade, and that the amendments against Pro-Tech arise from the same roof
+    assembly and the same series of events as the existing claim.
+
+11. No examinations for discovery have been scheduled in this action, and no trial date has been set. The
+    proposed amendments can be served and answered within the time limits in the Supreme Court Civil
+    Rules without any adjournment of a trial date.
+
+SWORN BEFORE ME at the City of Vancouver,         )
+in the Province of British Columbia,               )
+this ____ day of November, 2026.                   )
+                                                   )
+                                                   )   _________________________________________
+___________________________________________        )   MARCUS TREMBLAY
+A Commissioner for taking Affidavits               )
+for British Columbia                               )
+[Commissioner name, Commissioner stamp and expiry date to be completed by the commissioner]
+
+
+====================================================================================================
+EXHIBIT "A" - PROPOSED AMENDED NOTICE OF CIVIL CLAIM (EXCERPT, SYNTHETIC)
+====================================================================================================
+
+This is Exhibit "A" referred to in the Affidavit #1 of MARCUS TREMBLAY, sworn (or affirmed) before me at
+the City of Vancouver, in the Province of British Columbia, this ____ day of November, 2026.
+
+                                                    __________________________________________________
+                                                    A Commissioner for taking Affidavits for British Columbia
+
+AMENDED NOTICE OF CIVIL CLAIM (Excerpt)
+
+Parts 1-2: Plaintiff claims against the Defendants.
+
+1. The Plaintiff, Apex Structures Corp., is a corporation incorporated under the laws of British Columbia
+   and the owner of the Project.
+
+2. The Defendant, Cascade General Contracting Ltd., was the general contractor for the Project under the
+   Prime Contract dated June 3, 2024.
+
+3. The Proposed Added Defendant, Pro-Tech Roofing Systems Inc., was the roofing subcontractor for the
+   Project under a subcontract dated August 19, 2024.
+
+4. The roof assembly installed by Pro-Tech has allowed water ingress since March 28, 2025.
+
+5. The Plaintiff claims against Pro-Tech for negligent design and installation of the roof assembly,
+   including the membrane lap detailing at the north and east parapets and the roof drainage sizing.
+
+6. The Plaintiff claims against Cascade for breach of the Prime Contract warranty, and for negligent
+   supervision of the roofing work.
+
+7. The Plaintiff claims damages of approximately $412,000 to date, and continuing, together with interest
+   and costs.
+
+Parts 3-4: [Remainder of the proposed amended pleading omitted from this synthetic excerpt.]
+
+
+====================================================================================================
+EXHIBIT "B" - ENGINEERING INSPECTION REPORT (EXCERPT, SYNTHETIC)
+====================================================================================================
+
+This is Exhibit "B" referred to in the Affidavit #1 of MARCUS TREMBLAY, sworn (or affirmed) before me at
+the City of Vancouver, in the Province of British Columbia, this ____ day of November, 2026.
+
+                                                    __________________________________________________
+                                                    A Commissioner for taking Affidavits for British Columbia
+
+COASTAL BUILDING SCIENCE LTD.
+Suite 600 - 1200 Hornby Street, Vancouver, BC V6Z 1W2
+
+ROOF ASSEMBLY INSPECTION REPORT
+Project: 4418 Kingsway, Burnaby, BC
+Client: Apex Structures Corp.
+Report date: September 22, 2026
+Inspecting engineer: [Engineer name and P.Eng. number to be inserted]
+
+1. SCOPE
+
+   Visual and infrared inspection of the roof membrane, parapet terminations, and roof drainage system
+   on the north and east elevations, performed on September 9 and 10, 2026. Destructive testing was not
+   performed.
+
+2. FINDINGS
+
+   2.1  Membrane lap detailing at the north and east parapet terminations does not match the lap widths
+        shown on the issued-for-construction roof detail. Laps appear to be approximately 50 mm narrower
+        than specified at several locations.
+
+   2.2  Roof drains at the low points of the north and east roof areas have a clear outlet area below the
+        calculated design flow for the tributary roof area. Ponding was observed within 4 hours of rainfall
+        at both locations.
+
+   2.3  Staining consistent with water migration was observed on the ceiling of the third-floor tenant
+        space at the north-east corner. No evidence of tenant alteration to the roof assembly was
+        observed.
+
+3. PROBABLE CAUSE
+
+   In our opinion, the water ingress is most probably caused by (a) inadequate membrane lap detailing and
+   (b) undersized roof drains. Both conditions are consistent with installation and design deficiencies.
+   We cannot determine from the visual inspection alone whether the drain sizing originated in the design
+   documents or in the installed outlets.
+
+4. RECOMMENDATIONS
+
+   4.1  Replace the roof drains at the north and east low points with drains sized to the design flow.
+   4.2  Re-lap the membrane at the north and east parapet terminations to the issued-for-construction detail.
+   4.3  Carry out a flood test of the affected roof areas before reinstating the tenant fit-out finishes.
+
+Signed: ______________________________
+[Engineer name, P.Eng.] - Coastal Building Science Ltd.

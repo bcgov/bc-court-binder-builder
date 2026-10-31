@@ -1,0 +1,66 @@
+{
+  "court": "Supreme Court of British Columbia",
+  "registry": "Vancouver",
+  "file_number": "S-268841",
+  "matter_type": "Document Discovery (Civil Rule 7-1)",
+  "plaintiff": "Pacific Rim Holdings Ltd.",
+  "defendant": "North Shore Logistics Inc.",
+  "application_date": "November 19, 2026",
+  "time_estimate": "30 minutes",
+  "hearing_format": "Virtual Chambers (PD-73 via Microsoft Teams)",
+  "counsel_applicant": "Markham & Davies LLP | 1800 - 1075 W Georgia St, Vancouver, BC",
+  "counsel_respondent": "Coastline Business Law Group | 2200 - 555 W Hastings St, Vancouver, BC",
+  "documents": [
+    {
+      "item_num": 1,
+      "filename": "01_Notice_of_Application.pdf",
+      "title": "Notice of Application (Rule 8-1(4) - Production under Rule 7-1)",
+      "short_title": "01. Notice of Application",
+      "page_count": 4,
+      "exhibits": []
+    },
+    {
+      "item_num": 2,
+      "filename": "02_Application_Response.pdf",
+      "title": "Application Response of North Shore Logistics Inc.",
+      "short_title": "02. Application Response",
+      "page_count": 4,
+      "exhibits": []
+    },
+    {
+      "item_num": 3,
+      "filename": "03_Affidavit_1_Eleanor_Vance.pdf",
+      "title": "Affidavit #1 of Eleanor Vance sworn November 10, 2026",
+      "short_title": "03. Affidavit #1 of Eleanor Vance",
+      "page_count": 4,
+      "exhibits": [
+        {
+          "letter": "Exhibit A",
+          "description": "Master Warehousing Agreement dated Jan 15, 2025",
+          "rel_page": 2
+        },
+        {
+          "letter": "Exhibit B",
+          "description": "Deficiency Notice & Audit Demand dated Oct 2, 2026",
+          "rel_page": 3
+        }
+      ]
+    },
+    {
+      "item_num": 4,
+      "filename": "04_Draft_Order.pdf",
+      "title": "Draft Form of Order Made After Application",
+      "short_title": "04. Draft Order",
+      "page_count": 3,
+      "exhibits": []
+    },
+    {
+      "item_num": 5,
+      "filename": "05_Authority_Kalin_v_Campbell.pdf",
+      "title": "Tab 5 - Kalin v. Campbell, 2014 BCCA 441 (Document Disclosure Principles)",
+      "short_title": "Tab 5 - Kalin v. Campbell",
+      "page_count": 4,
+      "exhibits": []
+    }
+  ]
+}
