@@ -6,6 +6,8 @@ This project is made openly available under a hybrid open-source software and op
    Licensed under the **MIT License**.
 2. **Documentation, Specifications, Legal Analysis & Reference Manuals** (`*.md`, `references/`, `architecture.md`, `COURT_PURPOSE_AND_BENEFITS.md`):  
    Licensed under the **Creative Commons Attribution 4.0 International Public License (CC BY 4.0)**.
+3. **Upstream Engine & SDK Dependencies**:  
+   This project builds on the headless PDF processing kernel in [`storytold/pdfcraft`](https://github.com/storytold/pdfcraft) and the unified document processing SDK in [`richfrem/pdfcraft`](https://github.com/richfrem/pdfcraft), both licensed under **`MIT OR Apache-2.0`** (see [Part 3](#part-3-upstream-dependencies--licensing-notices)).
 
 ---
 
@@ -132,3 +134,19 @@ For the avoidance of doubt, this Section 4 supplements and does not replace Your
 2. To the extent possible, if any provision of this Public License is deemed unenforceable, it shall be automatically reformed to the minimum extent necessary to make it enforceable. If the provision cannot be reformed, it shall be severed from this Public License without affecting the enforceability of the remaining terms and conditions.
 3. No term or condition of this Public License will be waived and no failure to comply consented to unless expressly agreed to by the Licensor.
 4. Nothing in this Public License constitutes or may be interpreted as a limitation upon, or waiver of, any privileges and immunities that apply to the Licensor or You, including from the legal processes of any jurisdiction or authority.
+
+---
+
+## Part 3: Upstream Dependencies & Licensing Notices
+
+This project builds upon and interfaces with the clean-room PDF processing engine and SDK components from:
+
+1. **Upstream Engine Kernel ([`storytold/pdfcraft`](https://github.com/storytold/pdfcraft)):**  
+   - **License:** Dual-licensed under `MIT OR Apache-2.0` ([View Upstream MIT License](https://github.com/storytold/pdfcraft?tab=MIT-2-ov-file)).  
+   - **Notice:** Copyright (c) 2025–2026 the Storytold contributors.  
+   - Clean-room, zero-Adobe-dependency PDF processing engine and rendering kernel authored under strict clean-room policies (ISO 32000-2 / Arlington model).
+
+2. **Enterprise Document Processing SDK ([`richfrem/pdfcraft`](https://github.com/richfrem/pdfcraft)):**  
+   - **License:** Licensed under `MIT OR Apache-2.0` ([Richard Fremmerlid Fork](https://github.com/richfrem/pdfcraft)).  
+   - **Notice:** Copyright (c) 2026 Richard Fremmerlid and contributors.  
+   - Contains the unified Document Processing SDK (`pdfcraft-sdk`, Layer 7 in-process client), native PyO3 Python acceleration module (`pdfcraft-pyo3`), self-hosted REST service (`pdfcraft-rest`), and pre-built native wheel distribution binaries consumed by `bc-court-binder-builder`.

@@ -318,3 +318,4 @@ SUCCESS: Compliant Electronic Application Record generated!
 This project is made openly available under a hybrid license model (see [`LICENSE.md`](LICENSE.md)):
 * **Software Code & Implementation Scripts**: [MIT License](LICENSE.md#part-1-mit-license-software--scripts)
 * **Documentation, Legal Specifications & Reference Manuals**: [Creative Commons Attribution 4.0 International (CC BY 4.0)](LICENSE.md#part-2-creative-commons-attribution-40-international-public-license-documentation--references)
+* **Upstream Engine & SDK Dependencies**: Builds on the headless core in [`storytold/pdfcraft`](https://github.com/storytold/pdfcraft?tab=MIT-2-ov-file) and the unified SDK in [`richfrem/pdfcraft`](https://github.com/richfrem/pdfcraft), both licensed under `MIT OR Apache-2.0` (see [LICENSE.md Part 3](LICENSE.md#part-3-upstream-dependencies--licensing-notices))
