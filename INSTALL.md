@@ -136,7 +136,7 @@ python3 .apm/skills/assembling-court-binders/scripts/assembling_court_binders.py
 
 ## 🦀 4. Optional: Rust SDK Runner Setup
 
-If you wish to compile and run the native Rust example (`src/main.rs`):
+If you wish to compile and run the native Rust example (`src/main.rs`) to verify direct `pdfcraft-sdk` integration:
 
 ### Dependencies in `Cargo.toml`:
 ```toml
@@ -153,6 +153,16 @@ pdfcraft-sdk = { path = "../pdfcraft/crates/sdk" }
 ```bash
 cargo run
 ```
+
+### What `cargo run` Does:
+1. Compiles `src/main.rs` against `pdfcraft-sdk`.
+2. Synthesizes an in-memory commercial discovery case (5 items: Notice of Application, Response, Eleanor Vance Affidavit with Exhibits A & B, Draft Order, and Legal Authority).
+3. Calculates dynamic page folios, generates the Title Page and Index with invisible rectangle link annotations, stamps top-center $15\text{ pt}$ bold folios, and configures `/PageLabels` and Initial View outlines.
+4. Uses `pdfcraft_sdk::LocalClient::render_page()` to run raster engine verification on Page 1.
+5. Audits against the 50 MB CSO limit and saves the compiled PDF to:
+   ```text
+   output/01-commercial-discovery/Application_Record_Commercial_Document_Discovery_Rule_7-1_15Nov2026.pdf
+   ```
 
 ---
 

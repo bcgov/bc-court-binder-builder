@@ -89,10 +89,75 @@ python3 .apm/skills/validating-court-binders/scripts/validating_court_binders.py
   --file output/01-commercial-discovery/Application_Record.pdf
 ```
 
-### 2. Rust Pipeline
+### 2. Rust Pipeline (Native `pdfcraft-sdk` Reference Engine)
+
+The Rust runner in [`src/main.rs`](src/main.rs) is the native reference implementation that directly integrates with the in-process [`pdfcraft-sdk`](https://github.com/richfrem/pdfcraft) crate (`Layer 7`). It demonstrates how to build and verify a court application record without external CLI utilities.
+
+#### What `cargo run` Does:
+1. **In-Memory Legal Case Synthesis:** Instantiates a 5-document commercial discovery case (*Notice of Application*, *Application Response*, *Affidavit #1 of Eleanor Vance with Exhibits A & B*, *Draft Order*, and *Kalin v. Campbell* authority).
+2. **Dynamic Folio & Index Math:** Calculates exact folio target coordinates starting at **Page 1 on Tab 1** (leaving Title & Index unnumbered per Rule 16).
+3. **Vector PDF Generation:** Generates the Title page and 4-column Index table (`TAB`, `DOCUMENT`, `FILED DATE`, `PAGE`) with invisible rectangle GoTo hyperlinks (`/Border [0 0 0]`, `/H /N`).
+4. **Folio Stamping & Digital Metadata:** Injects $15\text{ pt}$ Bold Helvetica top-center page folios, sets `/PageLabels`, and configures Initial View (`/PageMode /UseOutlines`).
+5. **PdfCraft SDK Verification:** Calls `pdfcraft_sdk::LocalClient::default().render_page(&src, 1, ...)` to mathematically verify that the PdfCraft rasterization engine renders Page 1 without syntax errors.
+6. **CSO Audit & File Output:** Audits the generated PDF against the $50\text{ MB}$ Court Services Online limit and writes the file.
+
 ```bash
+# Execute the native Rust pipeline
 cargo run
 ```
+
+#### Output Artifact:
+```text
+output/01-commercial-discovery/Application_Record_Commercial_Document_Discovery_Rule_7-1_15Nov2026.pdf
+```
+
+#### Sample Terminal Output:
+```text
+================================================================================
+   BRITISH COLUMBIA ELECTRONIC APPLICATION RECORD BUILDER (PD-72 & CSO POC)     
+   Synthesized from BC Court Rules, CSO User Guides & Senior Paralegal Practice 
+================================================================================
+
+Step 1: Ingesting source documents and exhibit metadata...
+Step 2: Calculating dynamic page numbering, folios, and bookmarks...
+   -> Front matter: 2 pages (Title page + dynamic Index)
+   -> Tab 1 starts at visible Page 1 (foliated continuous)
+   -> Total substantive content: 15 pages across 5 items
+   -> Total application record size: 17 pages
+Step 3: Generating PDF byte stream with vector layout...
+Step 4: Compiling hierarchical bookmark outline tree and link annotations...
+Step 5: Verifying PDF with PdfCraft LocalClient...
+   -> PdfCraft engine raster verification passed: Page 1 rendered successfully
+Step 6: Executing CSO pre-flight compliance audit...
+
+SUCCESS: Compliant Electronic Application Record generated!
+  File Path: output/01-commercial-discovery/Application_Record_Commercial_Document_Discovery_Rule_7-1_15Nov2026.pdf
+  File Size: 18.42 KB (0.0176 MB)
+  CSO Audit: PASS (Within strict 50 MB Court Services Online ceiling)
+
+=== Professional Paralegal Workflow Checklist (Video 836310097) ===
+✔ [Step 1] Source PDFs ingested with logical sequence order.
+✔ [Step 2] Content compiled into single continuous PDF stream.
+✔ [Step 3] Bookmarks panel populated with clear titles and exhibit sub-bookmarks.
+✔ [Step 4] Top-center 14-16pt bold page numbers stamped across content pages.
+✔ [Step 5] Title page & dynamic Index generated with accurate calculated folios.
+✔ [Step 6] Text searchability verified (ready for OCR layer).
+✔ [Step 7] Visual folios align precisely with index numbers.
+✔ [Step 8] Hyperlink structure verified from Index entries to targets.
+✔ [Step 9] File size audited and verified under 50 MB threshold.
+```
+
+---
+
+### 💡 Which Pipeline Should I Use?
+
+| Feature | Python Pipeline (`.apm/skills/`) | Rust Pipeline (`cargo run`) |
+| :--- | :--- | :--- |
+| **Primary Use Case** | Day-to-day legal operations, batch processing, and AI Agent execution | Core engine development and SDK integration testing |
+| **Input Source** | Dynamic JSON manifests & arbitrary PDFs (`inputs/<scenario>/`) | Hardcoded commercial discovery test case in `src/main.rs` |
+| **Startup Time** | Instant (< 1 second) | Requires initial `cargo build` compilation |
+| **Disk Requirement** | Lightweight (< 1 MB cache) | Generates compiler cache in `target/` (~1 GB) |
+| **Customizability** | Drop any PDF or exhibit into `inputs/` | Edit Rust structs in `src/main.rs` |
 
 ---
 
