@@ -725,7 +725,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // -------------------------------------------------------------------------
     println!("Step 6: Executing CSO pre-flight compliance audit...");
 
-    let output_dir = PathBuf::from("poc/court-binder/output/01-commercial-discovery");
+    let output_dir = PathBuf::from("output/01-commercial-discovery");
     fs::create_dir_all(&output_dir)?;
     let output_path = output_dir.join("Application_Record_Commercial_Document_Discovery_Rule_7-1_15Nov2026.pdf");
     fs::write(&output_path, out.as_slice())?;
