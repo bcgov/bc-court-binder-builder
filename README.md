@@ -107,6 +107,7 @@ The Rust runner in [`src/main.rs`](src/main.rs) is the native reference implemen
 6. **CSO Audit & File Output:** Audits the generated PDF against the $50\text{ MB}$ Court Services Online limit and writes the file.
 
 ```bash
+# Prerequisites: Rust 1.80+ (https://rustup.rs or `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`)
 # Execute the native Rust pipeline
 cargo run
 ```

@@ -137,9 +137,30 @@ python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py --m
 
 ## 🦀 4. Optional: Rust SDK Runner Setup
 
-If you wish to compile and run the native Rust example (`src/main.rs`) to verify direct `pdfcraft-sdk` integration:
+If you wish to compile and run the native Rust example ([`src/main.rs`](src/main.rs)) to verify direct `pdfcraft-sdk` integration:
 
-### Dependencies in `Cargo.toml`:
+### 4.1 Install the Rust Toolchain (if not already installed)
+To install the official Rust compiler (`rustc`) and package manager (`cargo`):
+
+* **macOS / Linux:**
+  ```bash
+  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+  source "$HOME/.cargo/env"
+  ```
+* **Windows (PowerShell):**
+  ```powershell
+  # Via winget:
+  winget install --id Rustlang.Rustup
+  # Or download and run rustup-init.exe from https://rustup.rs
+  ```
+
+Verify your installation:
+```bash
+rustc --version   # Requires 1.80+
+cargo --version
+```
+
+### 4.2 Dependencies in `Cargo.toml`:
 ```toml
 [dependencies]
 pdfcraft-sdk = { git = "https://github.com/richfrem/pdfcraft", branch = "main" }
