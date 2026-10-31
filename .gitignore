@@ -3,3 +3,5 @@ output/
 inputs/*.pdf
 inputs/manifest.json
 Cargo.lock
+context/
+.DS_Store
