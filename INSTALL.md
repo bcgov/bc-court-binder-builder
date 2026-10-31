@@ -45,12 +45,22 @@ pip install "https://github.com/richfrem/pdfcraft/releases/download/v0.16.1/pdfc
 ```
 *(If building on an Intel Mac or without pre-compiled wheels, the pipeline automatically falls back to pure-Python vector serialization).*
 
-### Step 4: Verify Installation
+### Step 4: Verify Installation & Run Skills Right Away
+
+Every fresh clone can immediately run the 3 skills out of the box:
+
 ```bash
+# Skill 1: Generate a fresh set of input filings (discovery | amendment | family)
+python3 .apm/skills/generating-court-documents/scripts/generating_court_documents.py \
+  --output-dir inputs/01-commercial-discovery \
+  --matter-type discovery
+
+# Skill 2: Assemble the input documents into a compliant court binder
 python3 .apm/skills/assembling-court-binders/scripts/assembling_court_binders.py \
   --inputs inputs/01-commercial-discovery \
   --output output/01-commercial-discovery/Application_Record.pdf
 
+# Skill 3: Audit against the 20 statutory BC Court quality gates
 python3 .apm/skills/validating-court-binders/scripts/validating_court_binders.py \
   --file output/01-commercial-discovery/Application_Record.pdf
 ```
