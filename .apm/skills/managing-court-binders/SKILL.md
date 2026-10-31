@@ -1,7 +1,7 @@
 ---
 name: managing-court-binders
 description: >-
-  Compiles, stamps, bookmarks, and audits BC Supreme Court and Court of Appeal electronic application records and books of authorities. Use when generating synthetic filings, assembling court binders, or auditing against PD-72 and CSO compliance gates.
+  Builds, compiles, continuously foliates, bookmarks, and pre-flight audits BC Supreme Court and Court of Appeal electronic court binders, application records (PD-72), virtual chambers records (PD-73), and books of authorities. Use when asked to "create a court binder", "assemble an application record", "compile court documents", "validate this court submission", "pre-flight check court record", "check PD-72 compliance", or verify filings for Court Services Online (CSO).
 argument-hint: "[assemble|validate|setup|all|generate] [--inputs <dir>] [--output <file>]"
 allowed-tools: Bash, Read, Write, Glob, Grep
 ---

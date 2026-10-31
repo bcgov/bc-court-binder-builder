@@ -1,7 +1,9 @@
 target/
 output/
 inputs/*.pdf
+inputs/**/*.pdf
 inputs/manifest.json
+inputs/**/manifest.json
 Cargo.lock
 context/
 .DS_Store

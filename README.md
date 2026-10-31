@@ -46,11 +46,11 @@ Strictly adheres to:
   - [1. APM Package Installation for AI Agents](#apm-installation)
   - [2. Python Environment & Zero-Compiler Setup](#python-setup)
   - [3. Optional Rust Toolchain Setup](#rust-setup)
-- [🎮 Running the Interactive Skill](#running-interactive-skill)
-  - [1. Guided Terminal Wizard](#interactive-wizard)
-  - [2. Direct CLI Commands](#cli-commands)
-  - [3. Conversational AI Agent Triggers](#agent-prompts)
-  - [4. 🤖 Claude Code Quickstart](#claude-code-quickstart)
+- [🗣️ Interacting with the Skill: Natural Language First](#conversational-agent-skill)
+  - [1. Conversational Requests](#conversational-prompts)
+  - [2. How Intent Routing Works (YAML Frontmatter)](#yaml-intent-routing)
+  - [3. 🤖 Claude (Desktop & CLI) Walkthrough](#claude-code-quickstart)
+  - [4. Headless CLI Fallbacks & Terminal Wizard](#headless-cli)
 - [⚖️ The 20 Mandatory Court Quality Gates](#quality-gates)
 - [🦀 Rust Reference Pipeline (`pdfcraft-sdk`)](#rust-pipeline)
   - [Pipeline Comparison Matrix](#pipeline-comparison)
@@ -258,64 +258,47 @@ cargo run
 
 ---
 
-<a id="running-interactive-skill"></a>
-## 🎮 Running the Interactive Skill
+<a id="conversational-agent-skill"></a>
+## 🗣️ Interacting with the Skill: Natural Language First
 
-<a id="interactive-wizard"></a>
-### 1. Guided Terminal Wizard (Interactive Mode)
+Because this capability is an **AI Agent Skill**, users **never need to memorize CLI flags, write script paths, or navigate terminal menus**. 
 
-Launch the step-by-step interactive CLI to assemble or validate binders with guided prompts:
+The AI agent's model matches natural language requests directly to the skill's YAML description (`SKILL.md`) and autonomously orchestrates the underlying tools.
 
-```bash
-python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py --interactive
-```
+<a id="conversational-prompts"></a>
+### 1. Conversational Requests (What Users Actually Say)
 
-The interactive wizard prompts the operator for:
-1. **Action:** Assemble new binder, validate existing PDF, generate synthetic test filings, or execute the end-to-end pipeline.
-2. **Matter Type:** Commercial Document Discovery (Rule 7-1), Notice of Application Amendment (Rule 8-1), or Family Law Maintenance/Custody.
-3. **Paths:** Input directory containing source PDFs / exhibits and target output PDF path.
-4. **Execution & Live Audit:** Compiles the PDF and prints the 20-rule compliance scorecard.
+After installing via APM, you can talk to Claude, Copilot, Codex, or Antigravity in plain English:
 
----
-
-<a id="cli-commands"></a>
-### 2. Direct CLI Commands
-
-```bash
-# Complete Closed-Loop Demonstration (Generates inputs -> Assembles -> Validates)
-python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py --mode all
-
-# Case 1 (Primary): Assemble an electronic court binder from input filings
-python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py \
-  --mode assemble \
-  --inputs inputs/01-commercial-discovery \
-  --output output/01-commercial-discovery/Application_Record.pdf
-
-# Case 2 (Primary): Audit / validate an assembled binder PDF against the 20 quality gates
-python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py \
-  --mode validate \
-  --output output/01-commercial-discovery/Application_Record.pdf
-
-# Diagnostics & Auto-Setup
-python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py --mode setup
-```
+* 🗣️ *"Can you create a court binder from the documents in `./inputs/01-commercial-discovery`?"*
+* 🗣️ *"Can you validate this court submission at `./output/Application_Record.pdf` against the 20 BC court rules?"*
+* 🗣️ *"Pre-flight audit our application record before we submit to Court Services Online."*
+* 🗣️ *"Synthesize authentic chambers filings for an amendment application under Rule 8-1 and assemble them."*
+* 🗣️ *"Check whether this binder satisfies Practice Direction 72 (PD-72) and Court Services Online requirements."*
 
 ---
 
-<a id="agent-prompts"></a>
-### 3. Conversational AI Agent Triggers
+<a id="yaml-intent-routing"></a>
+### 2. How Intent Routing Works (YAML Frontmatter)
 
-When deployed via APM to Claude Code, GitHub Copilot, Codex, or Antigravity/Gemini, you can drive the skill using plain language:
+The agent automatically knows when and how to activate this skill because of the intent triggers codified in the skill's YAML frontmatter ([`.apm/skills/managing-court-binders/SKILL.md`](.apm/skills/managing-court-binders/SKILL.md)):
 
-* 🗣️ *"Build a compliant BC Supreme Court application record from the files in `./inputs/01-commercial-discovery`."*
-* 🗣️ *"Pre-flight validate our application record at `./output/Application_Record.pdf` against the 20 court quality gates."*
-* 🗣️ *"Synthesize authentic chambers documents for an amendment application under Rule 8-1."*
-* 🗣️ *"Check whether this binder satisfies Practice Direction 72 and Court Services Online requirements."*
+```yaml
+---
+name: managing-court-binders
+description: >-
+  Builds, compiles, continuously foliates, bookmarks, and pre-flight audits BC Supreme Court and Court of Appeal electronic court binders, application records (PD-72), virtual chambers records (PD-73), and books of authorities. Use when asked to "create a court binder", "assemble an application record", "compile court documents", "validate this court submission", "pre-flight check court record", "check PD-72 compliance", or verify filings for Court Services Online (CSO).
+argument-hint: "[assemble|validate|setup|all|generate] [--inputs <dir>] [--output <file>]"
+allowed-tools: Bash, Read, Write, Glob, Grep
+---
+```
+
+When a user in Claude Code, GitHub Copilot, or Codex says **"Can you create a court binder?"** or **"Can you validate this court submission?"**, the model matches the intent, loads the skill's instructions, and executes the compilation and verification pipeline autonomously.
 
 ---
 
 <a id="claude-code-quickstart"></a>
-### 4. 🤖 Complete Claude (Desktop & CLI) Quickstart
+### 3. 🤖 Complete Claude (Desktop & CLI) Walkthrough
 
 Follow this complete end-to-end sequence from scratch on any new machine:
 
@@ -334,7 +317,7 @@ apm install https://github.com/bcgov/bc-court-binder-builder --target claude
 * **Claude Code CLI:** Run `claude` in your case folder terminal.
 
 #### Step 3: Trigger via Slash Command & Self-Healing Setup
-Claude automatically exposes the skill as a slash command. In the prompt bar, type `/` and select `/managing-court-binders` (Claude renders it as a `[ /managing-court-binders ]` pill):
+Claude automatically exposes the skill as a slash command badge. In the prompt bar, type `/` and select `/managing-court-binders` (Claude renders it as a `[ /managing-court-binders ]` pill):
 
 > `/managing-court-binders Check environment and set up dependencies for managing-court-binders.`
 
@@ -353,6 +336,35 @@ To assemble and audit actual legal filings:
 > `/managing-court-binders Assemble a compliant BC Supreme Court application record from the files in ./inputs/01-commercial-discovery and pre-flight audit against the 20 court quality gates.`
 
 Claude executes the build and displays the certified 20/20 PASS scorecard ready for Court Services Online (CSO) filing.
+
+---
+
+<a id="headless-cli"></a>
+### 4. Headless CLI Fallbacks & Terminal Wizard (Developer & CI/CD Utility)
+
+For automated CI/CD pipelines, headless batch processing, or developers working without an LLM assistant, the driver script can also be executed directly via terminal commands or the interactive menu:
+
+```bash
+# Complete Closed-Loop Demonstration (Generates inputs -> Assembles -> Validates)
+python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py --mode all
+
+# Assemble an electronic court binder from input filings
+python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py \
+  --mode assemble \
+  --inputs inputs/01-commercial-discovery \
+  --output output/01-commercial-discovery/Application_Record.pdf
+
+# Pre-flight audit against the 20 quality gates
+python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py \
+  --mode validate \
+  --output output/01-commercial-discovery/Application_Record.pdf
+
+# Diagnostics & Auto-Setup
+python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py --mode setup
+
+# Optional: Guided interactive terminal menu
+python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py --interactive
+```
 
 ---
 
