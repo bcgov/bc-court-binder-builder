@@ -33,6 +33,25 @@ Strictly adheres to:
 
 ---
 
+## 📑 Table of Contents
+
+- [🏛️ Strategic Purpose & Benefits (Virtual Courts)](#strategic-purpose)
+- [🤖 The AI-Native Paradigm (Deterministic Execution)](#ai-native-paradigm)
+- [📚 Key Technical Documentation](#technical-docs)
+- [🔗 Lineage & Referenced Repositories](#referenced-repos)
+- [🤖 Consolidated Agent Skill (`managing-court-binders`)](#consolidated-skill)
+  - [Operational Modes](#operational-modes)
+  - [Key Reference Manuals](#reference-manuals)
+- [⚖️ The 20 Mandatory Court Quality Gates](#quality-gates)
+- [🚀 Quick Start](#quick-start)
+  - [1. Python Pipeline (Zero Compiler Setup)](#python-pipeline)
+  - [2. Rust Reference Pipeline (`pdfcraft-sdk`)](#rust-pipeline)
+  - [Pipeline Comparison Matrix](#pipeline-comparison)
+- [📄 License & Open-Source Terms](#license)
+
+---
+
+<a id="strategic-purpose"></a>
 ## 🏛️ Strategic Purpose & Institutional Benefits: Enabling Virtual Courts
 
 For the complete legal-economic policy analysis, read: 👉 **[`COURT_PURPOSE_AND_BENEFITS.md`](COURT_PURPOSE_AND_BENEFITS.md)**.
@@ -62,6 +81,7 @@ Modernizing court records from physical 3-ring paper binders to mathematically v
 
 ---
 
+<a id="ai-native-paradigm"></a>
 ## 🤖 The AI-Native Paradigm: Deterministic Execution via Agent Skills
 
 Rather than building another monolithic, heavyweight software application that requires complex UI maintenance, installation barriers, and manual operator training, this project introduces an **AI-native Agent Skill** (`managing-court-binders`). 
@@ -102,6 +122,7 @@ flowchart LR
 
 ---
 
+<a id="technical-docs"></a>
 ## 📚 Key Technical Documentation
 
 * **[`architecture.md`](architecture.md):** System architecture, legal taxonomy of submittable chambers matters (< 30 minutes before Associate Judges), component layering, and the consolidated skill specification.
@@ -110,6 +131,7 @@ flowchart LR
 
 ---
 
+<a id="referenced-repos"></a>
 ## 🔗 Lineage & Referenced Repositories
 
 This proof-of-concept synthesizes technical research, legal-ops automation models, and PDF engine primitives developed across three related repositories:
@@ -123,10 +145,12 @@ This proof-of-concept synthesizes technical research, legal-ops automation model
 
 ---
 
+<a id="consolidated-skill"></a>
 ## 🤖 Consolidated Agent Skill (`.apm/skills/managing-court-binders`)
 
 This repository encapsulates all legal-ops capabilities into a single, self-contained APM domain skill: **[`managing-court-binders`](.apm/skills/managing-court-binders)**.
 
+<a id="operational-modes"></a>
 ### Operational Modes
 
 | Mode | Priority / Use Case | Operational Function | Command |
@@ -138,6 +162,7 @@ This repository encapsulates all legal-ops capabilities into a single, self-cont
 | **`all`** | Closed-Loop Demo | Full automated loop: synthesizes test filings $\to$ compiles binder $\to$ executes 20-gate compliance audit. | `python3 scripts/managing_court_binders.py --mode all` |
 | **`generate`** | Test Data Synthesis | Synthesizes authentic multi-page chambers filings (`discovery`, `amendment`, `family`) and companion `manifest.json`. | `python3 scripts/managing_court_binders.py --mode generate` |
 
+<a id="reference-manuals"></a>
 ### Key Reference Manuals (`references/`)
 
 All domain knowledge is modularized inside [`.apm/skills/managing-court-binders/references/`](.apm/skills/managing-court-binders/references/):
@@ -156,6 +181,7 @@ All domain knowledge is modularized inside [`.apm/skills/managing-court-binders/
 
 ---
 
+<a id="quality-gates"></a>
 ## ⚖️ The 20 Mandatory Court Quality Gates
 
 Every assembled binder is audited against 20 deterministic rules:
@@ -183,8 +209,10 @@ Every assembled binder is audited against 20 deterministic rules:
 
 ---
 
+<a id="quick-start"></a>
 ## 🚀 Quick Start
 
+<a id="python-pipeline"></a>
 ### 1. Python Pipeline (Fast, Zero Compiler Setup)
 ```bash
 # Install dependencies
@@ -209,6 +237,7 @@ python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py --i
 python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py --mode all
 ```
 
+<a id="rust-pipeline"></a>
 ### 2. Rust Pipeline (Native `pdfcraft-sdk` Reference Engine)
 
 The Rust runner in [`src/main.rs`](src/main.rs) is the native reference implementation that directly integrates with the in-process [`pdfcraft-sdk`](https://github.com/richfrem/pdfcraft) crate (`Layer 7`). It demonstrates how to build and verify a court application record without external CLI utilities.
@@ -270,6 +299,7 @@ SUCCESS: Compliant Electronic Application Record generated!
 
 ---
 
+<a id="pipeline-comparison"></a>
 ### 💡 Which Pipeline Should I Use?
 
 | Feature | Python Pipeline (`.apm/skills/`) | Rust Pipeline (`cargo run`) |
@@ -282,6 +312,7 @@ SUCCESS: Compliant Electronic Application Record generated!
 
 ---
 
+<a id="license"></a>
 ## 📄 License
 
 This project is made openly available under a hybrid license model (see [`LICENSE.md`](LICENSE.md)):
