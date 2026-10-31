@@ -187,6 +187,10 @@ In the Claude prompt bar, Claude automatically exposes the installed skill as a 
 
 * **What Claude executes:** Claude runs the skill driver in `--mode setup`. It inspects Python 3.9+, verifies `pypdf` and `pdfplumber`, and automatically installs any missing dependencies via pip. No manual virtualenv troubleshooting is needed.
 
+> [!TIP]
+> **Conversational Zero-Parameter Invocation:**  
+> If you simply type `/managing-court-binders` with no parameters (or say *"Help me create a court binder"*), Claude initiates an interactive conversation: asking whether you want to assemble files, audit an existing PDF, or run tests; requesting your folder path; confirming document sequence with you; and pre-flight validating the result.
+
 #### Phase 5: Execute the Full Closed-Loop Verification Test
 Once setup confirms all packages are installed, verify the deterministic pipeline with:
 

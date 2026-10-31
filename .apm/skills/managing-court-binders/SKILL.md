@@ -56,11 +56,10 @@ python3 "$DRIVER" --interactive
 
 ## Workflow
 
-The two primary operational use cases are:
-1. **Case 1: Assemble Court Binder** (`--mode assemble`): Ingests source documents from `--inputs`, calculates dynamic folios starting at Tab 1 = Page 1, generates 4-column Index with invisible links (`/Border [0 0 0]`), and stamps $15\text{ pt}$ bold top-center folios.
-2. **Case 2: Validate Binder Submission** (`--mode validate`): Audits an assembled PDF against the 20 court quality gates (CSO 50 MB, outlines, margins, searchability) and outputs the scorecard.
-
-When invoked without explicit flags, prompt the operator to choose between **Case 1 (Assemble)**, **Case 2 (Validate)**, or **Case 3 (Demo / Test)**.
+When invoked without explicit flags (e.g. bare `/managing-court-binders`), conduct an interactive conversational intake:
+1. Prompt the operator to select: **Case 1 (Assemble Application Record)**, **Case 2 (Validate Existing PDF)**, or **Case 3 (Demo Test Loop)**.
+2. If assembling: prompt for input folder path, inspect files, confirm statutory filing sequence (Form 32 $\to$ Form 33 $\to$ Form 35 affidavits with exhibits $\to$ Draft Order), compile, and immediately execute the 20-gate pre-flight audit.
+3. If validating: prompt for target PDF path and display the complete 20-gate compliance scorecard.
 
 ## Verification
 

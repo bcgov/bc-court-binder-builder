@@ -276,6 +276,13 @@ After installing via APM, you can talk to Claude, Copilot, Codex, or Antigravity
 * 🗣️ *"Synthesize authentic chambers filings for an amendment application under Rule 8-1 and assemble them."*
 * 🗣️ *"Check whether this binder satisfies Practice Direction 72 (PD-72) and Court Services Online requirements."*
 
+> [!TIP]
+> **Zero-Parameter Interactive Mode:**  
+> If you simply type `/managing-court-binders` with no parameters (or say *"Help me prepare a court binder"*), the agent acts as your conversational guide directly in chat:
+> 1. Prompts you to choose: **(1) Assemble an Application Record**, **(2) Validate an existing PDF**, or **(3) Run test demo**.
+> 2. If assembling: asks for your folder path, inspects your PDFs, confirms the statutory sequence (Form 32 $\to$ Form 33 $\to$ Form 35 affidavits with exhibits $\to$ Draft Order) with you in chat, compiles the eBinder, and automatically pre-flights it against the 20 gates.
+> 3. If validating: asks for your PDF path and displays the certified scorecard.
+
 ---
 
 <a id="yaml-intent-routing"></a>
