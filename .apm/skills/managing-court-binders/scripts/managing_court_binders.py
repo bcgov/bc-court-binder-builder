@@ -26,15 +26,58 @@ except ImportError as e:
     # Fallback if imported from outside
     pass
 
+def interactive_menu():
+    """Interactive wizard for terminal users when run without arguments."""
+    print("================================================================================")
+    print("    BRITISH COLUMBIA COURT APPLICATION RECORD MANAGER (PD-72 & CSO GUIDE)       ")
+    print("================================================================================\n")
+    print("Select an operation:")
+    print("  1) Run Full Closed-Loop Pipeline (Generate -> Assemble -> Audit) [Recommended]")
+    print("  2) Assemble Binder from existing documents folder")
+    print("  3) Validate / Audit an existing PDF binder against 20 quality gates")
+    print("  4) Generate synthetic test filings (discovery, amendment, or family)")
+    print("  5) Exit")
+
+    choice = input("\nEnter choice [1-5, default: 1]: ").strip() or "1"
+
+    if choice == "1":
+        matter = input("Select matter type [discovery/amendment/family, default: discovery]: ").strip() or "discovery"
+        inputs_dir = input(f"Input documents folder [default: inputs/01-commercial-discovery]: ").strip() or "inputs/01-commercial-discovery"
+        output_pdf = input(f"Output PDF path [default: output/01-commercial-discovery/Application_Record.pdf]: ").strip() or "output/01-commercial-discovery/Application_Record.pdf"
+        return "all", matter, inputs_dir, output_pdf, False
+
+    elif choice == "2":
+        inputs_dir = input("Enter path to source documents folder: ").strip() or "inputs/01-commercial-discovery"
+        output_pdf = input("Enter destination PDF path: ").strip() or "output/01-commercial-discovery/Application_Record.pdf"
+        return "assemble", "discovery", inputs_dir, output_pdf, False
+
+    elif choice == "3":
+        pdf_path = input("Enter path to PDF binder to validate: ").strip() or "output/01-commercial-discovery/Application_Record.pdf"
+        return "validate", "discovery", "", pdf_path, False
+
+    elif choice == "4":
+        matter = input("Select matter type [discovery/amendment/family, default: discovery]: ").strip() or "discovery"
+        inputs_dir = input(f"Destination folder for filings [default: inputs/01-commercial-discovery]: ").strip() or "inputs/01-commercial-discovery"
+        return "generate", matter, inputs_dir, "", False
+
+    else:
+        print("Exiting.")
+        sys.exit(0)
+
 def main():
     parser = argparse.ArgumentParser(
         description="BC Court Electronic Binder Lifecycle Manager (PD-72 & CSO Guide)."
     )
     parser.add_argument(
         "--mode",
-        choices=["generate", "assemble", "validate", "all"],
-        default="all",
-        help="Operational mode: generate (inputs), assemble (binder), validate (audit), or all (end-to-end)"
+        choices=["generate", "assemble", "validate", "all", "interactive"],
+        default=None,
+        help="Operational mode: generate, assemble, validate, all, or interactive"
+    )
+    parser.add_argument(
+        "--interactive", "-i",
+        action="store_true",
+        help="Launch interactive guided prompt menu"
     )
     parser.add_argument(
         "--matter-type",
@@ -60,28 +103,40 @@ def main():
 
     args = parser.parse_args()
 
+    mode = args.mode
+    matter = args.matter_type
+    inputs_dir = args.inputs
+    output_pdf = args.output
+    emit_json = args.json
+
+    # Launch interactive menu if requested or run without arguments in a TTY
+    if args.interactive or mode == "interactive" or (mode is None and sys.stdin.isatty() and len(sys.argv) == 1):
+        mode, matter, inputs_dir, output_pdf, emit_json = interactive_menu()
+    elif mode is None:
+        mode = "all"
+
     # Mode 1: Generate
-    if args.mode in ("generate", "all"):
-        print(f"=== [Step 1: Generating Input Filings ({args.matter_type})] ===")
-        out_dir = Path(args.inputs)
+    if mode in ("generate", "all"):
+        print(f"=== [Step 1: Generating Input Filings ({matter})] ===")
+        out_dir = Path(inputs_dir)
         out_dir.mkdir(parents=True, exist_ok=True)
         if hasattr(generating_court_documents, "generate_discovery_preset"):
             generating_court_documents.generate_discovery_preset(out_dir)
 
     # Mode 2: Assemble
-    if args.mode in ("assemble", "all"):
+    if mode in ("assemble", "all"):
         print(f"\n=== [Step 2: Assembling Electronic Court Binder] ===")
-        inputs_dir = Path(args.inputs)
-        output_pdf = Path(args.output)
-        output_pdf.parent.mkdir(parents=True, exist_ok=True)
-        assembling_court_binders.build_binder(inputs_dir, output_pdf)
+        in_path = Path(inputs_dir)
+        out_path = Path(output_pdf)
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        assembling_court_binders.build_binder(in_path, out_path)
 
     # Mode 3: Validate
-    if args.mode in ("validate", "all"):
+    if mode in ("validate", "all"):
         print(f"\n=== [Step 3: Auditing Against 20 BC Court Quality Gates] ===")
-        output_pdf = Path(args.output)
-        passed, scorecard = validating_court_binders.validate_court_binder(output_pdf)
-        if args.json:
+        out_path = Path(output_pdf)
+        passed, scorecard = validating_court_binders.validate_court_binder(out_path)
+        if emit_json:
             import json
             print(json.dumps({"passed": passed, "scorecard": scorecard}, indent=2))
         else:

@@ -25,6 +25,7 @@ Automates compilation, continuous foliation, hyperlinked index generation, bookm
 
 | Mode | Purpose | Script Command |
 | :--- | :--- | :--- |
+| `interactive` | Guided prompt wizard asking user for operation and paths | `python3 scripts/managing_court_binders.py --interactive` |
 | `generate` | Creates synthetic multi-page chambers filings and `manifest.json` | `python3 scripts/managing_court_binders.py --mode generate` |
 | `assemble` | Compiles two-pass folios, index table, bookmarks, and links | `python3 scripts/managing_court_binders.py --mode assemble` |
 | `validate` | Audits PDF against 20 court quality gates (CSO 50 MB, outlines) | `python3 scripts/managing_court_binders.py --mode validate` |
@@ -35,19 +36,23 @@ Automates compilation, continuous foliation, hyperlinked index generation, bookm
 Run the unified lifecycle driver from repository root:
 
 ```bash
+# Interactive wizard (prompts for action, matter type, and paths)
+python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py --interactive
+
 # Full end-to-end run (generate, compile, audit)
 python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py --mode all
 
-# Run individual modes
+# Run individual modes directly
 python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py --mode assemble --inputs inputs/01-commercial-discovery --output output/01-commercial-discovery/Application_Record.pdf
 python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py --mode validate --output output/01-commercial-discovery/Application_Record.pdf
 ```
 
 ## Workflow
 
-1. **Intake / Generation**: Ingest case documents or generate test filings via `--mode generate`.
-2. **Assembly**: Execute two-pass continuous foliation and bookmark outline synthesis via `--mode assemble`.
-3. **Verification**: Audit the output against the 20 statutory quality gates via `--mode validate`.
+When invoked without explicit flags, guide the operator through a 3-step interactive interview:
+1. **Select Operation**: Ask whether to run full process, assemble existing documents, validate a binder, or generate test filings.
+2. **Resolve Paths**: Confirm the input filings directory (e.g. `inputs/01-commercial-discovery`) and output PDF path.
+3. **Execute & Report**: Run the corresponding mode and display the 20-gate compliance scorecard.
 
 ## Verification
 
