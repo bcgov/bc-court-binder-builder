@@ -241,7 +241,37 @@ def main():
             import json
             print(json.dumps({"passed": passed, "scorecard": scorecard}, indent=2))
         else:
-            print(f"\nAudit complete: {'20/20 PASS - APPROVED FOR CSO' if passed else 'FAIL - GATES REJECTED'}")
+            for c in scorecard:
+                if c["passed"]:
+                    status_icon = "✔ PASS        "
+                elif c["severity"] == "HARD_STOP":
+                    status_icon = "✖ HARD_STOP   "
+                else:
+                    status_icon = "⚠ SOFT_WARNING"
+                print(f"{status_icon} | [{c['rule']}] {c['title']}")
+                print(f"       Authority: {c['authority']}")
+                print(f"       Details:   {c['details']}")
+                if not c["passed"]:
+                    print(f"       Action:    {c['remediation']}")
+                print("-" * 86)
+
+            hard_stops = [c for c in scorecard if c["severity"] == "HARD_STOP" and not c["passed"]]
+            soft_warnings = [c for c in scorecard if c["severity"] == "SOFT_WARNING" and not c["passed"]]
+            passed_count = len([c for c in scorecard if c["passed"]])
+
+            print("\nSUMMARY SCORECARD:")
+            print(f"  - Hard Stops (Fatal Court Rejections): {len(hard_stops)}")
+            print(f"  - Soft Warnings (Formatting Advisories): {len(soft_warnings)}")
+            print(f"  - Passed Rules:                        {passed_count} / {len(scorecard)}")
+
+            if len(hard_stops) == 0 and len(soft_warnings) == 0:
+                verdict = "100% COMPLIANT - ALL GATES PASSED (APPROVED FOR CSO SUBMISSION)"
+            elif len(hard_stops) == 0:
+                verdict = "CONDITIONALLY COMPLIANT - PASS WITH SOFT WARNINGS (ACCEPTABLE FOR CSO)"
+            else:
+                verdict = "NON-COMPLIANT - REJECTED (HARD_STOP VIOLATIONS MUST BE REMEDIATED)"
+
+            print(f"\nFINAL VERDICT: {verdict}")
         if not passed:
             sys.exit(1)
 
