@@ -18,12 +18,18 @@ An automated, AI-native legal-ops pipeline for compiling, stamping, bookmarking,
 > Traditional approaches rely on reactionary audits after a binder is already defective. This AI-native agent skill synthesizes electronic court binders **correctly by construction**. Two-pass mathematical foliation, coordinate-projected hyperlinks, and standardized top-center page numbers ensure that formatting errors, registry clerk rejections, rework, and costly refilings never happen in the first place.
 
 Strictly adheres to:
-* **Practice Direction 72 (PD-72)**: *Electronic Application Records* — [Live Official PDF](https://www.bccourts.ca/supreme_court/practice_and_procedure/practice_directions/civil/PD-72_Electronic_Application_Records.pdf) • [Chambers Pilot Project](https://www.bccourts.ca/supreme_court/practice_and_procedure/associate_judges_chambers_pilot_project.aspx) • [Local Archive](.apm/skills/managing-court-binders/references/pdfs/PD-72_Electronic_Application_Records.pdf) • [Analysis](.apm/skills/managing-court-binders/references/court_practice_directions.md)
-* **Practice Direction 73 (PD-73)**: *Virtual Chambers & Microsoft Teams Hearings* — [Live Official PDF](https://www.bccourts.ca/supreme_court/practice_and_procedure/practice_directions/civil/PD-73_Virtual_Chambers.pdf) • [2026 Sitting Schedule PDF](https://www.bccourts.ca/supreme_court/scheduling/ASSOCIATE_JUDGES_VIRTUAL_CHAMBERS_SITTING_SCHEDULE_2026.pdf) • [Local Archive](.apm/skills/managing-court-binders/references/pdfs/PD-73_Virtual_Chambers.pdf)
-* **Court Services Online (CSO)**: *Guide to Submitting Application Records (April 2026 Edition)* — [Live Official PDF](https://justice.gov.bc.ca/pdfs/cso/InstructionsForUsersForApplicationRecords.pdf) • [CSO Portal](https://justice.gov.bc.ca/cso/) • [Local Archive](.apm/skills/managing-court-binders/references/pdfs/InstructionsForUsersForApplicationRecords.pdf) • [Analysis](.apm/skills/managing-court-binders/references/cso_application_record_guide_april2026.md)
-* **BCCA Civil Rule 27**: *Completion Instructions for Books of Authorities* — [Live Official PDF](https://www.bccourts.ca/Court_of_Appeal/practice_and_procedure/completion_instructions/civil/e_completion_instructions_book_of_authorities.pdf) • [Local Archive](.apm/skills/managing-court-binders/references/pdfs/e_completion_instructions_book_of_authorities.pdf)
-* **Paralegal Best Practices**: *Vancouver Senior Paralegal 9-Step Standard* — [Vimeo Training Video (ID 836310097)](https://vimeo.com/836310097) • [Video Analysis & Transcript](.apm/skills/managing-court-binders/references/paralegal_video_workflow.md)
-* **BC Supreme Court PDF Guides**: *All 13 Acrobat Technical Instruction Manuals* — [Court Practice & Procedure Portal](https://www.bccourts.ca/supreme_court/practice_and_procedure/pdf_instructions.aspx) • [Technical Breakdown](.apm/skills/managing-court-binders/references/pdf_instructions.md)
+* **Practice Direction 72 (PD-72)** (*Electronic Application Records*):  
+  [Live Official PDF](https://www.bccourts.ca/supreme_court/practice_and_procedure/practice_directions/civil/PD-72_Electronic_Application_Records.pdf) • [Pilot Project Portal](https://www.bccourts.ca/supreme_court/practice_and_procedure/associate_judges_chambers_pilot_project.aspx) • [Local Archive](.apm/skills/managing-court-binders/references/pdfs/PD-72_Electronic_Application_Records.pdf) • [Analysis](.apm/skills/managing-court-binders/references/court_practice_directions.md)
+* **Practice Direction 73 (PD-73)** (*Virtual Chambers & MS Teams Hearings*):  
+  [Live Official PDF](https://www.bccourts.ca/supreme_court/practice_and_procedure/practice_directions/civil/PD-73_Virtual_Chambers.pdf) • [2026 Sitting Schedule PDF](https://www.bccourts.ca/supreme_court/scheduling/ASSOCIATE_JUDGES_VIRTUAL_CHAMBERS_SITTING_SCHEDULE_2026.pdf) • [Local Archive](.apm/skills/managing-court-binders/references/pdfs/PD-73_Virtual_Chambers.pdf)
+* **Court Services Online (CSO)** (*Guide to Submitting Application Records, April 2026*):  
+  [Live Official PDF](https://justice.gov.bc.ca/pdfs/cso/InstructionsForUsersForApplicationRecords.pdf) • [CSO Portal](https://justice.gov.bc.ca/cso/) • [Local Archive](.apm/skills/managing-court-binders/references/pdfs/InstructionsForUsersForApplicationRecords.pdf) • [Analysis](.apm/skills/managing-court-binders/references/cso_application_record_guide_april2026.md)
+* **BCCA Civil Rule 27** (*Completion Instructions for Books of Authorities*):  
+  [Live Official PDF](https://www.bccourts.ca/Court_of_Appeal/practice_and_procedure/completion_instructions/civil/e_completion_instructions_book_of_authorities.pdf) • [Local Archive](.apm/skills/managing-court-binders/references/pdfs/e_completion_instructions_book_of_authorities.pdf)
+* **Paralegal Best Practices** (*Vancouver Senior Paralegal 9-Step Standard*):  
+  [Vimeo Training Video (ID 836310097)](https://vimeo.com/836310097) • [Video Analysis & Transcript](.apm/skills/managing-court-binders/references/paralegal_video_workflow.md)
+* **BC Supreme Court PDF Guides** (*All 13 Acrobat Technical Instruction Manuals*):  
+  [Court Practice & Procedure Portal](https://www.bccourts.ca/supreme_court/practice_and_procedure/pdf_instructions.aspx) • [Technical Breakdown](.apm/skills/managing-court-binders/references/pdf_instructions.md)
 
 ---
 
@@ -33,24 +39,11 @@ For the complete legal-economic policy analysis, read: 👉 **[`COURT_PURPOSE_AN
 
 Modernizing court records from physical 3-ring paper binders to mathematically verified, hyperlinked **eBinders** unlocks three transformative pillars for British Columbia's justice system:
 
-```mermaid
-flowchart TD
-    subgraph Citizens["1. Everyday Citizens & Litigants"]
-        C1["Cost Reduction: Saves $1,000–$3,000 per application<br/>(Eliminates printing, physical tabs, couriers, travel)"]
-        C2["Geographic Equity: Remote communities (Fort St. John, Cranbrook)<br/>get equal, immediate access to chambers hearings"]
-    end
-
-    subgraph Firms["2. Law Firms & Legal Operations"]
-        F1["Velocity: Replaces 45–90 min manual Acrobat compiling<br/>with sub-second (< 200 ms) mathematical build"]
-        F2["0% Error Guarantee: Zero off-by-one folio mismatches<br/>and pre-flight verified 20/20 PASS avoids CSO rejections"]
-    end
-
-    subgraph CourtSystem["3. Court Utilization & Virtual Chambers"]
-        U1["Workload Balancing: Decouples hearings from geography<br/>Dynamic docket transfers from Vancouver to Victoria/Kelowna"]
-        U2["Registry Relief: Eliminates physical binder shelving, boxing & shredding"]
-        U3["Hearing Velocity: Real-time navigation via synchronized folios & GoTo links"]
-    end
-```
+| Beneficiary Pillar | Core Economic & Operational Impact | Strategic Access to Justice Multiplier |
+| :--- | :--- | :--- |
+| **1. Everyday Citizens & Litigants** | **$1,000–$3,000 direct cost savings** per application by eliminating 1,000+ pages of printing, heavy binders, tabs, couriers, and attorney travel. | **Geographic equity:** Remote/northern communities (Fort St. John, Cranbrook) get equal, immediate chambers access via MS Teams (PD-73). |
+| **2. Law Firms & Legal Operations** | Replaces **45–90 minutes** of tedious manual Acrobat drag-and-drop with a sub-second (**< 200 ms**) mathematical build. | **0% error guarantee:** Eliminates off-by-one folios and ensures pre-flight 20/20 PASS, preventing rejected submissions. |
+| **3. Court System & Virtual Chambers** | **Provincial workload balancing:** Decouples hearings from geography by dynamically shifting dockets to available judges in Victoria/Kelowna. | **Registry & hearing velocity:** Eliminates physical binder warehouse rooms and speeds oral argument with synchronized folios and GoTo links. |
 
 ### Key Beneficiary Impact Matrix:
 
