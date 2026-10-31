@@ -34,19 +34,24 @@ Automates compilation, continuous foliation, hyperlinked index generation, bookm
 
 ## Quick start
 
-Run the unified lifecycle driver from repository root:
+Execute the driver script located in this skill's `scripts/` directory:
 
 ```bash
-# Case 1 (Most Common): Assemble court binder from document folder
-python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py \
-  --mode assemble --inputs inputs/01-commercial-discovery --output output/01-commercial-discovery/Application_Record.pdf
+# Locate driver script (e.g. .claude/skills/managing-court-binders/scripts/managing_court_binders.py
+# or ~/.claude/skills/managing-court-binders/scripts/managing_court_binders.py)
+DRIVER="<skill-dir>/scripts/managing_court_binders.py"
 
-# Case 2 (Most Common): Validate / audit an assembled binder PDF
-python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py \
-  --mode validate --output output/01-commercial-discovery/Application_Record.pdf
+# Setup & Dependency Check (auto-installs missing packages):
+python3 "$DRIVER" --mode setup
+
+# Case 1 (Most Common): Assemble court binder from document folder
+python3 "$DRIVER" --mode assemble --inputs inputs/01-commercial-discovery --output output/Application_Record.pdf
+
+# Case 2 (Most Common): Validate / audit an assembled binder PDF against 20 court rules
+python3 "$DRIVER" --mode validate --output output/Application_Record.pdf
 
 # Interactive wizard (prompts for action and paths)
-python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py --interactive
+python3 "$DRIVER" --interactive
 ```
 
 ## Workflow

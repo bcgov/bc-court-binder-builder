@@ -121,6 +121,45 @@ apm uninstall https://github.com/bcgov/bc-court-binder-builder --global
 
 ---
 
+### 6. 🤖 Claude Code Walkthrough: From APM Install to First Court Binder
+
+If you are using **Claude Code**, follow this 3-step walkthrough to get up and running:
+
+#### Step 1: Install the Skill with APM
+Run this once from your terminal to make the skill available across all your Claude Code sessions:
+```bash
+apm install https://github.com/bcgov/bc-court-binder-builder --global --target claude
+```
+APM automatically provisions the complete skill into `~/.claude/skills/managing-court-binders/`.
+
+#### Step 2: Open Claude Code
+In your project directory or case folder:
+```bash
+claude
+```
+Claude Code automatically discovers `managing-court-binders` from `~/.claude/skills/`.
+
+#### Step 3: Let Claude Guide Your Setup & Execution
+You don't need to manually configure virtual environments or debug missing packages. Claude Code handles the lifecycle through conversational prompts:
+
+1. **Assisted Dependency Check & Setup:**
+   > **You:** *"Check environment and set up dependencies for managing-court-binders."*  
+   > **Claude:** Runs `--mode setup`, validates Python 3.9+, verifies `pypdf` and `pdfplumber`, and installs any missing packages via pip automatically.
+
+2. **Run End-to-End Test Loop:**
+   > **You:** *"Run the complete court binder test loop."*  
+   > **Claude:** Runs `--mode all`, generating authentic multi-page commercial discovery filings (Forms 32/33/35, affidavits, exhibits), assembling the hyperlinked eBinder, and auditing against all 20 BC court quality gates.
+
+3. **Assemble Your Case Files:**
+   > **You:** *"Assemble a compliant BC Supreme Court application record from the PDFs in `./inputs/my-case`."*  
+   > **Claude:** Scans the folder, orders the filings, generates the Form 22 Style of Cause Title Page and 4-column Index, stamps top-center folios, configures `/PageLabels`, injects `/Border [0 0 0]` invisible links, and builds hierarchical bookmarks.
+
+4. **Statutory 20-Gate Pre-Flight Audit:**
+   > **You:** *"Validate `./output/Application_Record.pdf` against the 20 court quality gates and give me the scorecard."*  
+   > **Claude:** Executes the pre-flight audit and displays the pass/fail scorecard before you submit to Court Services Online.
+
+---
+
 ## 🐍 Option 2: Python Environment & Direct Execution (Zero Compiler Setup)
 
 If you prefer to run the scripts directly without APM, the entire pipeline operates out of the box using pure Python with zero C/C++ or Rust compiler requirements.

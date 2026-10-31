@@ -50,6 +50,7 @@ Strictly adheres to:
   - [1. Guided Terminal Wizard](#interactive-wizard)
   - [2. Direct CLI Commands](#cli-commands)
   - [3. Conversational AI Agent Triggers](#agent-prompts)
+  - [4. 🤖 Claude Code Quickstart](#claude-code-quickstart)
 - [⚖️ The 20 Mandatory Court Quality Gates](#quality-gates)
 - [🦀 Rust Reference Pipeline (`pdfcraft-sdk`)](#rust-pipeline)
   - [Pipeline Comparison Matrix](#pipeline-comparison)
@@ -310,6 +311,30 @@ When deployed via APM to Claude Code, GitHub Copilot, Codex, or Antigravity/Gemi
 * 🗣️ *"Pre-flight validate our application record at `./output/Application_Record.pdf` against the 20 court quality gates."*
 * 🗣️ *"Synthesize authentic chambers documents for an amendment application under Rule 8-1."*
 * 🗣️ *"Check whether this binder satisfies Practice Direction 72 and Court Services Online requirements."*
+
+---
+
+<a id="claude-code-quickstart"></a>
+### 4. 🤖 Claude Code Quickstart (Agent-Guided Setup & Execution)
+
+When working inside **Claude Code**, the agent actively assists you with environment configuration, dependency installation, and compilation:
+
+1. **Install Skill with APM (One-Time Setup):**
+   ```bash
+   apm install https://github.com/bcgov/bc-court-binder-builder --global --target claude
+   ```
+2. **Launch Claude Code:**
+   ```bash
+   claude
+   ```
+3. **Ask Claude to Configure & Verify Environment:**
+   > *"Check environment and set up dependencies for managing-court-binders."*  
+   Claude invokes `--mode setup`, validates your Python runtime, checks `pypdf` and `pdfplumber`, and automatically installs any missing dependencies via pip.
+4. **Ask Claude to Assemble & Audit Your Application Record:**
+   > *"Run the closed-loop court binder test demo."*  
+   or  
+   > *"Assemble an electronic application record from my files in `./inputs/01-commercial-discovery` and audit against the 20 quality gates."*  
+   Claude builds the continuous folios, injects invisible GoTo links, configures `/PageLabels`, stamps top-center numbers, and displays the 20-rule statutory scorecard.
 
 ---
 
