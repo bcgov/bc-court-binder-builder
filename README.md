@@ -315,26 +315,44 @@ When deployed via APM to Claude Code, GitHub Copilot, Codex, or Antigravity/Gemi
 ---
 
 <a id="claude-code-quickstart"></a>
-### 4. 🤖 Claude Code Quickstart (Agent-Guided Setup & Execution)
+### 4. 🤖 Complete Claude (Desktop & CLI) Quickstart
 
-When working inside **Claude Code**, the agent actively assists you with environment configuration, dependency installation, and compilation:
+Follow this complete end-to-end sequence from scratch on any new machine:
 
-1. **Install Skill with APM (One-Time Setup):**
-   ```bash
-   apm install https://github.com/bcgov/bc-court-binder-builder --global --target claude
-   ```
-2. **Launch Claude Code:**
-   ```bash
-   claude
-   ```
-3. **Ask Claude to Configure & Verify Environment:**
-   > *"Check environment and set up dependencies for managing-court-binders."*  
-   Claude invokes `--mode setup`, validates your Python runtime, checks `pypdf` and `pdfplumber`, and automatically installs any missing dependencies via pip.
-4. **Ask Claude to Assemble & Audit Your Application Record:**
-   > *"Run the closed-loop court binder test demo."*  
-   or  
-   > *"Assemble an electronic application record from my files in `./inputs/01-commercial-discovery` and audit against the 20 quality gates."*  
-   Claude builds the continuous folios, injects invisible GoTo links, configures `/PageLabels`, stamps top-center numbers, and displays the 20-rule statutory scorecard.
+#### Step 1: Install the Skill via APM (Terminal)
+Run this once in your terminal to deploy the skill directly into Claude:
+```bash
+# Global install (available across all Claude workspaces and projects)
+apm install https://github.com/bcgov/bc-court-binder-builder --global --target claude
+
+# Or project-local install (in your current legal case folder)
+apm install https://github.com/bcgov/bc-court-binder-builder --target claude
+```
+
+#### Step 2: Open Claude & Attach Environment
+* **Claude Desktop:** Open the app, click **`Choose environment ⌵`**, and select your local machine workspace pointing to your case folder.
+* **Claude Code CLI:** Run `claude` in your case folder terminal.
+
+#### Step 3: Trigger via Slash Command & Self-Healing Setup
+Claude automatically exposes the skill as a slash command. In the prompt bar, type `/` and select `/managing-court-binders` (Claude renders it as a `[ /managing-court-binders ]` pill):
+
+> `/managing-court-binders Check environment and set up dependencies for managing-court-binders.`
+
+Claude runs `--mode setup`, validates Python 3.9+, verifies `pypdf` and `pdfplumber`, and auto-installs missing packages via pip.
+
+#### Step 4: Run the Closed-Loop Verification Test
+Verify the full assembly and validation pipeline:
+
+> `/managing-court-binders Run the complete court binder test loop.`
+
+Claude runs `--mode all`, generating authentic commercial discovery filings, assembling the eBinder with folios, `/PageLabels`, bookmarks, and invisible links, and verifying 20/20 court rules.
+
+#### Step 5: Assemble & Pre-Flight Certify Real Case Records
+To assemble and audit actual legal filings:
+
+> `/managing-court-binders Assemble a compliant BC Supreme Court application record from the files in ./inputs/01-commercial-discovery and pre-flight audit against the 20 court quality gates.`
+
+Claude executes the build and displays the certified 20/20 PASS scorecard ready for Court Services Online (CSO) filing.
 
 ---
 

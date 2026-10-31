@@ -7,3 +7,12 @@ context/
 .DS_Store
 __pycache__/
 *.pyc
+
+
+# APM dependencies & client harness deployments
+apm_modules/
+apm.lock.yaml
+.claude/
+.agents/
+.gemini/
+.codex/

@@ -121,42 +121,92 @@ apm uninstall https://github.com/bcgov/bc-court-binder-builder --global
 
 ---
 
-### 6. 🤖 Claude Code Walkthrough: From APM Install to First Court Binder
+### 6. 🤖 Complete Claude (Desktop & CLI) Walkthrough: From Scratch to Certified eBinder
 
-If you are using **Claude Code**, follow this 3-step walkthrough to get up and running:
+This section assumes a completely fresh workstation with **zero pre-existing setup**. Do not assume steps have already been done. Follow this exact sequence:
 
-#### Step 1: Install the Skill with APM
-Run this once from your terminal to make the skill available across all your Claude Code sessions:
-```bash
-apm install https://github.com/bcgov/bc-court-binder-builder --global --target claude
 ```
-APM automatically provisions the complete skill into `~/.claude/skills/managing-court-binders/`.
-
-#### Step 2: Open Claude Code
-In your project directory or case folder:
-```bash
-claude
+┌─────────────────────────┐     ┌────────────────────────┐     ┌────────────────────────┐
+│  Phase 1: Install APM   │ ──> │  Phase 2: Install Skill│ ──> │  Phase 3: Open Claude  │
+│  (CLI Toolchain)        │     │  (apm install --target)│     │  (Select Environment)  │
+└─────────────────────────┘     └────────────────────────┘     └────────────────────────┘
+                                                                            │
+                                                                            ▼
+┌─────────────────────────┐     ┌────────────────────────┐     ┌────────────────────────┐
+│  Phase 6: Real Filings  │ <── │  Phase 5: Test Loop    │ <── │  Phase 4: Auto-Setup   │
+│  (Assemble & 20/20 PASS)│     │  (Closed-Loop Demo)    │     │  (/managing-court-... )│
+└─────────────────────────┘     └────────────────────────┘     └────────────────────────┘
 ```
-Claude Code automatically discovers `managing-court-binders` from `~/.claude/skills/`.
 
-#### Step 3: Let Claude Guide Your Setup & Execution
-You don't need to manually configure virtual environments or debug missing packages. Claude Code handles the lifecycle through conversational prompts:
+#### Phase 1: Verify or Install APM CLI (Terminal)
+Open your terminal and verify whether APM is installed:
+```bash
+apm --version
+```
+If not installed, run:
+* **macOS / Linux:**
+  ```bash
+  curl -sSL https://aka.ms/apm-unix | sh -s -- @v0.35.0
+  ```
+* **Windows (PowerShell):**
+  ```powershell
+  irm https://aka.ms/apm-windows | iex
+  ```
 
-1. **Assisted Dependency Check & Setup:**
-   > **You:** *"Check environment and set up dependencies for managing-court-binders."*  
-   > **Claude:** Runs `--mode setup`, validates Python 3.9+, verifies `pypdf` and `pdfplumber`, and installs any missing packages via pip automatically.
+#### Phase 2: Install the Skill into Claude via APM (Terminal)
+Run the install command to deploy the skill into Claude:
 
-2. **Run End-to-End Test Loop:**
-   > **You:** *"Run the complete court binder test loop."*  
-   > **Claude:** Runs `--mode all`, generating authentic multi-page commercial discovery filings (Forms 32/33/35, affidavits, exhibits), assembling the hyperlinked eBinder, and auditing against all 20 BC court quality gates.
+* **Global Workstation Installation** *(Recommended — available across all your Claude sessions and projects)*:
+  ```bash
+  apm install https://github.com/bcgov/bc-court-binder-builder --global --target claude
+  ```
+* **Project-Local Installation** *(Scoped only to your current case or project folder)*:
+  ```bash
+  cd <path-to-case-folder>
+  apm install https://github.com/bcgov/bc-court-binder-builder --target claude
+  ```
 
-3. **Assemble Your Case Files:**
-   > **You:** *"Assemble a compliant BC Supreme Court application record from the PDFs in `./inputs/my-case`."*  
-   > **Claude:** Scans the folder, orders the filings, generates the Form 22 Style of Cause Title Page and 4-column Index, stamps top-center folios, configures `/PageLabels`, injects `/Border [0 0 0]` invisible links, and builds hierarchical bookmarks.
+Confirm installation:
+```bash
+apm list
+# Output verifies: managing-court-binders -> .claude/skills/
+```
 
-4. **Statutory 20-Gate Pre-Flight Audit:**
-   > **You:** *"Validate `./output/Application_Record.pdf` against the 20 court quality gates and give me the scorecard."*  
-   > **Claude:** Executes the pre-flight audit and displays the pass/fail scorecard before you submit to Court Services Online.
+#### Phase 3: Launch Claude & Select Workspace
+* **Claude Desktop App:** Open Claude, click **`Choose environment ⌵`** in the center of the window, and choose your local machine environment pointing to your case folder (e.g. `bc-court-binder` or your legal case directory).
+* **Claude Code CLI:** In your terminal, navigate to your case folder and type:
+  ```bash
+  claude
+  ```
+
+#### Phase 4: Run Agent-Guided Setup & Dependency Installation
+In the Claude prompt bar, Claude automatically exposes the installed skill as a slash command. Type `/` and select `/managing-court-binders` (Claude renders it as a `[ /managing-court-binders ]` pill):
+
+> **Prompt:**  
+> `/managing-court-binders Check environment and set up dependencies for managing-court-binders.`
+
+* **What Claude executes:** Claude runs the skill driver in `--mode setup`. It inspects Python 3.9+, verifies `pypdf` and `pdfplumber`, and automatically installs any missing dependencies via pip. No manual virtualenv troubleshooting is needed.
+
+#### Phase 5: Execute the Full Closed-Loop Verification Test
+Once setup confirms all packages are installed, verify the deterministic pipeline with:
+
+> **Prompt:**  
+> `/managing-court-binders Run the complete court binder test loop.`
+
+* **What Claude executes:** Claude runs `--mode all`, synthesizing authentic commercial discovery filings (Forms 32/33/35, affidavits, exhibits), assembling the continuous eBinder, and auditing against all 20 BC court rules.
+
+#### Phase 6: Compile and Pre-Flight Validate Real Case Documents
+To compile and certify actual court submissions:
+
+> **Prompt:**  
+> `/managing-court-binders Assemble a compliant BC Supreme Court application record from the files in ./inputs/01-commercial-discovery and pre-flight audit against the 20 court quality gates.`
+
+* **What Claude delivers:**
+  1. Compiles continuous two-pass folios starting at Tab 1 = Page 1.
+  2. Generates Form 22 Style of Cause Title Page and 4-column Index.
+  3. Injects invisible rectangle `/Border [0 0 0]` hyperlinks and stamps top-center $15\text{ pt}$ bold page numbers.
+  4. Configures digital `/PageLabels` and hierarchical bookmarks.
+  5. Displays the **20/20 PASS scorecard** certifying the record is ready for Court Services Online (CSO) submission.
 
 ---
 
