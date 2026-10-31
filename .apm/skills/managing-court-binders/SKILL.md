@@ -68,5 +68,5 @@ Routing tests live in [evals/evals.json](evals/evals.json).
 
 ## References
 
-- Sub-skill procedures: [generating-court-documents](references/generating-court-documents.md) • [assembling-court-binders](references/assembling-court-binders.md) • [validating-court-binders](references/validating-court-binders.md) • [environment-setup](references/environment-setup.md) • [chambers-prompts](references/prompts/generate_bc_chambers_filings_prompt.md)
+- Sub-skill procedures: [generating-court-documents](references/generating-court-documents.md) • [assembling-court-binders](references/assembling-court-binders.md) • [validating-court-binders](references/validating-court-binders.md) • [filename-conventions](references/filename-conventions.md) • [environment-setup](references/environment-setup.md) • [chambers-prompts](references/prompts/generate_bc_chambers_filings_prompt.md)
 - Legal standards: [cso-guide-april-2026](references/cso_application_record_guide_april2026.md) • [court-practice-directions](references/court_practice_directions.md) • [pdf-technical-instructions](references/pdf_instructions.md) • [paralegal-workflow](references/paralegal_video_workflow.md)

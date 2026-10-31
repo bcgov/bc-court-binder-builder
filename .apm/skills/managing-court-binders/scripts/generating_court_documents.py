@@ -1,20 +1,26 @@
 #!/usr/bin/env python3
 """
 generating_court_documents.py
------------------------------
-Generates authentic, multi-page, substantively detailed BC Supreme Court filing
-PDF components for eligible chambers applications under Practice Direction 72 (PD-72):
+=============================
+PURPOSE:
+    Generates authentic, multi-page, substantively detailed BC Supreme Court filing
+    PDF components and manifest.json for eligible chambers applications under PD-72.
+    Supports commercial discovery (Rule 7-1), pleading amendments (Rule 6-1), and
+    interlocutory family matters (Family Rule 10-6).
 
-Supported Matter Presets:
-1. 'discovery' (Civil Rule 7-1): Commercial joint venture dispute; Notice of Application (3 pp),
-   Response (2 pp), Affidavit with 2-page Contract & Demand Letter (5 pp), Draft Order (1 p),
-   and BCCA Reasons for Judgment Authority (3 pp). Total = 14 content pages.
-2. 'amendment' (Civil Rule 6-1): Construction defect amendment adding subcontractor (12 pp).
-3. 'family' (Family Rule 10-6): Interim child/spousal support and corporate disclosure (13 pp).
+KEY INPUT DEPENDENCIES:
+    - Matter preset selection ('discovery', 'amendment', 'family')
+    - Optional raw .txt filing templates in destination folder
+    - No external binary dependencies required (pure-Python vector PDF generation)
 
-Outputs:
-  - inputs/*.pdf
-  - inputs/manifest.json
+FUNCTION INDEX:
+    - create_multipage_pdf(pages: list[dict]) -> bytes
+    - generate_discovery_preset(out_dir: Path) -> dict
+    - compile_txt_files_to_pdfs(target_dir: Path) -> dict
+    - main() -> None
+
+USAGE:
+    python3 generating_court_documents.py --matter-type discovery --output-dir inputs/01-commercial-discovery
 """
 
 import os

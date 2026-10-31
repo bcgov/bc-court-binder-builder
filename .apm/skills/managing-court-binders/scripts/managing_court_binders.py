@@ -1,18 +1,38 @@
 #!/usr/bin/env python3
 """
 managing_court_binders.py
--------------------------
-Unified CLI driver for BC Supreme Court Electronic Application Record & Book of Authorities lifecycle.
-Provides 4 operating modes:
-  1. generate: Creates synthetic multi-page chambers filings (Form 32, 33, Affidavits with Exhibits, Form 35, Authorities).
-  2. assemble: Executes two-pass continuous foliation, index table layout, invisible rectangle hyperlinks, and outlines.
-  3. validate: Audits assembled binder against the 20 statutory BC Court quality gates (CSO 50 MB, bookmarks, folios).
-  4. all / e2e: Executes the closed-loop pipeline from generation through assembly and automated audit.
+=========================
+PURPOSE:
+    Unified CLI driver and terminal wizard for the BC Supreme Court Electronic Application
+    Record & Book of Authorities lifecycle. Orchestrates environment verification,
+    synthetic filing drafting, two-pass binder assembly, and 20-gate statutory auditing.
+
+KEY INPUT DEPENDENCIES:
+    - inputs/<matter>/manifest.json     : Document sequence and metadata
+    - inputs/<matter>/*.pdf or *.txt    : Source court pleadings and exhibit documents
+    - requirements.txt                  : pypdf>=5.0.0, pdfplumber>=0.11.0
+
+FUNCTION INDEX:
+    - check_or_setup_environment(auto_install: bool = False) -> bool
+    - display_menu() -> None
+    - prompt_choice() -> str
+    - interactive_menu() -> tuple[str, str, str, str, bool]
+    - main() -> None
+
+USAGE:
+    python3 managing_court_binders.py --mode assemble --inputs inputs/01-commercial-discovery --output output/01-commercial-discovery/Application_Record.pdf
+    python3 managing_court_binders.py --mode validate --output output/01-commercial-discovery/Application_Record.pdf
+    python3 managing_court_binders.py --mode setup
+    python3 managing_court_binders.py --interactive
 """
 
 import sys
 import argparse
 from pathlib import Path
+
+# Module-level default path constants
+DEFAULT_INPUTS_DIR = "inputs/01-commercial-discovery"
+DEFAULT_OUTPUT_PDF = "output/01-commercial-discovery/Application_Record.pdf"
 
 # Add current script directory to path to import sibling scripts
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -91,8 +111,8 @@ def check_or_setup_environment(auto_install: bool = False) -> bool:
     print("\nVERDICT: Environment is 100% ready for assembling and validating court binders!")
     return True
 
-def interactive_menu():
-    """Interactive wizard for terminal users when run without arguments."""
+def display_menu() -> None:
+    """Prints the interactive wizard header and menu options to stdout."""
     print("================================================================================")
     print("    BRITISH COLUMBIA COURT APPLICATION RECORD MANAGER (PD-72 & CSO GUIDE)       ")
     print("================================================================================\n")
@@ -104,26 +124,33 @@ def interactive_menu():
     print("  5) Check & Setup Environment (first-time dependencies & wheel verification)")
     print("  6) Exit")
 
-    choice = input("\nEnter choice [1-6, default: 1]: ").strip() or "1"
+def prompt_choice() -> str:
+    """Prompts the operator for menu choice, defaulting to 1."""
+    return input("\nEnter choice [1-6, default: 1]: ").strip() or "1"
+
+def interactive_menu() -> tuple[str, str, str, str, bool]:
+    """Interactive wizard coordinating user choices and file path resolution."""
+    display_menu()
+    choice = prompt_choice()
 
     if choice == "1":
-        inputs_dir = input("Enter path to source documents folder [default: inputs/01-commercial-discovery]: ").strip() or "inputs/01-commercial-discovery"
-        output_pdf = input("Enter destination PDF path [default: output/01-commercial-discovery/Application_Record.pdf]: ").strip() or "output/01-commercial-discovery/Application_Record.pdf"
+        inputs_dir = input(f"Enter path to source documents folder [default: {DEFAULT_INPUTS_DIR}]: ").strip() or DEFAULT_INPUTS_DIR
+        output_pdf = input(f"Enter destination PDF path [default: {DEFAULT_OUTPUT_PDF}]: ").strip() or DEFAULT_OUTPUT_PDF
         return "assemble", "discovery", inputs_dir, output_pdf, False
 
     elif choice == "2":
-        pdf_path = input("Enter path to PDF binder to validate [default: output/01-commercial-discovery/Application_Record.pdf]: ").strip() or "output/01-commercial-discovery/Application_Record.pdf"
+        pdf_path = input(f"Enter path to PDF binder to validate [default: {DEFAULT_OUTPUT_PDF}]: ").strip() or DEFAULT_OUTPUT_PDF
         return "validate", "discovery", "", pdf_path, False
 
     elif choice == "3":
         matter = input("Select matter type [discovery/amendment/family, default: discovery]: ").strip() or "discovery"
-        inputs_dir = input(f"Input documents folder [default: inputs/01-commercial-discovery]: ").strip() or "inputs/01-commercial-discovery"
-        output_pdf = input(f"Output PDF path [default: output/01-commercial-discovery/Application_Record.pdf]: ").strip() or "output/01-commercial-discovery/Application_Record.pdf"
+        inputs_dir = input(f"Input documents folder [default: {DEFAULT_INPUTS_DIR}]: ").strip() or DEFAULT_INPUTS_DIR
+        output_pdf = input(f"Output PDF path [default: {DEFAULT_OUTPUT_PDF}]: ").strip() or DEFAULT_OUTPUT_PDF
         return "all", matter, inputs_dir, output_pdf, False
 
     elif choice == "4":
         matter = input("Select matter type [discovery/amendment/family, default: discovery]: ").strip() or "discovery"
-        inputs_dir = input(f"Destination folder for filings [default: inputs/01-commercial-discovery]: ").strip() or "inputs/01-commercial-discovery"
+        inputs_dir = input(f"Destination folder for filings [default: {DEFAULT_INPUTS_DIR}]: ").strip() or DEFAULT_INPUTS_DIR
         return "generate", matter, inputs_dir, "", False
 
     elif choice == "5":

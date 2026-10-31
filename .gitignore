@@ -5,3 +5,5 @@ inputs/manifest.json
 Cargo.lock
 context/
 .DS_Store
+__pycache__/
+*.pyc

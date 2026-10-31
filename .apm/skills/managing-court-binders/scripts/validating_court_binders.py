@@ -1,26 +1,36 @@
 #!/usr/bin/env python3
 """
 validating_court_binders.py
----------------------------
-Audits and verifies an Electronic Application Record or Book of Authorities PDF
-against the complete compliance matrix synthesized from:
-1. BC Supreme Court Practice Direction 72 (PD-72 Appendix A)
-2. BC Supreme Court Practice Direction 73 (Virtual Chambers)
-3. Court Services Online (CSO) 50 MB File Size & Document Acceptance Governance
-4. BC Court of Appeal Civil Rule 27 Completion Instructions (BoA)
-5. BC Supreme Court 13-Part PDF Instructions Library
-6. Professional Litigation Paralegal Standard Practice (Video 836310097)
-7. Ministry of Attorney General (JAG-CSO-Assistant) Enterprise Architecture:
-   - 3-tier severity classification (HARD_STOP, SOFT_WARNING, PASS)
-   - Spatial margin bounding box coordinate analysis (Top-Center vs Footer)
-   - Page geometry and standard Letter dimensions auditing
-   - Security & encryption rejection gate
-   - Shannon character entropy and legal dictionary OCR heuristics
-   - Substantive content density and non-blank page verification
+===========================
+PURPOSE:
+    Audits and certifies an Electronic Application Record or Book of Authorities PDF
+    against the 20 mandatory statutory court quality gates synthesized from:
+    1. BC Supreme Court Practice Direction 72 (PD-72 Appendix A) & Practice Direction 73
+    2. Court Services Online (CSO) 50 MB File Size & Document Acceptance Governance
+    3. BCCA Civil Rule 27 Completion Instructions for Books of Authorities
+    4. Senior Vancouver Litigation Paralegal 9-Step Standard Practice (Video 836310097)
+    5. Ministry of Attorney General (JAG-CSO-Assistant) Enterprise Architecture:
+       - 3-tier severity classification (HARD_STOP, SOFT_WARNING, PASS)
+       - Spatial bounding box coordinate analysis (Top-Center vs Footer folios)
+       - Page geometry and standard Letter dimensions auditing
+       - Security & encryption rejection gate
+       - Shannon character entropy and legal dictionary OCR heuristics
+       - Substantive content density and non-blank page verification
 
-Exit Code:
-  0 = Fully Compliant (PASS - all mandatory gates satisfied, 0 HARD_STOPs)
-  1 = Non-Compliant (FAIL - one or more HARD_STOP rules breached)
+KEY INPUT DEPENDENCIES:
+    - Candidate application record or BoA PDF (path passed via --output or sys.argv)
+    - pypdf>=5.0.0      : PDF structural and dictionary object analysis
+    - pdfplumber>=0.11.0: Spatial text bounding box coordinate probing
+
+FUNCTION INDEX:
+    - calculate_entropy(text: str) -> float
+    - evaluate_ocr_quality(text: str) -> dict
+    - validate_court_binder(pdf_path: Path) -> tuple[bool, list[dict]]
+    - main() -> None
+
+USAGE:
+    python3 validating_court_binders.py --output output/01-commercial-discovery/Application_Record.pdf
+    python3 validating_court_binders.py --output output/01-commercial-discovery/Application_Record.pdf --json
 """
 
 import os

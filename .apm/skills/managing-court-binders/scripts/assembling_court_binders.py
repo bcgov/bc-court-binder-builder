@@ -1,20 +1,30 @@
 #!/usr/bin/env python3
 """
 assembling_court_binders.py
-----------------------------
-Assembles an electronic court filing package into a fully-compliant
-BC Supreme Court PD-72 Electronic Application Record or Court of Appeal BoA.
+===========================
+PURPOSE:
+    Assembles source court documents into a fully compliant BC Supreme Court PD-72
+    Electronic Application Record or Court of Appeal Book of Authorities (BoA).
+    Executes two-pass mathematical foliation, Form 22 Title Page generation, 4-column
+    hyperlinked Index table, hierarchical bookmarks, top-center 15 pt bold folios,
+    and synchronized catalog /PageLabels.
 
-Dynamically ingests authentic, multi-page legal documents and manifest.json:
-1. Reads Cover Page / Title Page (Item 1)
-2. Dynamically calculates two-pass page counts & folios across all substantive filings
-3. Generates Numbered Index (Item 2) with calculated folios and invisible rectangle links (/H /N)
-4. Stamps top-center 14-16pt bold page numbers across all substantive content pages
-5. Builds hierarchical bookmark outline tree with nested Exhibit sub-bookmarks
-6. Injects Initial View /PageMode /UseOutlines (forces Acrobat bookmarks panel open)
-7. Sets digital /PageLabels (None for front matter, 1..N for tabs)
-8. Renders 100% visible, fully-detailed multi-page vector text streams
-9. Audits against CSO 50 MB upload threshold
+KEY INPUT DEPENDENCIES:
+    - inputs/<matter>/manifest.json     : Document sequence and metadata (or auto-inferred from Tab filenames)
+    - inputs/<matter>/*.pdf or *.txt    : Substantive court pleadings and exhibits
+    - references/filename-conventions.md: Statutory naming schema contract
+
+FUNCTION INDEX:
+    - clean_display_title(text: str) -> str
+    - extract_date_str(text: str, default: str = "") -> str
+    - escape_pdf_text(text: str) -> str
+    - load_document_lines(inputs_dir: Path, filename: str) -> list[str]
+    - infer_manifest_from_files(inputs_dir: Path) -> dict
+    - build_binder(inputs_dir: Path, output_file: Path) -> Path
+    - main() -> None
+
+USAGE:
+    python3 assembling_court_binders.py --inputs inputs/01-commercial-discovery --output output/01-commercial-discovery/Application_Record.pdf
 """
 
 import os
@@ -24,6 +34,19 @@ import json
 import textwrap
 import argparse
 from pathlib import Path
+
+# Regular expression for parsing raw document folders lacking manifest.json
+FILENAME_REGEX = re.compile(
+    r"^(?:Tab_?|Item_?|)(\d{1,2})[-_.\s]+"
+    r"(.+?)"
+    r"(?:[-_.\s]+(\d{1,2}[A-Za-z]{3}\d{4}))?"
+    r"\.pdf$",
+    re.IGNORECASE
+)
+
+# -----------------------------------------------------------------------------
+# Document metadata and text cleaning helpers
+# -----------------------------------------------------------------------------
 
 def clean_display_title(text: str) -> str:
     """Cleans up document title for the Index table."""
@@ -105,17 +128,74 @@ def load_document_lines(inputs_dir: Path, filename: str) -> list[str]:
 
     return [f"[Document: {filename}]", "Substantive legal content filed with court."]
 
+def infer_manifest_from_files(inputs_dir: Path) -> dict:
+    """Auto-synthesizes manifest data from conforming Tab filenames when manifest.json is absent."""
+    pdf_files = sorted(list(inputs_dir.glob("*.pdf")))
+    if not pdf_files:
+        raise FileNotFoundError(f"No PDF documents or manifest.json found in {inputs_dir}")
+
+    documents = []
+    non_conforming = []
+
+    for f in pdf_files:
+        if f.stat().st_size == 0:
+            raise ValueError(f"Input file is 0 bytes (corrupt/empty): {f.name}")
+
+        m = FILENAME_REGEX.match(f.name)
+        if m:
+            tab_num = int(m.group(1))
+            raw_title = m.group(2).replace("_", " ").strip()
+            date_str = m.group(3) or ""
+            documents.append({
+                "item_num": tab_num,
+                "title": f"Tab {tab_num} - {raw_title}",
+                "short_title": raw_title,
+                "date": date_str,
+                "filename": f.name,
+                "exhibits": []
+            })
+        else:
+            non_conforming.append(f.name)
+
+    if non_conforming:
+        examples = "\n  - ".join(non_conforming[:5])
+        raise ValueError(
+            f"Input folder contains files not conforming to court filename conventions:\n  - {examples}\n"
+            f"Please rename files to 'Tab01_Document_Description_DDMmmYYYY.pdf' or supply manifest.json.\n"
+            f"See references/filename-conventions.md for full specification."
+        )
+
+    documents.sort(key=lambda d: d["item_num"])
+    return {
+        "court": "SUPREME COURT OF BRITISH COLUMBIA",
+        "registry": "Vancouver",
+        "file_number": "S-240123",
+        "style_of_cause": "IN THE SUPREME COURT OF BRITISH COLUMBIA",
+        "hearing_date": "To be scheduled",
+        "application_date": "Current Session",
+        "documents": documents
+    }
+
 def build_binder(inputs_dir: Path, output_file: Path) -> Path:
     manifest_file = inputs_dir / "manifest.json"
-    if not manifest_file.exists():
-        raise FileNotFoundError(f"Missing manifest.json in {inputs_dir}")
+    if manifest_file.exists():
+        manifest = json.loads(manifest_file.read_text(encoding="utf-8"))
+    else:
+        print(f"No manifest.json found. Inferring document sequence from conforming filenames...")
+        manifest = infer_manifest_from_files(inputs_dir)
 
-    manifest = json.loads(manifest_file.read_text(encoding="utf-8"))
     docs = manifest.get("documents", [])
     if not docs:
-        raise ValueError("manifest.json contains no documents")
+        raise ValueError("manifest contains no documents")
 
-    print(f"Loaded {len(docs)} document definitions from {manifest_file.name}.")
+    # Defensive check: ensure no 0-byte or corrupt source files
+    for d in docs:
+        fname = d.get("filename", "")
+        fpath = inputs_dir / fname
+        if fpath.exists() and fpath.stat().st_size == 0:
+            raise ValueError(f"Input document file is 0 bytes (corrupt/empty): {fname}")
+
+    print(f"Loaded {len(docs)} document definitions for assembly.")
 
     court_name = manifest.get("court", "SUPREME COURT OF BRITISH COLUMBIA").upper()
     registry = manifest.get("registry", "Vancouver")
@@ -290,6 +370,9 @@ def build_binder(inputs_dir: Path, output_file: Path) -> Path:
         "parent": None
     })
 
+    # Record actual front matter page count for dynamic /PageLabels synchronization
+    front_matter_page_count = len(page_entries)
+
     # 3. Add Substantive Pages
     current_content_folio = 1
     for d_idx, doc_pages in enumerate(doc_pages_map):
@@ -332,7 +415,7 @@ def build_binder(inputs_dir: Path, output_file: Path) -> Path:
         f"<< /Type /Catalog /Pages {pages_root_idx} 0 R "
         f"/PageMode /UseOutlines "  # Initial View: open bookmarks navigation panel by default
         f"/Outlines {outlines_root_idx} 0 R "
-        f"/PageLabels << /Nums [0 << >> 2 << /S /D /St 1 >>] >> >>"
+        f"/PageLabels << /Nums [0 << >> {front_matter_page_count} << /S /D /St 1 >>] >> >>"
     )
 
     # 2. Pages Root Object
