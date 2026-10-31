@@ -117,6 +117,19 @@ flowchart LR
 
 ---
 
+## 🔗 Lineage & Referenced Repositories
+
+This proof-of-concept synthesizes technical research, legal-ops automation models, and PDF engine primitives developed across three related repositories:
+
+1. **[`richfrem/pdfcraft`](https://github.com/richfrem/pdfcraft):**  
+   The extended enterprise distribution and document processing SDK containing the Layer 7 in-process client (`pdfcraft-sdk`), native PyO3 acceleration module (`pdfcraft-pyo3`), self-hosted REST service (`pdfcraft-rest`), and pre-built Python wheels distributed via GitHub Releases.
+2. **[`storytold/pdfcraft`](https://github.com/storytold/pdfcraft):**  
+   The upstream clean-room, headless PDF processing engine and rendering kernel authored under strict clean-room rules (ISO 32000-2 / Arlington model) with zero Adobe proprietary dependencies.
+3. **[`bcgov-c/jag-cso-assistant`](https://github.com/bcgov-c/jag-cso-assistant) *(Private Ministry of Attorney General Repository)*:**  
+   The foundational Azure AI Foundry POC and policy evaluation suite that originally codified the 20 British Columbia court quality gates, 3-tier severity classification (`HARD_STOP`, `SOFT_WARNING`, `PASS`), spatial margin bounding box algorithms, and Shannon character OCR entropy heuristics.
+
+---
+
 ## 🤖 Consolidated Agent Skill (`.apm/skills/managing-court-binders`)
 
 This repository encapsulates all legal-ops capabilities into a single, self-contained APM domain skill: **[`managing-court-binders`](.apm/skills/managing-court-binders)**.

@@ -1,7 +1,7 @@
 # Architecture: Electronic Court Binder Processing Engine
 ### Standalone Legal-Ops Domain Pipeline & Pre-Flight Compliance Engine
 
-This document details the architectural design, component layers, legal taxonomy, and pre-flight auditing model of **`bc-court-binder`**. It describes how the high-level legal procedural taxonomy interfaces with the underlying document processing engine ([`pdfcraft`](https://github.com/richfrem/pdfcraft)) to assemble, stamp, bookmark, and validate electronic court binders submitted via Court Services Online (CSO).
+This document details the architectural design, component layers, legal taxonomy, and pre-flight auditing model of **`bc-court-binder-builder`**. It describes how the high-level legal procedural taxonomy interfaces with the underlying document processing engine ([`richfrem/pdfcraft`](https://github.com/richfrem/pdfcraft) / upstream [`storytold/pdfcraft`](https://github.com/storytold/pdfcraft)) and the foundational court compliance models originally developed in the Ministry of Attorney General repository [`bcgov-c/jag-cso-assistant`](https://github.com/bcgov-c/jag-cso-assistant) to assemble, stamp, bookmark, and validate electronic court binders submitted via Court Services Online (CSO).
 
 ---
 
