@@ -30,7 +30,7 @@ For a comprehensive breakdown of the institutional, operational, and economic dr
 
 * **[`architecture.md`](architecture.md):** System architecture, legal taxonomy of submittable chambers matters (< 30 minutes before Associate Judges), and component layering.
 * **[`BC_ELECTRONIC_BINDER_SPEC.md`](BC_ELECTRONIC_BINDER_SPEC.md):** Complete synthesis of the 9-step paralegal manual workflow (from Senior Vancouver Paralegal Video 836310097) vs. the automated SDK pipeline.
-* **[`references/`](references/):** Complete library of official court practice directions (`PD-72`, `PD-73`, `cso_application_record_guide_april2026.md`, and all 13 BC Supreme Court PDF technical instruction guides).
+* **[`managing-court-binders/references/`](.apm/skills/managing-court-binders/references/):** Complete library of official court practice directions (`PD-72`, `PD-73`, `cso_application_record_guide_april2026.md`, source court PDFs, and all 13 BC Supreme Court PDF technical instruction guides).
 
 ---
 

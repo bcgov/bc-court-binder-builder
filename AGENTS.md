@@ -136,4 +136,4 @@ A change is **not done** and must **never be committed** if any court quality ga
 
 1. **Synthetic Fixtures Only**: Never commit real litigant PII, confidential case materials, real bank statements, or sensitive court filings. All test cases must use synthetic, fictitious parties and docket numbers.
 2. **Never Crash**: Ingestion of malformed PDFs or bad manifest arguments must return a descriptive `Result` or exit code with remediation advice—never an unhandled panic.
-3. **Statutory Integrity**: Reference all court rules back to official publications in `references/` (`PD-72`, `PD-73`, and the April 2026 CSO Guide).
+3. **Statutory Integrity**: Reference all court rules back to official publications in `.apm/skills/managing-court-binders/references/` (`PD-72`, `PD-73`, and the April 2026 CSO Guide).
