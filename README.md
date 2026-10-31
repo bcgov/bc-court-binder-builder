@@ -4,7 +4,10 @@
 [![Jurisdiction](https://img.shields.io/badge/Jurisdiction-British%20Columbia%20(SC%20%26%20CA)-blue)](#key-technical-documentation)
 [![Engine](https://img.shields.io/badge/Powered%20By-PdfCraft%20SDK-orange)](https://github.com/richfrem/pdfcraft)
 
-An automated legal-ops pipeline for compiling, stamping, bookmarking, and validating **Electronic Application Records** and **Books of Authorities** for the Supreme Court of British Columbia and the Court of Appeal for British Columbia.
+An automated, AI-native legal-ops pipeline for compiling, stamping, bookmarking, and certifying **Electronic Application Records** and **Books of Authorities** for the Supreme Court of British Columbia and the Court of Appeal for British Columbia.
+
+> **💡 Better Than Validating Mistakes After the Fact — Correct by Construction:**  
+> Traditional approaches rely on reactionary audits after a binder is already defective. This AI-native agent skill synthesizes electronic court binders **correctly by construction**. Two-pass mathematical foliation, coordinate-projected hyperlinks, and standardized top-center page numbers ensure that formatting errors, registry clerk rejections, rework, and costly refilings never happen in the first place.
 
 Strictly adheres to:
 * **Practice Direction 72 (PD-72)**: *Electronic Application Records* — [Live Official PDF](https://www.bccourts.ca/supreme_court/practice_and_procedure/practice_directions/civil/PD-72_Electronic_Application_Records.pdf) • [Chambers Pilot Project](https://www.bccourts.ca/supreme_court/practice_and_procedure/associate_judges_chambers_pilot_project.aspx) • [Local Archive](.apm/skills/managing-court-binders/references/pdfs/PD-72_Electronic_Application_Records.pdf) • [Analysis](.apm/skills/managing-court-binders/references/court_practice_directions.md)
