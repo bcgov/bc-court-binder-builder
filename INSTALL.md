@@ -19,8 +19,8 @@ This guide covers installing and configuring `bc-court-binder` across macOS, Win
 
 ### Step 1: Clone Repository
 ```bash
-git clone https://github.com/richfrem/bc-court-binder.git
-cd bc-court-binder
+git clone https://github.com/bcgov/bc-court-binder-builder.git
+cd bc-court-binder-builder
 ```
 
 ### Step 2: Set Up Python Virtual Environment
@@ -90,8 +90,8 @@ FINAL VERDICT: 100% COMPLIANT - ALL GATES PASSED (APPROVED FOR CSO SUBMISSION)
 ### Step 1: Clone Repository
 In PowerShell:
 ```powershell
-git clone https://github.com/richfrem/bc-court-binder.git
-cd bc-court-binder
+git clone https://github.com/bcgov/bc-court-binder-builder.git
+cd bc-court-binder-builder
 ```
 
 ### Step 2: Set Up Python Virtual Environment
@@ -120,8 +120,8 @@ python .apm\skills\managing-court-binders\scripts\managing_court_binders.py --mo
 ## 🐧 3. Linux Installation (Ubuntu / Debian / RHEL)
 
 ```bash
-git clone https://github.com/richfrem/bc-court-binder.git
-cd bc-court-binder
+git clone https://github.com/bcgov/bc-court-binder-builder.git
+cd bc-court-binder-builder
 
 python3 -m venv .venv
 source .venv/bin/activate

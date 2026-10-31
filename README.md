@@ -1,5 +1,13 @@
 # BC Court Electronic Binder Builder
 
+> [!IMPORTANT]
+> ### 🧪 PROOF OF CONCEPT (POC)
+> **This project is a Proof of Concept (POC) validating an AI-native, correct-by-construction approach to electronic court application records.**
+> 
+> Rather than relying on expensive downstream automated audits or manual registry inspections *after* a defective binder has already been submitted, this POC empowers **law offices and legal-ops teams to build and pre-flight validate their own binders locally before submission**.
+> 
+> By synthesizing compliant folios, index hyperlinks, and bookmark trees deterministically by construction, it **eliminates the need for downstream automated binder validation**, prevents registry clerk rejections, avoids costly hearing adjournments, and guarantees first-time submission acceptance.
+
 [![Compliance](https://img.shields.io/badge/BC%20Courts%20PD--72-20%2F20%20PASS-brightgreen)](#the-20-mandatory-court-quality-gates)
 [![Jurisdiction](https://img.shields.io/badge/Jurisdiction-British%20Columbia%20(SC%20%26%20CA)-blue)](#key-technical-documentation)
 [![Engine](https://img.shields.io/badge/Powered%20By-PdfCraft%20SDK-orange)](https://github.com/richfrem/pdfcraft)
