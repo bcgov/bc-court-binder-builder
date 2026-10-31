@@ -1,0 +1,14 @@
+name: '@bcgov/bc-court-binder-builder'
+version: 1.0.0
+description: 'AI-Native BC Court Electronic Application Record (eBinder) Builder & 20-Gate Pre-Flight Compliance Validator for Virtual Chambers (PD-72/PD-73).'
+author: 'Ministry of Attorney General, British Columbia'
+targets:
+  - claude
+  - copilot
+  - codex
+  - gemini
+dependencies:
+  apm:
+    - ./.apm/skills/managing-court-binders
+  mcp: []
+includes: auto

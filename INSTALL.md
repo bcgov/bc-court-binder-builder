@@ -1,21 +1,129 @@
-# Installation & Setup Guide: bc-court-binder
+# Repository Installation & Lifecycle Guide — bc-court-binder
 
-This guide covers installing and configuring `bc-court-binder` across macOS, Windows, and Linux environments.
+This guide covers installing, configuring, deploying, and running the **BC Court Electronic Application Record (eBinder) Builder** and its unified agent skill (`managing-court-binders`).
 
----
-
-## 📋 Prerequisites
-
-| Runtime | Minimum Version | Required For |
-| :--- | :--- | :--- |
-| **Python** | `3.9+` (Recommended: `3.11`–`3.13`) | Core Agent Skills, automated assembly, and 20-gate validator |
-| **pip** | `23.0+` | Package and native `.whl` installation |
-| **Git** | `2.30+` | Cloning and version control |
-| **Rust / Cargo** *(Optional)* | `1.80+` | Only needed if executing or modifying the native Rust SDK example |
+It supports:
+1. **APM Package Management (Recommended for AI Agents):** Deploying skills to Claude Code, GitHub Copilot, Codex, and Gemini / Antigravity via [APM](https://github.com/microsoft/apm).
+2. **Standard Python Runtime (Zero-Compiler Setup):** Running the interactive terminal wizard, automated assembly, and 20-gate compliance validator directly with Python (`pypdf`, `pdfplumber`).
+3. **Native Acceleration (Optional):** Pre-compiled PyO3 native wheels (`pdfcraft-pyo3`) for high-throughput batch processing.
+4. **Rust Reference Implementation (Optional):** Compiling and executing the native in-process engine (`pdfcraft-sdk`).
 
 ---
 
-## 🍎 1. macOS Installation (Apple Silicon & Intel)
+## 📋 System Prerequisites
+
+| Component | Minimum Version | Recommended | Purpose |
+| :--- | :--- | :--- | :--- |
+| **Python** | `3.9+` | `3.11`–`3.13` | Core agent skills, document assembly, and 20-gate validator |
+| **pip** | `23.0+` | Latest | Dependency installation |
+| **APM CLI** *(Optional)* | `0.33.0+` | `0.35.0+` | Installing the skill into AI agent environments |
+| **Git** | `2.30+` | Latest | Cloning and revision management |
+| **Rust / Cargo** *(Optional)* | `1.80+` | Latest Stable | Compiling the native `pdfcraft-sdk` reference engine (`src/main.rs`) |
+
+---
+
+## 📦 Option 1: APM Package Management (Recommended for AI Agents)
+
+[Agent Package Manager (APM)](https://github.com/microsoft/apm) enables developers and legal-ops teams to install the `managing-court-binders` skill directly into any supported AI coding agent environment with a single command.
+
+### 1. Install the APM CLI (if not already installed)
+
+* **macOS / Linux:**
+  ```bash
+  curl -sSL https://aka.ms/apm-unix | sh -s -- @v0.35.0
+  ```
+
+* **Windows (PowerShell):**
+  ```powershell
+  irm https://aka.ms/apm-windows | iex
+  ```
+
+Verify APM installation:
+```bash
+apm --version
+```
+
+---
+
+### 2. Install the Skill from GitHub into Your AI Agent Harness
+
+To install the skill directly from the official GitHub repository into your agent environment:
+
+#### A. Global Workstation Installation (Available in Any Folder)
+Makes `managing-court-binders` available to your coding agents across your entire workstation:
+
+```bash
+# Target all installed agent environments (Claude, Copilot, Codex, Gemini/Antigravity):
+apm install https://github.com/bcgov/bc-court-binder-builder --global --target claude,copilot,codex,gemini
+```
+
+> [!TIP]
+> If using APM 0.35.0+, you can also specify `--target claude,copilot,codex,agy`.  
+> Select multiple harnesses separated by commas. Repeating `--target` retains only the last value.
+
+#### B. Project-Local Installation (For Specific Projects or Case Folders)
+Installs the skill strictly within the current repository or legal case directory:
+
+```bash
+cd <path-to-case-or-repo>
+apm install https://github.com/bcgov/bc-court-binder-builder --target claude,copilot,codex,gemini
+```
+This generates a local `apm.yml` and `apm.lock.yaml` recording the exact commit pin.
+
+---
+
+### 3. Target AI Agent Environments & Deployment Paths
+
+APM automatically deploys the skill files to the correct configuration directories based on your `--target` selection:
+
+| Target Flag | Target Agent Environment | Deployed Path (Global) | Deployed Path (Project Local) |
+| :--- | :--- | :--- | :--- |
+| `claude` | **Claude Code CLI** | `~/.claude/skills/managing-court-binders/` | `.claude/skills/managing-court-binders/` |
+| `copilot` | **GitHub Copilot CLI** | `~/.agents/skills/managing-court-binders/` | `.agents/skills/managing-court-binders/` |
+| `codex` | **OpenAI Codex CLI** | `~/.agents/skills/managing-court-binders/` | `.agents/skills/managing-court-binders/` |
+| `gemini` / `agy` | **Gemini / Antigravity CLI** | `~/.gemini/antigravity-cli/skills/managing-court-binders/` | `.gemini/skills/` or shared `.agents/` |
+
+---
+
+### 4. Clone-Based Local APM Installation (For Developers & Maintainers)
+
+If you have cloned the repository locally and want to link or deploy from your local working copy:
+
+* **macOS / Linux:**
+  ```bash
+  git clone https://github.com/bcgov/bc-court-binder-builder.git
+  cd bc-court-binder-builder
+  apm install "$PWD/.apm/skills/managing-court-binders" --global --target claude,copilot,codex,gemini
+  ```
+
+* **Windows (PowerShell):**
+  ```powershell
+  git clone https://github.com/bcgov/bc-court-binder-builder.git
+  cd bc-court-binder-builder
+  apm install "$PWD\.apm\skills\managing-court-binders" --global --target claude,copilot,codex,gemini --parallel-downloads 0
+  ```
+  *(Note: `--parallel-downloads 0` prevents file-locking issues on Windows during staging directory moves).*
+
+---
+
+### 5. Managing & Auditing Installed APM Skills
+
+```bash
+# List all active skills installed via APM:
+apm list
+
+# Audit on-disk skill integrity:
+apm audit
+
+# Uninstall the skill globally:
+apm uninstall https://github.com/bcgov/bc-court-binder-builder --global
+```
+
+---
+
+## 🐍 Option 2: Python Environment & Direct Execution (Zero Compiler Setup)
+
+If you prefer to run the scripts directly without APM, the entire pipeline operates out of the box using pure Python with zero C/C++ or Rust compiler requirements.
 
 ### Step 1: Clone Repository
 ```bash
@@ -23,125 +131,99 @@ git clone https://github.com/bcgov/bc-court-binder-builder.git
 cd bc-court-binder-builder
 ```
 
-### Step 2: Set Up Python Virtual Environment
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-```
+### Step 2: Set Up Virtual Environment
+* **macOS / Linux:**
+  ```bash
+  python3 -m venv .venv
+  source .venv/bin/activate
+  ```
+
+* **Windows (PowerShell):**
+  ```powershell
+  python -m venv .venv
+  .venv\Scripts\Activate.ps1
+  ```
+  *(If script execution is restricted: `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass`)*
 
 ### Step 3: Install Dependencies
 ```bash
-# Upgrade pip
 pip install --upgrade pip
-
-# Install requirements (pypdf, pdfplumber)
 pip install -r requirements.txt
 ```
 
 > [!NOTE]
-> `pip install -r requirements.txt` is **all that is required** to run the unified skill (`managing-court-binders`), assemble binders, stamp folios, inject hyperlinks, and validate against the 20 court quality gates.
-> 
-> **Optional: Native PdfCraft SDK Acceleration (PyO3 Engine):**
-> Install the pre-built native wheel directly from GitHub Releases:
-> ```bash
-> pip install "https://github.com/richfrem/pdfcraft/releases/download/v0.16.1/pdfcraft-0.5.0-cp313-cp313-macosx_11_0_arm64.whl"
-> ```
-> *(Or from local source if developing side-by-side: `pip install ../pdfcraft/sdks/python`). If no native wheel is installed, the pipeline operates 100% out of the box using built-in vector serialization.*
+> `requirements.txt` contains only `pypdf` and `pdfplumber`. This lightweight footprint provides 100% of the functionality needed to synthesize filings, assemble binders, stamp folios, inject GoTo links, and execute the 20-gate compliance audit.
 
-### Step 4: Verify Installation & Run Skill Right Away
+### Step 4 (Optional): High-Performance Native PyO3 Wheel Acceleration
+To enable native Rust acceleration via PyO3 without compiling from source, install the pre-built wheel from GitHub Releases:
+```bash
+# macOS Apple Silicon (ARM64):
+pip install "https://github.com/richfrem/pdfcraft/releases/download/v0.16.1/pdfcraft-0.5.0-cp313-cp313-macosx_11_0_arm64.whl"
+```
+*(If no native wheel is installed, the pipeline automatically falls back to standard Python vector serialization with zero degradation in compliance).*
 
-Every fresh clone can immediately run the unified `managing-court-binders` skill out of the box:
+---
+
+## 🎮 Running the Interactive Skill
+
+Once installed or cloned, you can run the skill in multiple ways:
+
+### 1. Guided Interactive Terminal Wizard (Recommended for Human Operators)
+```bash
+python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py --interactive
+```
+The wizard guides you through:
+1. **Selecting Workflow:** Assemble Binder, Validate PDF, Synthesize Test Filings, or Complete Pipeline.
+2. **Selecting Matter Type:** Commercial Discovery (Rule 7-1), Notice of Application Amendment (Rule 8-1), or Family Law.
+3. **Input & Output Configuration:** Choosing source document directories and target PDF path.
+4. **Execution & Scorecard:** Live progress reporting and statutory 20-gate compliance scorecard.
+
+---
+
+### 2. Headless Operational Modes (For Automation & CI/CD)
 
 ```bash
-# Option A: Run the complete closed-loop lifecycle in one command
+# A. Complete Closed-Loop Demonstration (Generates inputs -> Assembles -> Validates)
 python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py --mode all
 
-# Option B: Run individual steps as needed
-# 1. Generate a fresh set of input filings (discovery | amendment | family)
-python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py \
-  --mode generate \
-  --inputs inputs/01-commercial-discovery \
-  --matter-type discovery
-
-# 2. Assemble the input documents into a compliant court binder
+# B. Assemble an Electronic Application Record from an input directory
 python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py \
   --mode assemble \
   --inputs inputs/01-commercial-discovery \
   --output output/01-commercial-discovery/Application_Record.pdf
 
-# 3. Audit against the 20 statutory BC Court quality gates
+# C. Pre-flight Audit a Candidate PDF against the 20 Court Quality Gates
 python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py \
   --mode validate \
   --output output/01-commercial-discovery/Application_Record.pdf
-```
-Expected output:
-```text
-SUMMARY SCORECARD:
-  - Hard Stops (Fatal Court Rejections): 0
-  - Soft Warnings (Formatting Advisories): 0
-  - Passed Rules:                        20 / 20
-FINAL VERDICT: 100% COMPLIANT - ALL GATES PASSED (APPROVED FOR CSO SUBMISSION)
-```
 
----
+# D. Synthesize authentic chambers filings with manifest.json
+python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py \
+  --mode generate \
+  --inputs inputs/01-commercial-discovery \
+  --matter-type discovery
 
-## 🪟 2. Windows Installation (PowerShell)
-
-### Step 1: Clone Repository
-In PowerShell:
-```powershell
-git clone https://github.com/bcgov/bc-court-binder-builder.git
-cd bc-court-binder-builder
-```
-
-### Step 2: Set Up Python Virtual Environment
-```powershell
-python -m venv .venv
-.venv\Scripts\Activate.ps1
-```
-*(If PowerShell restricts script execution, run: `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass`)*
-
-### Step 3: Install Dependencies
-```powershell
-python -m pip install --upgrade pip
-pip install -r requirements.txt
-```
-
-> [!NOTE]
-> `pip install -r requirements.txt` provides everything required to run the unified skill out of the box. Installing the native PyO3 acceleration module (`pdfcraft-pyo3`) is optional. If developing alongside a local `pdfcraft` clone, run `pip install ..\pdfcraft\sdks\python`.
-
-### Step 4: Verify Installation
-```powershell
-python .apm\skills\managing-court-binders\scripts\managing_court_binders.py --mode all
+# E. Run environment diagnostics and dependency checks
+python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py --mode setup
 ```
 
 ---
 
-## 🐧 3. Linux Installation (Ubuntu / Debian / RHEL)
+### 3. Natural Language Prompts for AI Agents (Claude, Copilot, Codex, Antigravity)
 
-```bash
-git clone https://github.com/bcgov/bc-court-binder-builder.git
-cd bc-court-binder-builder
-
-python3 -m venv .venv
-source .venv/bin/activate
-
-pip install --upgrade pip
-pip install -r requirements.txt
-
-# Run full end-to-end assembly and pre-flight validation
-python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py --mode all
-```
+Once deployed via APM, your AI agents will automatically recognize prompts such as:
+* *"Build a compliant BC Supreme Court application record from the PDFs in `./inputs/01-commercial-discovery`."*
+* *"Validate `./output/Application_Record.pdf` against the 20 statutory quality gates and show the compliance scorecard."*
+* *"Synthesize a set of authentic chambers filings for an amendment application under Rule 8-1."*
+* *"Check whether this court binder satisfies Practice Direction 72 and Court Services Online requirements."*
 
 ---
 
-## 🦀 4. Optional: Rust SDK Runner Setup
+## 🦀 Option 3: Optional Rust Reference Pipeline (`pdfcraft-sdk`)
 
-If you wish to compile and run the native Rust example ([`src/main.rs`](src/main.rs)) to verify direct `pdfcraft-sdk` integration:
+For developers working directly on low-level PDF engine primitives or embedding the Rust Layer 7 SDK:
 
-### 4.1 Install the Rust Toolchain (if not already installed)
-To install the official Rust compiler (`rustc`) and package manager (`cargo`):
-
+### 1. Install Rust & Cargo (if not installed)
 * **macOS / Linux:**
   ```bash
   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
@@ -149,58 +231,47 @@ To install the official Rust compiler (`rustc`) and package manager (`cargo`):
   ```
 * **Windows (PowerShell):**
   ```powershell
-  # Via winget:
   winget install --id Rustlang.Rustup
-  # Or download and run rustup-init.exe from https://rustup.rs
   ```
+Verify: `rustc --version` (Requires `1.80+`).
 
-Verify your installation:
-```bash
-rustc --version   # Requires 1.80+
-cargo --version
-```
-
-### 4.2 Dependencies in `Cargo.toml`:
-```toml
-[dependencies]
-pdfcraft-sdk = { git = "https://github.com/richfrem/pdfcraft", branch = "main" }
-tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
-
-# Optional local override when developing side-by-side with pdfcraft checkout:
-[patch."https://github.com/richfrem/pdfcraft"]
-pdfcraft-sdk = { path = "../pdfcraft/crates/sdk" }
-```
-
-### Execution:
+### 2. Execute Native Reference Engine
 ```bash
 cargo run
 ```
-
-### What `cargo run` Does:
-1. Compiles `src/main.rs` against `pdfcraft-sdk`.
-2. Synthesizes an in-memory commercial discovery case (5 items: Notice of Application, Response, Eleanor Vance Affidavit with Exhibits A & B, Draft Order, and Legal Authority).
-3. Calculates dynamic page folios, generates the Title Page and Index with invisible rectangle link annotations, stamps top-center $15\text{ pt}$ bold folios, and configures `/PageLabels` and Initial View outlines.
-4. Uses `pdfcraft_sdk::LocalClient::render_page()` to run raster engine verification on Page 1.
-5. Audits against the 50 MB CSO limit and saves the compiled PDF to:
-   ```text
-   output/01-commercial-discovery/Application_Record_Commercial_Document_Discovery_Rule_7-1_15Nov2026.pdf
-   ```
+This builds and executes [`src/main.rs`](src/main.rs), which compiles an in-memory commercial discovery record, calls `pdfcraft-sdk` Layer 7 client for raster engine verification, and outputs:
+```text
+output/01-commercial-discovery/Application_Record_Commercial_Document_Discovery_Rule_7-1_15Nov2026.pdf
+```
 
 ---
 
-## 🛠️ Troubleshooting
+## 🛠️ Platform Specifics & Troubleshooting
 
-### 1. `ModuleNotFoundError: No module named 'pypdf'`
-Ensure your virtual environment is active (`source .venv/bin/activate` or `.venv\Scripts\Activate.ps1`), then re-run:
+### Windows Path Limits & Execution Policies
+1. **PowerShell Script Execution:**
+   If activating `.venv` gives an execution policy error:
+   ```powershell
+   Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+   ```
+2. **Windows Path Length Limitations:**
+   If installing from deep Git paths triggers `[WinError 3] The system cannot find the path specified`:
+   * Enable long paths in PowerShell (Administrator):
+     ```powershell
+     New-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem -Name LongPathsEnabled -Value 1 -PropertyType DWORD -Force
+     git config --global core.longpaths true
+     ```
+   * Or install from a short local clone path (e.g. `C:\src\bc-court-binder`).
+
+### macOS & Linux Permissions
+Ensure script execution permissions are enabled:
 ```bash
-pip install -r requirements.txt
+chmod +x .apm/skills/managing-court-binders/scripts/*.py
 ```
 
-### 2. Disk Space Caution during Rust Builds
-Rust debug builds can consume several gigabytes of disk in `target/`. If you are low on disk space, stick to the **Python Skills pipeline**, which runs with zero compilation cache and negligible disk impact (< 1 MB).
-
-### 3. File Permissions on macOS / Linux
-Ensure script permissions are executable:
+### Module Not Found Errors
+If `ModuleNotFoundError: No module named 'pypdf'` occurs, verify that your virtual environment is active:
 ```bash
-chmod +x .apm/skills/*/scripts/*.py
+which python3   # Should point to <repo>/.venv/bin/python3
+pip list        # Should list pypdf and pdfplumber
 ```

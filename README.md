@@ -42,10 +42,16 @@ Strictly adheres to:
 - [🤖 Consolidated Agent Skill (`managing-court-binders`)](#consolidated-skill)
   - [Operational Modes](#operational-modes)
   - [Key Reference Manuals](#reference-manuals)
+- [🛠️ Initial Setup, Dependencies & APM Installation](#setup-installation)
+  - [1. APM Package Installation for AI Agents](#apm-installation)
+  - [2. Python Environment & Zero-Compiler Setup](#python-setup)
+  - [3. Optional Rust Toolchain Setup](#rust-setup)
+- [🎮 Running the Interactive Skill](#running-interactive-skill)
+  - [1. Guided Terminal Wizard](#interactive-wizard)
+  - [2. Direct CLI Commands](#cli-commands)
+  - [3. Conversational AI Agent Triggers](#agent-prompts)
 - [⚖️ The 20 Mandatory Court Quality Gates](#quality-gates)
-- [🚀 Quick Start](#quick-start)
-  - [1. Python Pipeline (Zero Compiler Setup)](#python-pipeline)
-  - [2. Rust Reference Pipeline (`pdfcraft-sdk`)](#rust-pipeline)
+- [🦀 Rust Reference Pipeline (`pdfcraft-sdk`)](#rust-pipeline)
   - [Pipeline Comparison Matrix](#pipeline-comparison)
 - [📄 License & Open-Source Terms](#license)
 
@@ -88,24 +94,11 @@ Rather than building another monolithic, heavyweight software application that r
 
 It empowers humans, paralegals, and autonomous coding agents (Claude, Codex, Gemini, Antigravity) to orchestrate a high-performance legal compilation pipeline directly through conversational instructions, interactive terminal wizards, or headless CI/CD execution.
 
-```mermaid
-flowchart LR
-    subgraph Traditional["Traditional Manual Overhead"]
-        M1["Paralegal: 45–90 min manual Acrobat assembly"]
-        M2["Registry: Manual visual compliance inspection"]
-        M3["Rejections: Off-by-one folios & defective refilings"]
-    end
-
-    subgraph AINative["AI-Native Agent Skill (Deterministic)"]
-        A1["Preparation: < 200 ms build (0% error rate)"]
-        A2["Validation: Instant programmatic audit (20/20 PASS)"]
-        A3["Filing: Guaranteed 1st-time CSO acceptance"]
-    end
-
-    M1 -.->|99% Time Reduction| A1
-    M2 -.->|Instant Clerical Audit| A2
-    M3 -.->|Eliminates Refilings| A3
-```
+| Execution Dimension | Traditional Manual Overhead (Adobe Acrobat) | AI-Native Agent Skill (`managing-court-binders`) | Impact & Multiplier |
+| :--- | :--- | :--- | :--- |
+| **Preparation Velocity** | 45–90 min manual dragging, bookmarking, and folio stamping | **< 200 ms** deterministic programmatic build | **99% time & cost reduction** |
+| **Compliance Validation** | Manual visual inspection against 14+ practice directions | Instant automated 20/20 quality gate pre-flight audit | **100% audit coverage** before registry submission |
+| **Filing Outcome** | Frequent rejection from off-by-one folios & broken links | Mathematical zero-defect guarantee; first-time CSO acceptance | **Eliminates refilings & hearing delay** |
 
 ### Three FTE Efficiency Multipliers (Work Better Done by a Machine):
 
@@ -181,6 +174,145 @@ All domain knowledge is modularized inside [`.apm/skills/managing-court-binders/
 
 ---
 
+<a id="setup-installation"></a>
+## 🛠️ Initial Setup, Dependencies & APM Installation
+
+For full cross-platform instructions, Windows PowerShell settings, and CI/CD pipelines, read: 👉 **[`INSTALL.md`](INSTALL.md)**.
+
+<a id="apm-installation"></a>
+### 1. APM Package Installation for AI Agents (Recommended)
+
+This repository publishes its legal-ops capabilities as an [APM](https://github.com/microsoft/apm) package (`@bcgov/bc-court-binder-builder`), allowing you to install the `managing-court-binders` skill directly into any supported AI coding agent with one command.
+
+#### Install the APM CLI (if not already installed):
+* **macOS / Linux:** `curl -sSL https://aka.ms/apm-unix | sh -s -- @v0.35.0`
+* **Windows (PowerShell):** `irm https://aka.ms/apm-windows | iex`
+
+#### Install from GitHub into Your AI Agent Environment:
+
+* **Global Workstation Installation** (Deploy to all agent environments on your machine):
+  ```bash
+  apm install https://github.com/bcgov/bc-court-binder-builder --global --target claude,copilot,codex,gemini
+  ```
+
+* **Project-Local Installation** (Scoped to current legal case or project folder):
+  ```bash
+  apm install https://github.com/bcgov/bc-court-binder-builder --target claude,copilot,codex,gemini
+  ```
+
+* **Clone-Based Local Install** (Deploy from your local working copy):
+  ```bash
+  apm install "$PWD/.apm/skills/managing-court-binders" --global --target claude,copilot,codex,gemini
+  ```
+
+#### Target AI Agent Environments & Deployment Paths:
+
+| Target Flag | Target Agent Platform | Deployed Skill Path |
+| :--- | :--- | :--- |
+| `claude` | **Claude Code CLI** | `~/.claude/skills/managing-court-binders/` |
+| `copilot` | **GitHub Copilot CLI** | `~/.agents/skills/managing-court-binders/` |
+| `codex` | **OpenAI Codex CLI** | `~/.agents/skills/managing-court-binders/` |
+| `agy` / `gemini` | **Antigravity / Gemini CLI** | `~/.gemini/antigravity-cli/skills/managing-court-binders/` |
+
+---
+
+<a id="python-setup"></a>
+### 2. Python Environment & Zero-Compiler Setup
+
+If running without APM, the entire pipeline operates out of the box with standard Python (3.9–3.13) and zero compiler toolchains:
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/bcgov/bc-court-binder-builder.git
+cd bc-court-binder-builder
+
+# 2. Create and activate a virtual environment
+python3 -m venv .venv
+source .venv/bin/activate   # Windows: .venv\Scripts\Activate.ps1
+
+# 3. Install lightweight dependencies (pypdf, pdfplumber)
+pip install -r requirements.txt
+```
+
+> [!TIP]
+> **Optional: Native PyO3 Wheel Acceleration:**  
+> For enterprise-scale batch processing, download and install the pre-built native wheel directly from GitHub Releases with zero Rust compilation:  
+> `pip install "https://github.com/richfrem/pdfcraft/releases/download/v0.16.1/pdfcraft-0.5.0-cp313-cp313-macosx_11_0_arm64.whl"`
+
+---
+
+<a id="rust-setup"></a>
+### 3. Optional Rust Toolchain Setup (`pdfcraft-sdk`)
+
+Only required if compiling and modifying the native Rust reference engine in [`src/main.rs`](src/main.rs):
+
+```bash
+# Install Rust toolchain (1.80+)
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source "$HOME/.cargo/env"
+
+# Run native reference implementation against pdfcraft-sdk Layer 7 client
+cargo run
+```
+
+---
+
+<a id="running-interactive-skill"></a>
+## 🎮 Running the Interactive Skill
+
+<a id="interactive-wizard"></a>
+### 1. Guided Terminal Wizard (Interactive Mode)
+
+Launch the step-by-step interactive CLI to assemble or validate binders with guided prompts:
+
+```bash
+python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py --interactive
+```
+
+The interactive wizard prompts the operator for:
+1. **Action:** Assemble new binder, validate existing PDF, generate synthetic test filings, or execute the end-to-end pipeline.
+2. **Matter Type:** Commercial Document Discovery (Rule 7-1), Notice of Application Amendment (Rule 8-1), or Family Law Maintenance/Custody.
+3. **Paths:** Input directory containing source PDFs / exhibits and target output PDF path.
+4. **Execution & Live Audit:** Compiles the PDF and prints the 20-rule compliance scorecard.
+
+---
+
+<a id="cli-commands"></a>
+### 2. Direct CLI Commands
+
+```bash
+# Complete Closed-Loop Demonstration (Generates inputs -> Assembles -> Validates)
+python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py --mode all
+
+# Case 1 (Primary): Assemble an electronic court binder from input filings
+python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py \
+  --mode assemble \
+  --inputs inputs/01-commercial-discovery \
+  --output output/01-commercial-discovery/Application_Record.pdf
+
+# Case 2 (Primary): Audit / validate an assembled binder PDF against the 20 quality gates
+python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py \
+  --mode validate \
+  --output output/01-commercial-discovery/Application_Record.pdf
+
+# Diagnostics & Auto-Setup
+python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py --mode setup
+```
+
+---
+
+<a id="agent-prompts"></a>
+### 3. Conversational AI Agent Triggers
+
+When deployed via APM to Claude Code, GitHub Copilot, Codex, or Antigravity/Gemini, you can drive the skill using plain language:
+
+* 🗣️ *"Build a compliant BC Supreme Court application record from the files in `./inputs/01-commercial-discovery`."*
+* 🗣️ *"Pre-flight validate our application record at `./output/Application_Record.pdf` against the 20 court quality gates."*
+* 🗣️ *"Synthesize authentic chambers documents for an amendment application under Rule 8-1."*
+* 🗣️ *"Check whether this binder satisfies Practice Direction 72 and Court Services Online requirements."*
+
+---
+
 <a id="quality-gates"></a>
 ## ⚖️ The 20 Mandatory Court Quality Gates
 
@@ -209,36 +341,8 @@ Every assembled binder is audited against 20 deterministic rules:
 
 ---
 
-<a id="quick-start"></a>
-## 🚀 Quick Start
-
-<a id="python-pipeline"></a>
-### 1. Python Pipeline (Fast, Zero Compiler Setup)
-```bash
-# Install dependencies
-pip install -r requirements.txt
-
-# Case 1 (Most Common): Assemble an electronic court binder from input filings
-python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py \
-  --mode assemble \
-  --inputs inputs/01-commercial-discovery \
-  --output output/01-commercial-discovery/Application_Record.pdf
-
-# Case 2 (Most Common): Audit / validate an assembled binder PDF against the 20 quality gates
-python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py \
-  --mode validate \
-  --output output/01-commercial-discovery/Application_Record.pdf
-
-# Case 3: Verify environment & automated dependency install
-python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py --mode setup
-
-# Case 4: Run the interactive wizard or full closed-loop demo
-python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py --interactive
-python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py --mode all
-```
-
 <a id="rust-pipeline"></a>
-### 2. Rust Pipeline (Native `pdfcraft-sdk` Reference Engine)
+## 🦀 Rust Reference Pipeline (`pdfcraft-sdk`)
 
 The Rust runner in [`src/main.rs`](src/main.rs) is the native reference implementation that directly integrates with the in-process [`pdfcraft-sdk`](https://github.com/richfrem/pdfcraft) crate (`Layer 7`). It demonstrates how to build and verify a court application record without external CLI utilities.
 
