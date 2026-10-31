@@ -39,7 +39,7 @@ pip install -r requirements.txt
 ```
 
 > [!NOTE]
-> `pip install -r requirements.txt` is **all that is required** to run all 3 skills, assemble binders, stamp folios, inject hyperlinks, and validate against the 20 court quality gates.
+> `pip install -r requirements.txt` is **all that is required** to run the unified skill (`managing-court-binders`), assemble binders, stamp folios, inject hyperlinks, and validate against the 20 court quality gates.
 > 
 > **Optional: Native PdfCraft SDK Acceleration (PyO3 Engine):**
 > Install the pre-built native wheel directly from GitHub Releases:
@@ -108,7 +108,7 @@ pip install -r requirements.txt
 ```
 
 > [!NOTE]
-> `pip install -r requirements.txt` provides everything required to run all 3 skills out of the box. Installing the native PyO3 acceleration module (`pdfcraft-pyo3`) is optional. If developing alongside a local `pdfcraft` clone, run `pip install ..\pdfcraft\sdks\python`.
+> `pip install -r requirements.txt` provides everything required to run the unified skill out of the box. Installing the native PyO3 acceleration module (`pdfcraft-pyo3`) is optional. If developing alongside a local `pdfcraft` clone, run `pip install ..\pdfcraft\sdks\python`.
 
 ### Step 4: Verify Installation
 ```powershell

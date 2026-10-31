@@ -70,7 +70,7 @@ Managing physical application records is one of the most labour-intensive workfl
 
 * **Eliminating Clerical Handling:** Registry staff previously spent thousands of hours annually receiving, unboxing, inspecting, physically stamping, hand-sorting, and boxing 3-ring binders.
 * **Eliminating Physical Storage & Shredding:** Courthouses previously maintained rooms of shelving to store application records pending hearing dates, followed by physical returns to counsel or post-hearing shredding. eBinders require zero physical shelf space.
-* **Instant Rejection/Acceptance Validation:** Using programmatic validation gates (such as the [`validating-court-binders`](.apm/skills/validating-court-binders) skill), registry clerks can verify in seconds whether a filing satisfies PD-72 rules before accepting it, preventing defective files from ever reaching the judge.
+* **Instant Rejection/Acceptance Validation:** Using programmatic validation gates (such as the [`managing-court-binders`](.apm/skills/managing-court-binders) skill in `--mode validate`), registry clerks can verify in seconds whether a filing satisfies PD-72 rules before accepting it, preventing defective files from ever reaching the judge.
 
 ---
 

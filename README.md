@@ -28,19 +28,41 @@ For a comprehensive breakdown of the institutional, operational, and economic dr
 
 ## 📚 Key Technical Documentation
 
-* **[`architecture.md`](architecture.md):** System architecture, legal taxonomy of submittable chambers matters (< 30 minutes before Associate Judges), and component layering.
+* **[`architecture.md`](architecture.md):** System architecture, legal taxonomy of submittable chambers matters (< 30 minutes before Associate Judges), component layering, and the consolidated skill specification.
 * **[`BC_ELECTRONIC_BINDER_SPEC.md`](BC_ELECTRONIC_BINDER_SPEC.md):** Complete synthesis of the 9-step paralegal manual workflow (from Senior Vancouver Paralegal Video 836310097) vs. the automated SDK pipeline.
-* **[`managing-court-binders/references/`](.apm/skills/managing-court-binders/references/):** Complete library of official court practice directions (`PD-72`, `PD-73`, `cso_application_record_guide_april2026.md`, source court PDFs, and all 13 BC Supreme Court PDF technical instruction guides).
+* **[`managing-court-binders/references/`](.apm/skills/managing-court-binders/references/):** Consolidated, self-contained library containing procedural sub-skill manuals, environment setup guides, official court practice directions (`PD-72`, `PD-73`), the April 2026 CSO Guide, 18 source court PDFs, and all 13 BC Supreme Court PDF technical instruction guides.
 
 ---
 
 ## 🤖 Consolidated Agent Skill (`.apm/skills/managing-court-binders`)
 
-This repository provides an APM-compliant, multi-mode domain skill for court binder operations:
+This repository encapsulates all legal-ops capabilities into a single, self-contained APM domain skill: **[`managing-court-binders`](.apm/skills/managing-court-binders)**.
 
-| Skill | Path | Operational Modes |
-| :--- | :--- | :--- |
-| **`managing-court-binders`** | [`.apm/skills/managing-court-binders/`](.apm/skills/managing-court-binders) | • `generate`: Ingests or creates synthetic chambers filings<br/>• `assemble`: Compiles two-pass folios, index, and links<br/>• `validate`: Audits against 20 statutory quality gates<br/>• `all`: Full closed-loop execution |
+### Operational Modes
+
+| Mode | Priority / Use Case | Operational Function | Command |
+| :--- | :--- | :--- | :--- |
+| **`assemble`** | **Case 1 (Primary)** | Ingests source documents, calculates two-pass folios, builds Form 22 Title Page and 4-column Index, stamps top-center folios, sets `/PageLabels`, and injects `/Border [0 0 0]` invisible hyperlinks. | `python3 scripts/managing_court_binders.py --mode assemble` |
+| **`validate`** | **Case 2 (Primary)** | Audits candidate PDF against the 20 statutory court quality gates (CSO 50 MB, outlines, margins, OCR entropy). | `python3 scripts/managing_court_binders.py --mode validate` |
+| **`interactive`** | Guided Wizard | Launches interactive terminal menu prompting the operator for desired workflow and file paths. | `python3 scripts/managing_court_binders.py --interactive` |
+| **`setup`** | Diagnostics & Install | Verifies Python runtime, pip dependencies (`pypdf`, `pdfplumber`), native PyO3 wheel, and Rust toolchain; auto-installs missing packages. | `python3 scripts/managing_court_binders.py --mode setup` |
+| **`all`** | Closed-Loop Demo | Full automated loop: synthesizes test filings $\to$ compiles binder $\to$ executes 20-gate compliance audit. | `python3 scripts/managing_court_binders.py --mode all` |
+| **`generate`** | Test Data Synthesis | Synthesizes authentic multi-page chambers filings (`discovery`, `amendment`, `family`) and companion `manifest.json`. | `python3 scripts/managing_court_binders.py --mode generate` |
+
+### Key Reference Manuals (`references/`)
+
+All domain knowledge is modularized inside [`.apm/skills/managing-court-binders/references/`](.apm/skills/managing-court-binders/references/):
+* **Procedural Sub-Skill References:**
+  * [`assembling-court-binders.md`](.apm/skills/managing-court-binders/references/assembling-court-binders.md) — Two-pass foliation math, coordinate projection, `/Border [0 0 0]` invisible links, `/PageLabels`.
+  * [`validating-court-binders.md`](.apm/skills/managing-court-binders/references/validating-court-binders.md) — 20-gate compliance auditing engine, 3-tier severity (`HARD_STOP`, `SOFT_WARNING`), OCR entropy ($H \ge 3.0$).
+  * [`generating-court-documents.md`](.apm/skills/managing-court-binders/references/generating-court-documents.md) — Supreme Court Forms 32, 33, and 35 filing generator and manifest schemas.
+  * [`environment-setup.md`](.apm/skills/managing-court-binders/references/environment-setup.md) — Runtime environment verification, pip dependencies, native PyO3 wheel, and Rust toolchain setup.
+  * [`prompts/generate_bc_chambers_filings_prompt.md`](.apm/skills/managing-court-binders/references/prompts/generate_bc_chambers_filings_prompt.md) — High-density LLM prompt template for drafting chambers filings.
+* **Official Court Standards & Manuals:**
+  * [`cso_application_record_guide_april2026.md`](.apm/skills/managing-court-binders/references/cso_application_record_guide_april2026.md) — Court Services Online (CSO) April 2026 guidelines.
+  * [`court_practice_directions.md`](.apm/skills/managing-court-binders/references/court_practice_directions.md) — Practice Direction 72 (PD-72) and Practice Direction 73 (PD-73).
+  * [`paralegal_video_workflow.md`](.apm/skills/managing-court-binders/references/paralegal_video_workflow.md) — Senior Vancouver Paralegal 9-step manual workflow transcript & analysis.
+  * [`pdf_instructions.md`](.apm/skills/managing-court-binders/references/pdf_instructions.md) — Technical analysis of all 13 official Supreme Court PDF instructions.
 
 ---
 
@@ -89,7 +111,10 @@ python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py \
   --mode validate \
   --output output/01-commercial-discovery/Application_Record.pdf
 
-# Case 3: Run the interactive wizard or full closed-loop demo
+# Case 3: Verify environment & automated dependency install
+python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py --mode setup
+
+# Case 4: Run the interactive wizard or full closed-loop demo
 python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py --interactive
 python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py --mode all
 ```

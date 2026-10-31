@@ -59,7 +59,7 @@ The system enforces strict architectural separation between legal-domain orchest
 flowchart TD
     subgraph UI["Agent & Developer Interface Layer"]
         CLI["CLI Commands & CI/CD Runners"]
-        Skill["Unified Skill: managing-court-binders<br/>(Modes: generate | assemble | validate | all)"]
+        Skill["Unified Skill: managing-court-binders<br/>(Modes: assemble | validate | setup | interactive | all | generate)"]
     end
 
     subgraph Domain["bc-court-binder Domain Layer"]
@@ -96,28 +96,44 @@ flowchart TD
 
 ---
 
-## ⚙️ 3. Unified Agent Skill Specification (`managing-court-binders`)
+## ⚙️ 3. Unified Agent Skill Architecture & Knowledge Base (`managing-court-binders`)
 
-The repository encapsulates court binder operations in a single multi-mode APM domain skill: **`managing-court-binders`**.
+The repository consolidates all legal-ops capabilities into a single, self-contained APM domain skill: **[`managing-court-binders`](.apm/skills/managing-court-binders)**.
 
-### 3.1 Operational Modes:
-1. **Mode: `generate`**
-   * Generates authentic, multi-page synthetic filings and `manifest.json` across matter types (`discovery`, `amendment`, `family`).
-   * Includes prompt library for LLM drafting ([`generate_bc_chambers_filings_prompt.md`](.apm/skills/managing-court-binders/references/prompts/generate_bc_chambers_filings_prompt.md)).
-2. **Mode: `assemble`**
-   * Executes the automated 9-step synthesis in two-pass mode.
-   * Generates Form 22 Style of Cause Title Page and 4-column Index table (`TAB`, `DOCUMENT`, `FILED DATE`, `PAGE`).
-   * Stamps $15\text{ pt}$ Bold folios at top-center ($Y \approx 765\text{ pt}$), sets `/PageLabels`, and injects `/Border [0 0 0]` invisible rectangle hyperlinks.
-3. **Mode: `validate`**
-   * Evaluates the PDF against the 20 statutory court quality gates.
-   * Enforces spatial margin bounding boxes, Shannon character entropy ($H \ge 3.0$), and the 50 MB CSO limit.
-4. **Mode: `all`**
-   * Closed-loop automation combining generation, assembly, and compliance auditing in one step.
-* **Purpose:** Automated QA gatekeeper verifying candidate binders against statutory court rules before electronic submission.
-* **3-Tier Severity System:**
-  * `HARD_STOP`: Fatal court rejections (e.g. unencrypted violation, missing Title Page, folios in footers instead of top-center, missing Index, size > 50 MB).
-  * `SOFT_WARNING`: Technical advisories (e.g. non-standard font sizes, visible link borders).
-  * `PASS`: 100% compliant with court rules.
+### 3.1 Architectural Skill Consolidation
+Originally prototyped as three disparate agent skills (`generating-court-documents`, `assembling-court-binders`, and `validating-court-binders`), the architecture was refactored into a single multi-mode skill to eliminate fragmentation, prevent context drift, and comply strictly with Agent Package Manager (APM) invariants:
+* **Single Entrypoint:** A unified CLI driver (`managing_court_binders.py`) orchestrates the entire document lifecycle without switching agent contexts.
+* **100% Self-Contained References:** All domain manuals, statutory practice directions, sample court PDFs, and former skill specifications are housed directly within [`.apm/skills/managing-court-binders/references/`](.apm/skills/managing-court-binders/references/).
+* **Lean Router Boundary:** The root [`SKILL.md`](.apm/skills/managing-court-binders/SKILL.md) remains strictly under 80 lines (72 lines), routing operational questions to modular references.
+
+### 3.2 Operational Modes
+The skill supports six discrete operational modes:
+
+| Mode | Priority / Use Case | Description | Command |
+| :--- | :--- | :--- | :--- |
+| **`assemble`** | **Case 1 (Primary)** | Compiles documents from `--inputs`, calculates two-pass folios, builds Form 22 Title Page and 4-column Index, stamps folios, sets `/PageLabels`, and injects invisible hyperlinks. | `python3 scripts/managing_court_binders.py --mode assemble` |
+| **`validate`** | **Case 2 (Primary)** | Audits an assembled PDF against the 20 statutory court quality gates (CSO 50 MB, outlines, margins, OCR entropy). | `python3 scripts/managing_court_binders.py --mode validate` |
+| **`interactive`** | Guided Wizard | Launches an interactive terminal menu prompting the operator for the desired workflow and file paths. | `python3 scripts/managing_court_binders.py --interactive` |
+| **`setup`** | Diagnostics & Install | Verifies Python runtime, pip dependencies (`pypdf`, `pdfplumber`), native PyO3 acceleration wheel, and Rust toolchain; auto-installs missing packages. | `python3 scripts/managing_court_binders.py --mode setup` |
+| **`all`** | Closed-Loop Demo | Full automated loop: synthesizes synthetic filings $\to$ compiles binder $\to$ executes 20-gate compliance audit. | `python3 scripts/managing_court_binders.py --mode all` |
+| **`generate`** | Test Data Synthesis | Synthesizes authentic multi-page chambers filings (`discovery`, `amendment`, `family`) and companion `manifest.json`. | `python3 scripts/managing_court_binders.py --mode generate` |
+
+### 3.3 Modular Reference Knowledge Base (`references/`)
+The consolidated skill maintains a comprehensive library of domain knowledge that agents and developers consult on demand:
+
+1. **Sub-Skill Procedures (Converted from Prior Skills):**
+   * **[`references/assembling-court-binders.md`](.apm/skills/managing-court-binders/references/assembling-court-binders.md):** Mathematical specification of Pass 1 (page count probing, substantive Tab 1 = Page 1 mapping) and Pass 2 (coordinate projection for 4-column Index, invisible rectangle link annotations `/Border [0 0 0]`, `/H /N`, and top-center $15\text{ pt}$ Bold foliation).
+   * **[`references/validating-court-binders.md`](.apm/skills/managing-court-binders/references/validating-court-binders.md):** The 20-gate compliance auditing engine, 3-tier severity classification (`HARD_STOP`, `SOFT_WARNING`, `PASS`), spatial margin bounding box algorithms, and Shannon character entropy ($H \ge 3.0$).
+   * **[`references/generating-court-documents.md`](.apm/skills/managing-court-binders/references/generating-court-documents.md):** Court filing generator for Supreme Court Forms 32, 33, and 35, legal drafting rules, and manifest metadata structure.
+   * **[`references/environment-setup.md`](.apm/skills/managing-court-binders/references/environment-setup.md):** Cross-platform runtime setup, virtual environments, pip dependencies, native PyO3 wheel distribution, and optional Rust toolchain configuration.
+   * **[`references/prompts/generate_bc_chambers_filings_prompt.md`](.apm/skills/managing-court-binders/references/prompts/generate_bc_chambers_filings_prompt.md):** High-density LLM prompt template for drafting realistic interlocutory chambers applications.
+
+2. **Statutory Standards & Official Court Manuals:**
+   * **[`references/cso_application_record_guide_april2026.md`](.apm/skills/managing-court-binders/references/cso_application_record_guide_april2026.md):** Official Court Services Online (CSO) April 2026 guidelines for electronic submissions.
+   * **[`references/court_practice_directions.md`](.apm/skills/managing-court-binders/references/court_practice_directions.md):** Text and legal analysis of Practice Direction 72 (PD-72) and Practice Direction 73 (PD-73).
+   * **[`references/paralegal_video_workflow.md`](.apm/skills/managing-court-binders/references/paralegal_video_workflow.md):** Step-by-step transcript, timestamps, and legal procedural analysis of the Senior Vancouver Paralegal manual workflow.
+   * **[`references/pdf_instructions.md`](.apm/skills/managing-court-binders/references/pdf_instructions.md):** Technical analysis of all 13 official Supreme Court PDF instructions.
+   * **`references/pdfs/`:** Archive of 18 official court PDF instruction guides and sample application records.
 
 ---
 

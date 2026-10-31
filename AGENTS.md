@@ -64,39 +64,43 @@ cargo run
 
 ## 3. Agent Tool & Skill Execution Workflows
 
-Agents must use the unified `.apm/skills/managing-court-binders` skill to generate, assemble, and validate binders headlessly:
+Agents must use the consolidated `.apm/skills/managing-court-binders` skill to inspect, generate, assemble, and validate binders headlessly:
 
 ```mermaid
-flowchart LR
-    G["managing-court-binders<br/>(--mode generate)"] --> A["managing-court-binders<br/>(--mode assemble)"]
-    A --> V["managing-court-binders<br/>(--mode validate)"]
-    V -->|20/20 PASS| S["Approved for CSO"]
+flowchart TD
+    subgraph PrimaryWorkflows["Primary Production Workflows"]
+        Case1["Case 1: Assemble Court Binder<br/>(--mode assemble --inputs <dir> --output <file>)"]
+        Case2["Case 2: Validate Court Binder<br/>(--mode validate --output <file>)"]
+    end
+
+    subgraph AuxiliaryModes["Auxiliary & Support Modes"]
+        Setup["Environment Setup & Health Check<br/>(--mode setup)"]
+        Wizard["Interactive Guided Wizard<br/>(--interactive)"]
+        Demo["Full Closed-Loop Demo<br/>(--mode all)"]
+        Gen["Synthesize Sample Filings<br/>(--mode generate)"]
+    end
+
+    Case1 --> Case2
+    Case2 -->|20/20 PASS| Approved["Approved for Court Services Online (CSO)"]
 ```
 
-### Full Closed-Loop Lifecycle (Single Command):
-```bash
-python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py --mode all
-```
+### 3.1 Primary Operational Workflows:
 
-### Discrete Operational Steps:
+#### Case 1: Assemble Court Binder (Most Common)
 ```bash
-# Step 1: Synthesize input filings (if generating test case)
-python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py \
-  --mode generate \
-  --inputs inputs/01-commercial-discovery \
-  --matter-type discovery
-
-# Step 2: Assemble the electronic court binder
 python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py \
   --mode assemble \
   --inputs inputs/01-commercial-discovery \
   --output output/01-commercial-discovery/Application_Record.pdf
+```
 
-# Step 3: Run the pre-flight compliance gate audit
+#### Case 2: Validate / Audit Court Binder Submission (Most Common)
+```bash
 python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py \
   --mode validate \
   --output output/01-commercial-discovery/Application_Record.pdf
 ```
+
 To obtain structured machine-readable JSON for agent receipt verification:
 ```bash
 python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py \
@@ -104,6 +108,33 @@ python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py \
   --output output/01-commercial-discovery/Application_Record.pdf \
   --json
 ```
+
+#### Case 3: Interactive Wizard & Environment Verification
+```bash
+# Verify environment dependencies & auto-install missing packages
+python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py --mode setup
+
+# Run the interactive guided terminal wizard
+python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py --interactive
+
+# Run the complete closed-loop lifecycle (generate -> assemble -> audit)
+python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py --mode all
+```
+
+### 3.2 Agent Knowledge Base & Reference Structure
+All legal domain rules, procedural instructions, and former skills have been consolidated under [`.apm/skills/managing-court-binders/references/`](.apm/skills/managing-court-binders/references/). When an agent needs deep domain context, it must consult these references directly:
+
+| Task / Domain Query | Reference File | What It Contains |
+| :--- | :--- | :--- |
+| **Assembly, Folios & Links** | [`references/assembling-court-binders.md`](.apm/skills/managing-court-binders/references/assembling-court-binders.md) | Pass 1 folio math, Pass 2 coordinate projection, `/Border [0 0 0]` invisible links, `/PageLabels`. |
+| **Compliance & 20 Quality Gates** | [`references/validating-court-binders.md`](.apm/skills/managing-court-binders/references/validating-court-binders.md) | 20-gate implementation rules, 3-tier severity (`HARD_STOP`, `SOFT_WARNING`), OCR entropy ($H \ge 3.0$). |
+| **Filing Synthesis & Drafting** | [`references/generating-court-documents.md`](.apm/skills/managing-court-binders/references/generating-court-documents.md) | Form 32, Form 33, Form 35 layout, manifest schema, and synthetic filing generator. |
+| **LLM Chambers Drafting Prompts** | [`references/prompts/generate_bc_chambers_filings_prompt.md`](.apm/skills/managing-court-binders/references/prompts/generate_bc_chambers_filings_prompt.md) | System prompt for LLM drafting of commercial discovery, amendment, and family filings. |
+| **Environment Setup & Wheels** | [`references/environment-setup.md`](.apm/skills/managing-court-binders/references/environment-setup.md) | Virtualenv, pip requirements, pre-built native wheel install, and optional Rust setup. |
+| **Official CSO Rules (April 2026)** | [`references/cso_application_record_guide_april2026.md`](.apm/skills/managing-court-binders/references/cso_application_record_guide_april2026.md) | The April 2026 CSO Guide for submitting application records electronically. |
+| **Practice Directions** | [`references/court_practice_directions.md`](.apm/skills/managing-court-binders/references/court_practice_directions.md) | Practice Direction 72 (PD-72) and Practice Direction 73 (PD-73) text and rules. |
+| **Paralegal Workflow Analysis** | [`references/paralegal_video_workflow.md`](.apm/skills/managing-court-binders/references/paralegal_video_workflow.md) | Transcript and breakdown of the Senior Vancouver Paralegal 9-step manual workflow. |
+| **Court PDF Technical Guides** | [`references/pdf_instructions.md`](.apm/skills/managing-court-binders/references/pdf_instructions.md) | Analysis of all 13 official Supreme Court PDF instructions. |
 
 ---
 
