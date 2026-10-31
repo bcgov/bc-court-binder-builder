@@ -1,5 +1,7 @@
 # Guide to Submitting Application Records Using Court Services Online (CSO)
-**Source:** British Columbia Ministry of Attorney General & Supreme Court of British Columbia (April 2026)
+**Official Source PDF:** [https://justice.gov.bc.ca/pdfs/cso/InstructionsForUsersForApplicationRecords.pdf](https://justice.gov.bc.ca/pdfs/cso/InstructionsForUsersForApplicationRecords.pdf)  
+**Publisher:** British Columbia Ministry of Attorney General & Supreme Court of British Columbia (April 2026 Edition)  
+**Local Repository Archive:** [`references/pdfs/InstructionsForUsersForApplicationRecords.pdf`](pdfs/InstructionsForUsersForApplicationRecords.pdf)
 
 ## Contents
 

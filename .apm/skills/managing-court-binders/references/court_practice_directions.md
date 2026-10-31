@@ -17,6 +17,9 @@ This document consolidates all official practice directions, filing guidelines, 
 
 ## 1. Practice Direction 72 (PD-72) — Electronic Application Records
 
+**Official Live PDF Source:** [https://www.bccourts.ca/supreme_court/practice_and_procedure/practice_directions/civil/PD-72_Electronic_Application_Records.pdf](https://www.bccourts.ca/supreme_court/practice_and_procedure/practice_directions/civil/PD-72_Electronic_Application_Records.pdf)  
+**Chambers Pilot Project Overview:** [https://www.bccourts.ca/supreme_court/practice_and_procedure/associate_judges_chambers_pilot_project.aspx](https://www.bccourts.ca/supreme_court/practice_and_procedure/associate_judges_chambers_pilot_project.aspx)  
+**Local Repository Archive:** [`references/pdfs/PD-72_Electronic_Application_Records.pdf`](pdfs/PD-72_Electronic_Application_Records.pdf)  
 
 Effective Date: March 31, 2026
 Number: PD - 72
@@ -262,6 +265,9 @@ Page 5 of 5
 
 ## 2. Practice Direction 73 (PD-73) — Virtual Chambers
 
+**Official Live PDF Source:** [https://www.bccourts.ca/supreme_court/practice_and_procedure/practice_directions/civil/PD-73_Virtual_Chambers.pdf](https://www.bccourts.ca/supreme_court/practice_and_procedure/practice_directions/civil/PD-73_Virtual_Chambers.pdf)  
+**2026 Sitting Schedule PDF:** [https://www.bccourts.ca/supreme_court/scheduling/ASSOCIATE_JUDGES_VIRTUAL_CHAMBERS_SITTING_SCHEDULE_2026.pdf](https://www.bccourts.ca/supreme_court/scheduling/ASSOCIATE_JUDGES_VIRTUAL_CHAMBERS_SITTING_SCHEDULE_2026.pdf)  
+**Local Repository Archive:** [`references/pdfs/PD-73_Virtual_Chambers.pdf`](pdfs/PD-73_Virtual_Chambers.pdf)  
 
 Effective Date: March 31, 2026
 Updated Date: October 1, 2026
@@ -638,6 +644,9 @@ Page 9 of 9
 
 ## 3. CSO Guide to Submitting Application Records
 
+**Official Live PDF Source:** [https://justice.gov.bc.ca/pdfs/cso/InstructionsForUsersForApplicationRecords.pdf](https://justice.gov.bc.ca/pdfs/cso/InstructionsForUsersForApplicationRecords.pdf)  
+**Court Services Online (CSO) Portal:** [https://justice.gov.bc.ca/cso/](https://justice.gov.bc.ca/cso/)  
+**Local Repository Archive:** [`references/pdfs/InstructionsForUsersForApplicationRecords.pdf`](pdfs/InstructionsForUsersForApplicationRecords.pdf)  
 
 GUIDE TO SUBMITTING
 APPLICATION RECORDS
@@ -1126,6 +1135,8 @@ If you have questions about virtual chambers, please contact CSO Support.
 
 ## 4. BCCA Civil Rule 27 Completion Instructions (Books of Authorities)
 
+**Official Live PDF Source:** [https://www.bccourts.ca/Court_of_Appeal/practice_and_procedure/completion_instructions/civil/e_completion_instructions_book_of_authorities.pdf](https://www.bccourts.ca/Court_of_Appeal/practice_and_procedure/completion_instructions/civil/e_completion_instructions_book_of_authorities.pdf)  
+**Local Repository Archive:** [`references/pdfs/e_completion_instructions_book_of_authorities.pdf`](pdfs/e_completion_instructions_book_of_authorities.pdf)  
 
 COURT OF APPEAL FOR BRITISH COLUMBIA
 
@@ -1380,6 +1391,8 @@ www.bccourts.ca/Court_of_Appeal/
 
 ## 5. Associate Judges Sitting Schedule 2026
 
+**Official Live PDF Source:** [https://www.bccourts.ca/supreme_court/scheduling/ASSOCIATE_JUDGES_VIRTUAL_CHAMBERS_SITTING_SCHEDULE_2026.pdf](https://www.bccourts.ca/supreme_court/scheduling/ASSOCIATE_JUDGES_VIRTUAL_CHAMBERS_SITTING_SCHEDULE_2026.pdf)  
+**Local Repository Archive:** [`references/pdfs/ASSOCIATE_JUDGES_VIRTUAL_CHAMBERS_SITTING_SCHEDULE_2026.pdf`](pdfs/ASSOCIATE_JUDGES_VIRTUAL_CHAMBERS_SITTING_SCHEDULE_2026.pdf)  
 
 ASSOCIATE JUDGES VIRTUAL CHAMBERS SITTING SCHEDULE 2026
 Please note: To be eligible for Virtual Chambers, matters must originate outside of Vancouver

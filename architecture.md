@@ -128,12 +128,12 @@ The consolidated skill maintains a comprehensive library of domain knowledge tha
    * **[`references/environment-setup.md`](.apm/skills/managing-court-binders/references/environment-setup.md):** Cross-platform runtime setup, virtual environments, pip dependencies, native PyO3 wheel distribution, and optional Rust toolchain configuration.
    * **[`references/prompts/generate_bc_chambers_filings_prompt.md`](.apm/skills/managing-court-binders/references/prompts/generate_bc_chambers_filings_prompt.md):** High-density LLM prompt template for drafting realistic interlocutory chambers applications.
 
-2. **Statutory Standards & Official Court Manuals:**
-   * **[`references/cso_application_record_guide_april2026.md`](.apm/skills/managing-court-binders/references/cso_application_record_guide_april2026.md):** Official Court Services Online (CSO) April 2026 guidelines for electronic submissions.
-   * **[`references/court_practice_directions.md`](.apm/skills/managing-court-binders/references/court_practice_directions.md):** Text and legal analysis of Practice Direction 72 (PD-72) and Practice Direction 73 (PD-73).
-   * **[`references/paralegal_video_workflow.md`](.apm/skills/managing-court-binders/references/paralegal_video_workflow.md):** Step-by-step transcript, timestamps, and legal procedural analysis of the Senior Vancouver Paralegal manual workflow.
-   * **[`references/pdf_instructions.md`](.apm/skills/managing-court-binders/references/pdf_instructions.md):** Technical analysis of all 13 official Supreme Court PDF instructions.
-   * **`references/pdfs/`:** Archive of 18 official court PDF instruction guides and sample application records.
+2. **Statutory Standards & Official Live Publications:**
+   * **[`references/cso_application_record_guide_april2026.md`](.apm/skills/managing-court-binders/references/cso_application_record_guide_april2026.md):** Official Court Services Online (CSO) April 2026 guidelines ([Live Official PDF](https://justice.gov.bc.ca/pdfs/cso/InstructionsForUsersForApplicationRecords.pdf)).
+   * **[`references/court_practice_directions.md`](.apm/skills/managing-court-binders/references/court_practice_directions.md):** Text and legal analysis of Practice Direction 72 ([Live PDF](https://www.bccourts.ca/supreme_court/practice_and_procedure/practice_directions/civil/PD-72_Electronic_Application_Records.pdf)), Practice Direction 73 ([Live PDF](https://www.bccourts.ca/supreme_court/practice_and_procedure/practice_directions/civil/PD-73_Virtual_Chambers.pdf)), [Associate Judges Chambers Pilot Project Portal](https://www.bccourts.ca/supreme_court/practice_and_procedure/associate_judges_chambers_pilot_project.aspx), and [2026 Virtual Chambers Sitting Schedule PDF](https://www.bccourts.ca/supreme_court/scheduling/ASSOCIATE_JUDGES_VIRTUAL_CHAMBERS_SITTING_SCHEDULE_2026.pdf).
+   * **[`references/paralegal_video_workflow.md`](.apm/skills/managing-court-binders/references/paralegal_video_workflow.md):** Step-by-step transcript, timestamps, and legal procedural analysis of the Senior Vancouver Paralegal manual workflow ([Vimeo Video 836310097](https://vimeo.com/836310097)).
+   * **[`references/pdf_instructions.md`](.apm/skills/managing-court-binders/references/pdf_instructions.md):** Technical analysis of all 13 official Supreme Court PDF instructions ([BC Courts Portal](https://www.bccourts.ca/supreme_court/practice_and_procedure/pdf_instructions.aspx)).
+   * **`references/pdfs/`:** Archive of 18 official court PDF instruction guides, schedules, and sample application records.
 
 ---
 
