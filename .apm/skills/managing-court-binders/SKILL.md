@@ -25,34 +25,36 @@ Automates compilation, continuous foliation, hyperlinked index generation, bookm
 
 | Mode | Purpose | Script Command |
 | :--- | :--- | :--- |
+| `assemble` | **Primary 1**: Compiles two-pass folios, index table, bookmarks, and links | `python3 scripts/managing_court_binders.py --mode assemble` |
+| `validate` | **Primary 2**: Audits PDF against 20 court quality gates (CSO 50 MB, outlines) | `python3 scripts/managing_court_binders.py --mode validate` |
 | `interactive` | Guided prompt wizard asking user for operation and paths | `python3 scripts/managing_court_binders.py --interactive` |
+| `all` | Closed-loop demo (generate sample $\to$ assemble $\to$ audit) | `python3 scripts/managing_court_binders.py --mode all` |
 | `generate` | Creates synthetic multi-page chambers filings and `manifest.json` | `python3 scripts/managing_court_binders.py --mode generate` |
-| `assemble` | Compiles two-pass folios, index table, bookmarks, and links | `python3 scripts/managing_court_binders.py --mode assemble` |
-| `validate` | Audits PDF against 20 court quality gates (CSO 50 MB, outlines) | `python3 scripts/managing_court_binders.py --mode validate` |
-| `all` | Runs closed-loop lifecycle (generate $\to$ assemble $\to$ audit) | `python3 scripts/managing_court_binders.py --mode all` |
 
 ## Quick start
 
 Run the unified lifecycle driver from repository root:
 
 ```bash
-# Interactive wizard (prompts for action, matter type, and paths)
+# Case 1 (Most Common): Assemble court binder from document folder
+python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py \
+  --mode assemble --inputs inputs/01-commercial-discovery --output output/01-commercial-discovery/Application_Record.pdf
+
+# Case 2 (Most Common): Validate / audit an assembled binder PDF
+python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py \
+  --mode validate --output output/01-commercial-discovery/Application_Record.pdf
+
+# Interactive wizard (prompts for action and paths)
 python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py --interactive
-
-# Full end-to-end run (generate, compile, audit)
-python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py --mode all
-
-# Run individual modes directly
-python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py --mode assemble --inputs inputs/01-commercial-discovery --output output/01-commercial-discovery/Application_Record.pdf
-python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py --mode validate --output output/01-commercial-discovery/Application_Record.pdf
 ```
 
 ## Workflow
 
-When invoked without explicit flags, guide the operator through a 3-step interactive interview:
-1. **Select Operation**: Ask whether to run full process, assemble existing documents, validate a binder, or generate test filings.
-2. **Resolve Paths**: Confirm the input filings directory (e.g. `inputs/01-commercial-discovery`) and output PDF path.
-3. **Execute & Report**: Run the corresponding mode and display the 20-gate compliance scorecard.
+The two primary operational use cases are:
+1. **Case 1: Assemble Court Binder** (`--mode assemble`): Ingests source documents from `--inputs`, calculates dynamic folios starting at Tab 1 = Page 1, generates 4-column Index with invisible links (`/Border [0 0 0]`), and stamps $15\text{ pt}$ bold top-center folios.
+2. **Case 2: Validate Binder Submission** (`--mode validate`): Audits an assembled PDF against the 20 court quality gates (CSO 50 MB, outlines, margins, searchability) and outputs the scorecard.
+
+When invoked without explicit flags, prompt the operator to choose between **Case 1 (Assemble)**, **Case 2 (Validate)**, or **Case 3 (Demo / Test)**.
 
 ## Verification
 

@@ -78,20 +78,20 @@ Every assembled binder is audited against 20 deterministic rules:
 # Install dependencies
 pip install -r requirements.txt
 
-# Option A: Run the complete closed-loop lifecycle in one command
-python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py --mode all
-
-# Option B: Run individual steps as needed
-# 1. Assemble an electronic court binder from input filings
+# Case 1 (Most Common): Assemble an electronic court binder from input filings
 python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py \
   --mode assemble \
   --inputs inputs/01-commercial-discovery \
   --output output/01-commercial-discovery/Application_Record.pdf
 
-# 2. Audit against the 20 BC Court compliance gates
+# Case 2 (Most Common): Audit / validate an assembled binder PDF against the 20 quality gates
 python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py \
   --mode validate \
   --output output/01-commercial-discovery/Application_Record.pdf
+
+# Case 3: Run the interactive wizard or full closed-loop demo
+python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py --interactive
+python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py --mode all
 ```
 
 ### 2. Rust Pipeline (Native `pdfcraft-sdk` Reference Engine)

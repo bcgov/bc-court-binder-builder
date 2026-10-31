@@ -32,28 +32,28 @@ def interactive_menu():
     print("    BRITISH COLUMBIA COURT APPLICATION RECORD MANAGER (PD-72 & CSO GUIDE)       ")
     print("================================================================================\n")
     print("Select an operation:")
-    print("  1) Run Full Closed-Loop Pipeline (Generate -> Assemble -> Audit) [Recommended]")
-    print("  2) Assemble Binder from existing documents folder")
-    print("  3) Validate / Audit an existing PDF binder against 20 quality gates")
+    print("  1) Assemble Court Binder (from documents folder) [Primary]")
+    print("  2) Validate Court Binder Submission (audit against 20 quality gates) [Primary]")
+    print("  3) Run Full Closed-Loop Demo (Generate sample -> Assemble -> Audit)")
     print("  4) Generate synthetic test filings (discovery, amendment, or family)")
     print("  5) Exit")
 
     choice = input("\nEnter choice [1-5, default: 1]: ").strip() or "1"
 
     if choice == "1":
+        inputs_dir = input("Enter path to source documents folder [default: inputs/01-commercial-discovery]: ").strip() or "inputs/01-commercial-discovery"
+        output_pdf = input("Enter destination PDF path [default: output/01-commercial-discovery/Application_Record.pdf]: ").strip() or "output/01-commercial-discovery/Application_Record.pdf"
+        return "assemble", "discovery", inputs_dir, output_pdf, False
+
+    elif choice == "2":
+        pdf_path = input("Enter path to PDF binder to validate [default: output/01-commercial-discovery/Application_Record.pdf]: ").strip() or "output/01-commercial-discovery/Application_Record.pdf"
+        return "validate", "discovery", "", pdf_path, False
+
+    elif choice == "3":
         matter = input("Select matter type [discovery/amendment/family, default: discovery]: ").strip() or "discovery"
         inputs_dir = input(f"Input documents folder [default: inputs/01-commercial-discovery]: ").strip() or "inputs/01-commercial-discovery"
         output_pdf = input(f"Output PDF path [default: output/01-commercial-discovery/Application_Record.pdf]: ").strip() or "output/01-commercial-discovery/Application_Record.pdf"
         return "all", matter, inputs_dir, output_pdf, False
-
-    elif choice == "2":
-        inputs_dir = input("Enter path to source documents folder: ").strip() or "inputs/01-commercial-discovery"
-        output_pdf = input("Enter destination PDF path: ").strip() or "output/01-commercial-discovery/Application_Record.pdf"
-        return "assemble", "discovery", inputs_dir, output_pdf, False
-
-    elif choice == "3":
-        pdf_path = input("Enter path to PDF binder to validate: ").strip() or "output/01-commercial-discovery/Application_Record.pdf"
-        return "validate", "discovery", "", pdf_path, False
 
     elif choice == "4":
         matter = input("Select matter type [discovery/amendment/family, default: discovery]: ").strip() or "discovery"

@@ -12,26 +12,20 @@ From repository root:
 # 1. Install dependencies
 pip install -r requirements.txt
 
-# 2. Run closed-loop generation, compilation, and compliance audit:
-python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py --mode all
-
-# 3. Or run discrete operational modes:
-# Generate input filings
-python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py \
-  --mode generate \
-  --inputs inputs/04-creditor-execution \
-  --matter-type discovery
-
-# Assemble into an electronic court binder
+# Case 1 (Most Common): Assemble into an electronic court binder
 python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py \
   --mode assemble \
   --inputs inputs/04-creditor-execution \
   --output output/04-creditor-execution/Application_Record_Creditor_Execution.pdf
 
-# Pre-flight audit against the 20 BC Court quality gates
+# Case 2 (Most Common): Pre-flight audit against the 20 BC Court quality gates
 python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py \
   --mode validate \
   --output output/04-creditor-execution/Application_Record_Creditor_Execution.pdf
+
+# Case 3: Interactive guided wizard or full closed-loop demo
+python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py --interactive
+python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py --mode all
 ```
 
 ---
