@@ -34,16 +34,19 @@ source .venv/bin/activate
 # Upgrade pip
 pip install --upgrade pip
 
-# Install requirements
+# Install requirements (pypdf, pdfplumber)
 pip install -r requirements.txt
 ```
 
-#### Installing the Native PdfCraft SDK Wheel:
-To install the pre-compiled native PyO3 engine wheel for macOS (Apple Silicon):
-```bash
-pip install "https://github.com/richfrem/pdfcraft/releases/download/v0.16.1/pdfcraft-0.5.0-cp313-cp313-macosx_11_0_arm64.whl"
-```
-*(If building on an Intel Mac or without pre-compiled wheels, the pipeline automatically falls back to pure-Python vector serialization).*
+> [!NOTE]
+> `pip install -r requirements.txt` is **all that is required** to run all 3 skills, assemble binders, stamp folios, inject hyperlinks, and validate against the 20 court quality gates.
+> 
+> **Optional: Native PdfCraft SDK Acceleration (PyO3 Engine):**
+> If you have a local checkout of [`pdfcraft`](https://github.com/richfrem/pdfcraft) in the parent directory (`../pdfcraft`), you can optionally install the native Rust PyO3 acceleration module:
+> ```bash
+> pip install ../pdfcraft/sdks/python
+> ```
+> *(Pre-built release `.whl` files will also be available on GitHub Releases once tagged. If no native wheel is installed, the pipeline operates 100% out of the box using built-in vector serialization).*
 
 ### Step 4: Verify Installation & Run Skills Right Away
 
@@ -97,10 +100,8 @@ python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-#### Installing the Native PdfCraft SDK Wheel for Windows:
-```powershell
-pip install "https://github.com/richfrem/pdfcraft/releases/download/v0.16.1/pdfcraft-0.5.0-cp313-cp313-win_amd64.whl"
-```
+> [!NOTE]
+> `pip install -r requirements.txt` provides everything required to run all 3 skills out of the box. Installing the native PyO3 acceleration module (`pdfcraft-pyo3`) is optional. If developing alongside a local `pdfcraft` clone, run `pip install ..\pdfcraft\sdks\python`.
 
 ### Step 4: Verify Installation
 ```powershell
