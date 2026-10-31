@@ -225,4 +225,7 @@ SUCCESS: Compliant Electronic Application Record generated!
 ---
 
 ## 📄 License
-Dual-licensed under MIT or Apache-2.0.
+
+This project is made openly available under a hybrid license model (see [`LICENSE.md`](LICENSE.md)):
+* **Software Code & Implementation Scripts**: [MIT License](LICENSE.md#part-1-mit-license-software--scripts)
+* **Documentation, Legal Specifications & Reference Manuals**: [Creative Commons Attribution 4.0 International (CC BY 4.0)](LICENSE.md#part-2-creative-commons-attribution-40-international-public-license-documentation--references)
