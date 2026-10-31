@@ -208,12 +208,16 @@ This repository publishes its legal-ops capabilities as an [APM](https://github.
 
 #### Target AI Agent Environments & Deployment Paths:
 
-| Target Flag | Target Agent Platform | Deployed Skill Path |
-| :--- | :--- | :--- |
-| `claude` | **Claude Code CLI** | `~/.claude/skills/managing-court-binders/` |
-| `copilot` | **GitHub Copilot CLI** | `~/.agents/skills/managing-court-binders/` |
-| `codex` | **OpenAI Codex CLI** | `~/.agents/skills/managing-court-binders/` |
-| `agy` / `gemini` | **Antigravity / Gemini CLI** | `~/.gemini/antigravity-cli/skills/managing-court-binders/` |
+| Target Flag | Target Agent Platform | Invocation Syntax | Deployed Skill Path |
+| :--- | :--- | :--- | :--- |
+| `claude` | **Claude Code CLI & Desktop** | `/managing-court-binders` | `~/.claude/skills/managing-court-binders/` |
+| `codex` | **OpenAI Codex CLI & Antigravity IDE** | `$managing-court-binders` | `~/.agents/skills/managing-court-binders/` |
+| `copilot` | **GitHub Copilot CLI & Desktop App** | `copilot` / `copilot app` | `~/.agents/skills/managing-court-binders/` |
+| `agy` / `gemini` | **Antigravity / Gemini CLI** | Natural Language / Skill | `~/.gemini/antigravity-cli/skills/managing-court-binders/` |
+
+> [!NOTE]
+> **Microsoft Copilot vs. GitHub Copilot:**  
+> The developer-facing **GitHub Copilot** (CLI `copilot` and `GitHub Copilot.app`) natively discovers and executes APM skills. In contrast, the consumer/enterprise **Microsoft Copilot** app (`com.microsoft.m365copilot` for Bing/Office 365) operates in a restricted webview without local workspace access or skill execution capabilities.
 
 ---
 

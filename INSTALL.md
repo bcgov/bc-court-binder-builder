@@ -214,6 +214,100 @@ To compile and certify actual court submissions:
 
 ---
 
+### 7. 🧠 OpenAI Codex Walkthrough (Antigravity IDE & Codex CLI)
+
+OpenAI Codex (`gpt-6-luna medium` / `codex`) operates natively with the `managing-court-binders` skill when loaded in Antigravity IDE or the Codex CLI.
+
+#### Step 1: Deploy Skill for Codex
+* **Global workstation deploy:**
+  ```bash
+  apm install ./.apm/skills/managing-court-binders --global --target codex
+  ```
+* **Project-local deploy** *(Recommended inside Codex sandboxes)*:
+  ```bash
+  apm install ./.apm/skills/managing-court-binders --target codex
+  ```
+  *(Writes to `.agents/skills/managing-court-binders/` which Codex automatically discovers).*
+
+#### Step 2: Invoke via Codex Skill Prefix (`$`)
+In Codex or Antigravity IDE's terminal prompt, skills are invoked using the `$` prefix:
+
+> **Prompt:**  
+> `$managing-court-binders Create a brand new set of 5 court filings from scratch in ./inputs/06-chambers-motion for an interim chambers application: 1. Form 32 Notice of Application 2. Form 33 Response 3. Form 35 Affidavit of Alex Morgan with Exhibit A and B 4. Form 35 Draft Order 5. RJR-MacDonald authority citation and principle summary. Then assemble into ./output/06-chambers-motion/Application_Record.pdf and validate against the 20 BC court rules.`
+
+#### Step 3: Dynamic Document Synthesis & Manifest Bookmarks
+When prompted to generate novel filings:
+1. Codex authors synthetic text filing PDFs directly in `./inputs/<case-name>/`.
+2. Codex compiles a companion `manifest.json`. To achieve a **100% 20/20 PASS (0 Hard Stops, 0 Soft Warnings)**, nested exhibits are declared under their parent affidavit with `rel_page` offsets:
+   ```json
+   {
+     "tab": 3,
+     "title": "Affidavit #1 of Alex Morgan",
+     "filename": "03_Affidavit_Alex_Morgan.pdf",
+     "exhibits": [
+       { "name": "Exhibit A - Financial Ledger", "rel_page": 2 },
+       { "name": "Exhibit B - Email Correspondence", "rel_page": 3 }
+     ]
+   }
+   ```
+3. Codex runs the assembler and validator, rendering the complete statutory audit table certifying full compliance.
+
+> [!NOTE]
+> **Subprocess Sandbox Invariant:**  
+> Codex CLI isolates subprocess file writes strictly to the active workspace. If performing global APM operations (`apm install --global`), execute them on the host terminal rather than inside a sandboxed Codex subshell.
+
+---
+
+### 8. 🐙 GitHub Copilot Integration Guide (Desktop App, CLI, & VS Code)
+
+GitHub Copilot supports the Agent Skills specification (`SKILL.md`) natively through multiple interfaces.
+
+#### Crucial Distinction: Microsoft Copilot vs. GitHub Copilot
+Ensure you are using the developer-oriented **GitHub Copilot** tooling:
+* ❌ **Microsoft Copilot macOS App** (`/Applications/Copilot.app`, bundle `com.microsoft.m365copilot`): Consumer/Enterprise M365 AI chat (Bing/Office). It operates in an isolated web sandbox without access to local workspace files, terminal processes, or APM agent skills.
+* ✅ **GitHub Copilot Desktop App** (`/Applications/GitHub Copilot.app`, bundle `com.github.githubapp`): Dedicated GitHub developer desktop assistant.
+* ✅ **GitHub Copilot CLI** (`copilot` / `gh copilot`): Command-line coding agent with native Agent Skills support.
+* ✅ **VS Code / Antigravity IDE Extension**: GitHub Copilot Chat extension configured with `.github/copilot-instructions.md`.
+
+#### Step 1: Verify Skill Discovery in Copilot
+GitHub Copilot automatically searches `.agents/skills/`, `.claude/skills/`, and `~/.agents/skills/`. Verify that `managing-court-binders` is detected:
+```bash
+cd ~/Projects/bc-court-binder
+copilot skill list
+```
+The output confirms discovery under **Project skills**:
+```text
+Project skills:
+  managing-court-binders - Compiles, stamps, bookmarks, and audits BC Supreme Court and Court of Appeal electronic application records and books of authorities. Use when generating synthetic filings, assembling court binders, or auditing against PD-72 and CSO compliance gates.
+```
+
+#### Step 2: Launch GitHub Copilot Desktop App Scoped to Workspace
+To open the standalone GitHub Copilot desktop application pre-scoped to your court binder workspace:
+```bash
+cd ~/Projects/bc-court-binder
+copilot app
+```
+The desktop app opens with the repository, files, and skill instructions immediately available in context.
+
+#### Step 3: Interactive Copilot CLI Execution
+To run an interactive session in your terminal:
+```bash
+cd ~/Projects/bc-court-binder
+copilot
+```
+Simply prompt Copilot conversationally:
+> *"Assemble a compliant BC Supreme Court application record from ./inputs/01-commercial-discovery and run the pre-flight validation audit."*
+
+Copilot invokes the pipeline scripts, calculates two-pass folios, builds the Form 22 Title Page and Index, and outputs the 20-gate scorecard.
+
+#### Step 4: Non-Interactive Headless Scripting (CI/CD / Automation)
+For unattended batch runs or automated pre-flight gates:
+```bash
+copilot -C ~/Projects/bc-court-binder -p "Run the complete court binder test loop" --allow-all-tools
+```
+
+---
+
 ## 🐍 Option 2: Python Environment & Direct Execution (Zero Compiler Setup)
 
 If you prefer to run the scripts directly without APM, the entire pipeline operates out of the box using pure Python with zero C/C++ or Rust compiler requirements.
