@@ -42,11 +42,11 @@ pip install -r requirements.txt
 > `pip install -r requirements.txt` is **all that is required** to run all 3 skills, assemble binders, stamp folios, inject hyperlinks, and validate against the 20 court quality gates.
 > 
 > **Optional: Native PdfCraft SDK Acceleration (PyO3 Engine):**
-> If you have a local checkout of [`pdfcraft`](https://github.com/richfrem/pdfcraft) in the parent directory (`../pdfcraft`), you can optionally install the native Rust PyO3 acceleration module:
+> Install the pre-built native wheel directly from GitHub Releases:
 > ```bash
-> pip install ../pdfcraft/sdks/python
+> pip install "https://github.com/richfrem/pdfcraft/releases/download/v0.16.1/pdfcraft-0.5.0-cp313-cp313-macosx_11_0_arm64.whl"
 > ```
-> *(Pre-built release `.whl` files will also be available on GitHub Releases once tagged. If no native wheel is installed, the pipeline operates 100% out of the box using built-in vector serialization).*
+> *(Or from local source if developing side-by-side: `pip install ../pdfcraft/sdks/python`). If no native wheel is installed, the pipeline operates 100% out of the box using built-in vector serialization.*
 
 ### Step 4: Verify Installation & Run Skills Right Away
 
