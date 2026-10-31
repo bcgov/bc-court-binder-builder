@@ -26,6 +26,71 @@ except ImportError as e:
     # Fallback if imported from outside
     pass
 
+def check_or_setup_environment(auto_install: bool = False) -> bool:
+    """Verifies that all runtime requirements are satisfied, with auto-installation option."""
+    print("================================================================================")
+    print("       CHECKING RUNTIME ENVIRONMENT & DEPENDENCIES FOR BC-COURT-BINDER          ")
+    print("================================================================================\n")
+    
+    # 1. Check Python
+    py_ver = sys.version_info
+    print(f"✔ Python: {py_ver.major}.{py_ver.minor}.{py_ver.micro} (Requires 3.9+)")
+    
+    missing_required = []
+    
+    # 2. Check pypdf
+    try:
+        import pypdf
+        print(f"✔ pypdf: {getattr(pypdf, '__version__', 'installed')} (Required: PDF container, folios, links)")
+    except ImportError:
+        print("✖ pypdf: NOT INSTALLED (Required for PDF assembly and folio math)")
+        missing_required.append("pypdf>=5.0.0")
+
+    # 3. Check pdfplumber
+    try:
+        import pdfplumber
+        print(f"✔ pdfplumber: {getattr(pdfplumber, '__version__', 'installed')} (Required: spatial & entropy audit)")
+    except ImportError:
+        print("✖ pdfplumber: NOT INSTALLED (Required for 20-gate compliance audit)")
+        missing_required.append("pdfplumber>=0.11.0")
+
+    # 4. Check native pdfcraft (Optional)
+    try:
+        import pdfcraft
+        print(f"✔ pdfcraft (native PyO3): {getattr(pdfcraft, '__version__', '0.5.0')} (Optional: high-speed engine acceleration)")
+    except ImportError:
+        print("ℹ pdfcraft (native PyO3): Not installed (Optional; pure-Python vector fallback is active)")
+
+    # 5. Check Rust / Cargo (Optional)
+    import shutil
+    cargo_path = shutil.which("cargo")
+    if cargo_path:
+        print(f"✔ Rust / Cargo: Installed at {cargo_path} (Optional: src/main.rs reference runner)")
+    else:
+        print("ℹ Rust / Cargo: Not found in PATH (Optional: only needed for src/main.rs reference runner)")
+
+    if missing_required:
+        print(f"\nMissing required packages: {', '.join(missing_required)}")
+        should_install = auto_install
+        if not auto_install and sys.stdin.isatty():
+            ans = input("\nWould you like to install missing dependencies now? [Y/n]: ").strip().lower()
+            should_install = ans in ("y", "yes", "")
+        if should_install:
+            import subprocess
+            print("\nInstalling dependencies via pip...")
+            cmd = [sys.executable, "-m", "pip", "install"] + missing_required
+            res = subprocess.run(cmd)
+            if res.returncode == 0:
+                print("\n✔ All required dependencies successfully installed!")
+                return True
+            else:
+                print("\n✖ Failed to install dependencies. Please run: pip install -r requirements.txt")
+                return False
+        return False
+
+    print("\nVERDICT: Environment is 100% ready for assembling and validating court binders!")
+    return True
+
 def interactive_menu():
     """Interactive wizard for terminal users when run without arguments."""
     print("================================================================================")
@@ -36,9 +101,10 @@ def interactive_menu():
     print("  2) Validate Court Binder Submission (audit against 20 quality gates) [Primary]")
     print("  3) Run Full Closed-Loop Demo (Generate sample -> Assemble -> Audit)")
     print("  4) Generate synthetic test filings (discovery, amendment, or family)")
-    print("  5) Exit")
+    print("  5) Check & Setup Environment (first-time dependencies & wheel verification)")
+    print("  6) Exit")
 
-    choice = input("\nEnter choice [1-5, default: 1]: ").strip() or "1"
+    choice = input("\nEnter choice [1-6, default: 1]: ").strip() or "1"
 
     if choice == "1":
         inputs_dir = input("Enter path to source documents folder [default: inputs/01-commercial-discovery]: ").strip() or "inputs/01-commercial-discovery"
@@ -60,6 +126,9 @@ def interactive_menu():
         inputs_dir = input(f"Destination folder for filings [default: inputs/01-commercial-discovery]: ").strip() or "inputs/01-commercial-discovery"
         return "generate", matter, inputs_dir, "", False
 
+    elif choice == "5":
+        return "setup", "discovery", "", "", False
+
     else:
         print("Exiting.")
         sys.exit(0)
@@ -70,9 +139,9 @@ def main():
     )
     parser.add_argument(
         "--mode",
-        choices=["generate", "assemble", "validate", "all", "interactive"],
+        choices=["generate", "assemble", "validate", "all", "interactive", "setup"],
         default=None,
-        help="Operational mode: generate, assemble, validate, all, or interactive"
+        help="Operational mode: generate, assemble, validate, all, setup, or interactive"
     )
     parser.add_argument(
         "--interactive", "-i",
@@ -114,6 +183,11 @@ def main():
         mode, matter, inputs_dir, output_pdf, emit_json = interactive_menu()
     elif mode is None:
         mode = "all"
+
+    # Mode 0: Setup
+    if mode == "setup":
+        success = check_or_setup_environment(auto_install=True)
+        sys.exit(0 if success else 1)
 
     # Mode 1: Generate
     if mode in ("generate", "all"):

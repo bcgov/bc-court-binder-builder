@@ -2,7 +2,7 @@
 name: managing-court-binders
 description: >-
   Compiles, stamps, bookmarks, and audits BC Supreme Court and Court of Appeal electronic application records and books of authorities. Use when generating synthetic filings, assembling court binders, or auditing against PD-72 and CSO compliance gates.
-argument-hint: "[generate|assemble|validate|all] [--inputs <dir>] [--output <file>]"
+argument-hint: "[assemble|validate|setup|all|generate] [--inputs <dir>] [--output <file>]"
 allowed-tools: Bash, Read, Write, Glob, Grep
 ---
 
@@ -28,6 +28,7 @@ Automates compilation, continuous foliation, hyperlinked index generation, bookm
 | `assemble` | **Primary 1**: Compiles two-pass folios, index table, bookmarks, and links | `python3 scripts/managing_court_binders.py --mode assemble` |
 | `validate` | **Primary 2**: Audits PDF against 20 court quality gates (CSO 50 MB, outlines) | `python3 scripts/managing_court_binders.py --mode validate` |
 | `interactive` | Guided prompt wizard asking user for operation and paths | `python3 scripts/managing_court_binders.py --interactive` |
+| `setup` | Environment readiness and automated dependency install | `python3 scripts/managing_court_binders.py --mode setup` |
 | `all` | Closed-loop demo (generate sample $\to$ assemble $\to$ audit) | `python3 scripts/managing_court_binders.py --mode all` |
 | `generate` | Creates synthetic multi-page chambers filings and `manifest.json` | `python3 scripts/managing_court_binders.py --mode generate` |
 
@@ -67,5 +68,5 @@ Routing tests live in [evals/evals.json](evals/evals.json).
 
 ## References
 
-- Sub-skill procedures: [generating-court-documents](references/generating-court-documents.md) • [assembling-court-binders](references/assembling-court-binders.md) • [validating-court-binders](references/validating-court-binders.md) • [chambers-prompts](references/prompts/generate_bc_chambers_filings_prompt.md)
+- Sub-skill procedures: [generating-court-documents](references/generating-court-documents.md) • [assembling-court-binders](references/assembling-court-binders.md) • [validating-court-binders](references/validating-court-binders.md) • [environment-setup](references/environment-setup.md) • [chambers-prompts](references/prompts/generate_bc_chambers_filings_prompt.md)
 - Legal standards: [cso-guide-april-2026](references/cso_application_record_guide_april2026.md) • [court-practice-directions](references/court_practice_directions.md) • [pdf-technical-instructions](references/pdf_instructions.md) • [paralegal-workflow](references/paralegal_video_workflow.md)
