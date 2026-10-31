@@ -1,0 +1,63 @@
+{
+  "court": "Supreme Court of British Columbia",
+  "registry": "Vancouver",
+  "file_number": "S-240123",
+  "matter_type": "Document Discovery (Civil Rule 7-1)",
+  "plaintiff": "Acme Enterprises Ltd.",
+  "defendant": "Pacific Developments Corp. and John Doe",
+  "application_date": "November 15, 2026",
+  "time_estimate": "25 minutes",
+  "documents": [
+    {
+      "item_num": 1,
+      "filename": "01_Notice_of_Application.pdf",
+      "title": "Notice of Application filed October 10, 2026",
+      "short_title": "01. Notice of Application",
+      "page_count": 3,
+      "exhibits": []
+    },
+    {
+      "item_num": 2,
+      "filename": "02_Application_Response.pdf",
+      "title": "Application Response of Respondent filed October 20, 2026",
+      "short_title": "02. Application Response",
+      "page_count": 2,
+      "exhibits": []
+    },
+    {
+      "item_num": 3,
+      "filename": "03_Affidavit_1_Jane_Smith.pdf",
+      "title": "Affidavit #1 of Jane Smith sworn October 25, 2026",
+      "short_title": "03. Affidavit #1 of Jane Smith",
+      "page_count": 5,
+      "exhibits": [
+        {
+          "letter": "Exhibit A",
+          "description": "Joint Venture Development Agreement dated Jan 15, 2025",
+          "rel_page": 3
+        },
+        {
+          "letter": "Exhibit B",
+          "description": "Deficiency Demand Letter dated September 14, 2026",
+          "rel_page": 5
+        }
+      ]
+    },
+    {
+      "item_num": 4,
+      "filename": "04_Draft_Order.pdf",
+      "title": "Draft Form of Order",
+      "short_title": "04. Draft Order",
+      "page_count": 1,
+      "exhibits": []
+    },
+    {
+      "item_num": 5,
+      "filename": "05_Authority_Kalin_v_Campbell.pdf",
+      "title": "Tab 1 - Kalin v. Campbell, 2014 BCCA 441",
+      "short_title": "Tab 1 - Kalin v. Campbell",
+      "page_count": 3,
+      "exhibits": []
+    }
+  ]
+}
