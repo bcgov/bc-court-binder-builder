@@ -138,6 +138,21 @@ All legal domain rules, procedural instructions, and former skills have been con
 
 ---
 
+### 3.3 Desktop App (`app/`)
+
+A local desktop app (pywebview + HTML/CSS/JS) exposes three functions: create synthetic filings and run a full cycle, build a binder from a user-chosen folder, and validate a user-chosen PDF.
+
+* **Engine is the skill.** `app/binder_app/engine.py` imports the scripts in `.apm/skills/managing-court-binders/scripts/`. Never copy or reimplement generate, assemble or validate logic in `app/`; change the skill instead.
+* **Do not put app code under `.apm/`.** APM manages that folder and may overwrite it.
+* **Design system.** UI uses BC Sans and tokens from the `bc-gov-design-system` skill only (no raw hex, no other fonts, sentence case, visible focus ring, acknowledgment footer). Dynamic text is set with `textContent`, never `innerHTML`.
+* **Coding conventions.** Python files carry the standard header, full type hints, dual-layer docs, and functions under 50 lines.
+* **Manifest.** The adapter writes `manifest.json` after generation (the skill's `--mode all` does not, which yields 19 / 20 on RULE-18). Keep that behaviour while the skill is unfixed.
+* **Verify before claiming done:** `cd app && python -m unittest discover -s tests -t .` must pass with all 20 gates green.
+* **Run it:** `cd app && python -m binder_app.main` (see [`INSTALL.md`](INSTALL.md#option-4-desktop-app)).
+* `src/main.rs` is a separate Rust prototype, not part of the app.
+
+---
+
 ## 4. Quality Invariants: The 20 Mandatory Court Gates
 
 A change is **not done** and must **never be committed** if any court quality gate fails:
