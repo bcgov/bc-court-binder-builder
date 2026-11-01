@@ -16,6 +16,14 @@
     "should_trigger": true
   },
   {
+    "query": "Build a court binder from my folder of PDFs but I don't have a manifest",
+    "should_trigger": true
+  },
+  {
+    "query": "How do I register for Court Services Online and add a credit card so I can e-file my application record?",
+    "should_trigger": true
+  },
+  {
     "query": "What is the capital of France?",
     "should_trigger": false
   },

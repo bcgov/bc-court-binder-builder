@@ -1,0 +1,70 @@
+{
+  "verified_on": "2026-11-01",
+  "note": "Official Court Services Online (CSO) addresses used by the skill and the desktop app. The app only ever opens pages listed here. Re-verify before relying on them; CSO may change addresses.",
+  "pages": {
+    "home": {
+      "label": "CSO home page",
+      "url": "https://justice.gov.bc.ca/cso/index.do",
+      "verified": "Public page, read 2026-11-01"
+    },
+    "register": {
+      "label": "Register for a CSO account",
+      "url": "https://justice.gov.bc.ca/cso/register.do",
+      "verified": "Public page, read 2026-11-01"
+    },
+    "logon": {
+      "label": "Log on (BCeID, IDIR or BC Services Card)",
+      "url": "https://justice.gov.bc.ca/cso/logon.do",
+      "verified": "Link on the public home page, read 2026-11-01"
+    },
+    "logon_bc_service_card": {
+      "label": "Log on with BC Registry Service (BC Services Card)",
+      "url": "https://justice.gov.bc.ca/cso/bcRegistryLogon.do?kc_idp_hint=bcsc",
+      "verified": "Link on the public home page, read 2026-11-01"
+    },
+    "logon_bceid": {
+      "label": "Log on with BC Registry Service (BCeID)",
+      "url": "https://justice.gov.bc.ca/cso/bcRegistryLogon.do?kc_idp_hint=bceid",
+      "verified": "Link on the public home page, read 2026-11-01"
+    },
+    "efile_home": {
+      "label": "E-file home (requires log on)",
+      "url": "https://justice.gov.bc.ca/cso/filing/submission/efileHome.do",
+      "verified": "Address seen in a logged-on screenshot supplied by the project owner, 2026-11-01. Not opened by the skill authors while logged on."
+    },
+    "fees": {
+      "label": "CSO schedule of fees",
+      "url": "https://justice.gov.bc.ca/cso/feeSchedule/index.do",
+      "verified": "Link on the public home page, read 2026-11-01"
+    },
+    "faq": {
+      "label": "CSO frequently asked questions",
+      "url": "https://justice.gov.bc.ca/cso/help/faq.do",
+      "verified": "Public page, read 2026-11-01"
+    },
+    "registration_guide": {
+      "label": "CSO registration guide (PDF)",
+      "url": "https://justice.gov.bc.ca/cso/help/registration/CSO_registration_guide.pdf",
+      "verified": "Official CSO registration guide (PDF, undated), read in full 2026-11-01"
+    },
+    "application_record_guide": {
+      "label": "Guide to submitting application records (PDF)",
+      "url": "https://justice.gov.bc.ca/pdfs/cso/InstructionsForUsersForApplicationRecords.pdf",
+      "verified": "Official source named in the repository's reference copy; live PDF not re-read"
+    },
+    "register_credit_card": {
+      "label": "Register a credit card (requires log on)",
+      "url": "https://justice.gov.bc.ca/cso/clients/creditCardRegOptions.do",
+      "verified": "Address and page seen in a logged-on screenshot supplied by the project owner, 2026-11-01. Requires log on; not opened by the skill authors."
+    }
+  },
+  "limits": {
+    "direct_upload_mb": 20,
+    "max_mb": 50
+  },
+  "not_yet_verified": [
+    "The direct address of the Application Records screen (listed in the E-file menu; not opened)",
+    "Whether a corrected application record is charged the $7.00 transaction fee again (CSO eFile help says so for eFile packages)",
+    "The content of the CSO notice linked from the home page (31 March 2026 news item)"
+  ]
+}

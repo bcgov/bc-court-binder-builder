@@ -31,6 +31,7 @@ import os
 import sys
 import re
 import glob
+from datetime import datetime
 import json
 import textwrap
 import argparse
@@ -51,6 +52,113 @@ FILENAME_REGEX = re.compile(
 
 PLACEHOLDER_REGISTRY = "[Registry - complete before filing]"
 PLACEHOLDER_FILE_NUMBER = "[Court file number - complete before filing]"
+
+
+CASE_FIELDS = (
+    "court", "registry", "file_number", "plaintiff", "defendant",
+    "application_date", "time_estimate", "counsel_applicant", "counsel_respondent",
+)
+REQUIRED_CASE_FIELDS = {
+    "court": "court",
+    "registry": "registry",
+    "file_number": "court file number",
+    "plaintiff": "applicant or plaintiff",
+    "defendant": "respondent or defendant",
+    "application_date": "hearing date",
+    "time_estimate": "time estimate",
+}
+DEFAULT_COURT = "Supreme Court of British Columbia"
+
+
+def read_case_details(folder: Path) -> dict:
+    """Returns the title-page case details for a folder of filings.
+
+    Args:
+        folder: Folder of filings.
+
+    Returns:
+        Every case field (empty text when unknown; the court is prefilled) plus
+        has_manifest, which says whether manifest.json already existed.
+    """
+    details = {field: "" for field in CASE_FIELDS}
+    details["court"] = DEFAULT_COURT
+    manifest_path = folder / "manifest.json"
+    has_manifest = manifest_path.is_file()
+    if has_manifest:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        for field in CASE_FIELDS:
+            details[field] = str(manifest.get(field, details[field]))
+    details["has_manifest"] = has_manifest
+    return details
+
+
+def save_case_details(folder: Path, details: dict) -> Path:
+    """Validates case details and writes them into folder/manifest.json.
+
+    Never invents values: a blank required field is refused. An existing
+    manifest keeps its documents and exhibits; with none, the document list is
+    inferred from the Tab filenames.
+
+    Args:
+        folder: Folder of filings.
+        details: Case fields supplied by the user.
+
+    Returns:
+        The path of the written manifest.json.
+
+    Raises:
+        ValueError: If a required field is blank or the filenames cannot be read.
+    """
+    cleaned = {f: str(details.get(f, "")).strip() for f in CASE_FIELDS}
+    missing = [label for field, label in REQUIRED_CASE_FIELDS.items() if not cleaned[field]]
+    if missing:
+        raise ValueError("Enter the " + ", ".join(missing) + " before building.")
+    manifest_path = folder / "manifest.json"
+    if manifest_path.is_file():
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    else:
+        manifest = infer_manifest_from_files(folder)
+        manifest.pop("inferred", None)
+    for field, value in cleaned.items():
+        if value or field in REQUIRED_CASE_FIELDS:
+            manifest[field] = value
+        else:
+            manifest.pop(field, None)
+    temp = manifest_path.with_suffix(".json.tmp")
+    temp.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+    temp.replace(manifest_path)
+    return manifest_path
+
+
+def suggest_binder_name(folder: Path, application_date: str | None = None) -> str:
+    """Suggests a binder file name: Application_Record_<folder>[_DDMmmYYYY].
+
+    The folder name identifies the matter. The application date, from the
+    argument or manifest.json, is appended as DDMmmYYYY (for example 15Nov2026).
+    The court guides set no rule for this name; it is a project recommendation.
+
+    Args:
+        folder: Folder of filings.
+        application_date: A date typed by the user; overrides the manifest's.
+
+    Returns:
+        A file name without the .pdf extension.
+    """
+    stem = re.sub(r"[^A-Za-z0-9_-]+", "_", folder.name).strip("_") or "Filings"
+    name = f"Application_Record_{stem}"
+    raw = application_date or ""
+    if not raw:
+        try:
+            raw = str(json.loads((folder / "manifest.json").read_text(encoding="utf-8")).get("application_date", ""))
+        except (OSError, ValueError):
+            return name
+    match = re.search(r"([A-Za-z]+)\s+(\d{1,2}),?\s+(\d{4})", raw)
+    if match:
+        try:
+            return f"{name}_{datetime.strptime(' '.join(match.groups()), '%B %d %Y').strftime('%d%b%Y')}"
+        except ValueError:
+            pass
+    return name
 
 
 def clean_display_title(text: str) -> str:
@@ -156,7 +264,15 @@ def load_document_lines(inputs_dir: Path, filename: str) -> list[str]:
         resolve_inside(inputs_dir, filename),
     ]
     prefix = glob.escape(filename.split("_")[0])
-    txt_candidates.extend(p for p in base.glob(f"{prefix}_*.txt") if p.is_relative_to(base))
+    exact_exists = any(c.exists() and c.suffix == ".txt" for c in txt_candidates)
+    prefix_matches = sorted(p for p in base.glob(f"{prefix}_*.txt") if p.is_relative_to(base))
+    if not exact_exists and len(prefix_matches) > 1:
+        names = ", ".join(m.name for m in prefix_matches)
+        raise SourceTextUnavailable(
+            f"Ambiguous source text for {filename}: several files share its prefix ({names}). "
+            "Name the text file exactly like the filing."
+        )
+    txt_candidates.extend(prefix_matches)
 
     for cand in txt_candidates:
         if cand.exists() and cand.suffix == ".txt":

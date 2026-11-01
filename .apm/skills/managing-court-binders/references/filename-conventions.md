@@ -68,6 +68,18 @@ Tab{NN}_{Document_Description}_{DDMmmYYYY}.pdf
 
 ---
 
+## Binder (Output) File Name
+
+The court guides in this repository (PD-72, PD-73, the CSO guide and the PDF instructions) set **no rule for the name of the finished binder**. CSO asks for the file and a sequence number, not a name. The convention below is this project's recommendation, so people can tell binders apart:
+
+```text
+Application_Record_{Matter_or_Folder_Name}_{DDMmmYYYY}.pdf
+```
+
+* The matter or folder name identifies the case (for example `01-commercial-discovery`).
+* The date is the **application date**, in the same `DDMmmYYYY` style as source filings (for example `15Nov2026`). It is omitted when the manifest has no application date. Do not use the build date: it changes on every rebuild.
+* The desktop app suggests this name when you choose a folder, and you can edit it. It never overwrites an existing file; a number is added instead (`... 2.pdf`).
+
 ## Exhibit & Sub-Bookmark Naming
 
 When an affidavit contains separate PDF files for its exhibits, name them using this sub-tab schema:

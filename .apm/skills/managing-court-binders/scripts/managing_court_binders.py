@@ -197,6 +197,20 @@ def main():
         action="store_true",
         help="Emit structured JSON verification receipt"
     )
+    case = parser.add_argument_group(
+        "case details",
+        "Title-page details written to manifest.json when assembling. Never guessed: "
+        "without a manifest.json and without these, the title page carries placeholders.",
+    )
+    case.add_argument("--court", help="Court name (default: Supreme Court of British Columbia)")
+    case.add_argument("--registry", help="Registry, for example Vancouver")
+    case.add_argument("--file-number", dest="file_number", help="Court file number as shown on the court documents")
+    case.add_argument("--plaintiff", help="Applicant or plaintiff")
+    case.add_argument("--defendant", help="Respondent or defendant")
+    case.add_argument("--hearing-date", dest="hearing_date", help="Hearing date, for example 'November 15, 2026'")
+    case.add_argument("--time-estimate", dest="time_estimate", help="Time estimate, for example '25 minutes'")
+    case.add_argument("--counsel-applicant", dest="counsel_applicant", help="Counsel for the applicant (optional)")
+    case.add_argument("--counsel-respondent", dest="counsel_respondent", help="Counsel for the respondent (optional)")
 
     args = parser.parse_args()
 
@@ -237,6 +251,22 @@ def main():
         in_path = Path(inputs_dir)
         out_path = Path(output_pdf)
         out_path.parent.mkdir(parents=True, exist_ok=True)
+        supplied = {
+            "court": args.court, "registry": args.registry, "file_number": args.file_number,
+            "plaintiff": args.plaintiff, "defendant": args.defendant, "application_date": args.hearing_date,
+            "time_estimate": args.time_estimate, "counsel_applicant": args.counsel_applicant,
+            "counsel_respondent": args.counsel_respondent,
+        }
+        supplied = {key: value for key, value in supplied.items() if value}
+        if supplied:
+            details = assembling_court_binders.read_case_details(in_path)
+            details.pop("has_manifest", None)
+            details.update(supplied)
+            print(f"Saved case details to {assembling_court_binders.save_case_details(in_path, details)}")
+        elif not (in_path / "manifest.json").exists():
+            print("WARNING: no manifest.json and no case details given, so the court file number and "
+                  "registry on the title page will be placeholders. Pass --registry, --file-number, "
+                  "--plaintiff, --defendant, --hearing-date and --time-estimate, or create manifest.json.")
         assembling_court_binders.build_binder(in_path, out_path)
 
     # Mode 3: Validate

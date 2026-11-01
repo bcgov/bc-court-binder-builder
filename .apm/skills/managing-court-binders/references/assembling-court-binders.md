@@ -94,6 +94,21 @@ python3 .apm/skills/managing-court-binders/scripts/assembling_court_binders.py \
 
 ---
 
+## Case Details and manifest.json
+
+The title page prints the court, registry, court file number, both parties, hearing date, time estimate and (optionally) counsel for each side. These come from `manifest.json` in the input folder, which the assembler cannot guess from filenames. Without it the title page carries clearly marked placeholders and exhibits are not bookmarked, and the assembler prints a warning.
+
+Provide them with the command-line options (they write or update `manifest.json`, keeping any documents and exhibits already in it):
+
+```bash
+python3 scripts/managing_court_binders.py --mode assemble --inputs inputs/my-matter \
+  --output output/my-matter/Application_Record_my-matter_15Nov2026.pdf \
+  --registry Vancouver --file-number "S-123456" --plaintiff "Roe Holdings Ltd." \
+  --defendant "Doe Corp." --hearing-date "November 15, 2026" --time-estimate "25 minutes"
+```
+
+Agents must ask the user for these values and must never reuse sample values. The desktop app collects the same fields in a "Case details" form and calls the same functions (`read_case_details`, `save_case_details`, `suggest_binder_name` in `assembling_court_binders.py`).
+
 ## Authoritative References
 
 * **CSO Application Records Guide (April 2026)**: [`cso_application_record_guide_april2026.md`](cso_application_record_guide_april2026.md)

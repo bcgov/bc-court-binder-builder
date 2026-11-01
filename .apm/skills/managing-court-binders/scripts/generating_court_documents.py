@@ -25,6 +25,7 @@ USAGE:
 
 import os
 import sys
+import glob
 import json
 import argparse
 from pathlib import Path
@@ -501,8 +502,13 @@ def compile_txt_files_to_pdfs(target_dir: Path) -> dict:
         base_stem = Path(filename).stem
         txt_path = target_dir / f"{base_stem}.txt"
         if not txt_path.exists():
-            prefix = base_stem.split("_")[0]
-            matches = list(target_dir.glob(f"{prefix}_*.txt"))
+            prefix = glob.escape(base_stem.split("_")[0])
+            matches = sorted(target_dir.glob(f"{prefix}_*.txt"))
+            if len(matches) > 1:
+                raise ValueError(
+                    f"Ambiguous source text for {filename}: several files share its prefix "
+                    f"({', '.join(m.name for m in matches)}). Name the text file exactly like the filing."
+                )
             if matches:
                 txt_path = matches[0]
         
