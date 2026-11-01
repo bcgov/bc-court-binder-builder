@@ -146,7 +146,7 @@ A local desktop app (pywebview + HTML/CSS/JS) exposes three functions: create sy
 * **Do not put app code under `.apm/`.** APM manages that folder and may overwrite it.
 * **Design system.** UI uses BC Sans and tokens from the `bc-gov-design-system` skill only (no raw hex, no other fonts, sentence case, visible focus ring, acknowledgment footer). Dynamic text is set with `textContent`, never `innerHTML`.
 * **Coding conventions.** Python files carry the standard header, full type hints, dual-layer docs, and functions under 50 lines.
-* **Manifest.** The adapter writes `manifest.json` after generation (the skill's `--mode all` does not, which yields 19 / 20 on RULE-18). Keep that behaviour while the skill is unfixed.
+* **Manifest.** `generate_discovery_preset()` only returns the manifest; callers must write `manifest.json` or the assembler cannot create exhibit bookmarks. The skill's `--mode all` and the app adapter both do this now (20 / 20).
 * **Verify before claiming done:** `cd app && python -m unittest discover -s tests -t .` must pass with all 20 gates green.
 * **Run it:** `cd app && python -m binder_app.main` (see [`INSTALL.md`](INSTALL.md#option-4-desktop-app)).
 * `src/main.rs` is a separate Rust prototype, not part of the app.

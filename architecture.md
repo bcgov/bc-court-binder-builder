@@ -205,6 +205,6 @@ flowchart LR
 **Design decisions**
 - **Local only.** Court filings are confidential; nothing is uploaded.
 - **Engine adapter, not a fork.** A gate fix in the skill reaches the app automatically.
-- **Manifest workaround.** `generate_discovery_preset()` returns the manifest but only the generator's own CLI writes `manifest.json`. `managing_court_binders.py --mode all` therefore builds a binder without exhibit sub-bookmarks and scores 19 / 20 (RULE-18 advisory). The adapter writes the manifest itself and scores 20 / 20.
+- **Manifest.** `generate_discovery_preset()` returns the manifest but does not write it. Both `managing_court_binders.py --mode all` and the app adapter now write `manifest.json` themselves, so exhibit sub-bookmarks are built and the sample cycle scores 20 / 20.
 - **Rust POC.** `src/main.rs` is an earlier, separate prototype and is not used by the app.
 - **Packaging (planned).** PyInstaller plus `create-dmg` for macOS and Inno Setup for Windows, built per OS in CI.
