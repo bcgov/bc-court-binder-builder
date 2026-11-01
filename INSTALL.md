@@ -495,10 +495,11 @@ Install GTK and WebKit first, for example on Debian or Ubuntu: `sudo apt install
 
 ### Using it
 
-1. **Working folder** (sidebar): where the app saves what it creates. Defaults to `inputs/` in the repo; **Change…** remembers your choice in `~/.bc_court_binder_settings.json`.
-2. **Create sample filings → Run full test cycle:** writes `Sample run <timestamp>/` containing `filings/` and `Application_Record_Sample.pdf`, then shows the scorecard (expect 20 / 20).
-3. **Build a binder:** choose a folder of filings, name the file, press **Build binder**. The PDF is saved in the working folder. **Check this binder** jumps to step 3.
+1. **Working folder and Output folder** (sidebar): the working folder (default `inputs/` in the repo) is where sample filings are created; the output folder (default `output/`) is where finished binders go. **Change…** remembers your choice in `~/.bc_court_binder_settings.json`.
+2. **Create sample filings → Run full test cycle:** writes the filings to `Sample run <timestamp>/filings/` in the working folder and the binder to `Sample run <timestamp>/Application_Record_Sample.pdf` in the output folder, then shows the scorecard (expect 20 / 20).
+3. **Build a binder:** choose a folder of filings, fill in the **Case details** (court file number, registry, parties, hearing date and time estimate are required; they are saved as `manifest.json` in the filings folder and prefilled next time), check the suggested file name, press **Build binder**. The PDF is saved in the folder shown under **Save binder in** (by default a subfolder of the output folder named after your filings folder; use **Choose folder…** to pick another). Existing files are never overwritten. **Check this binder** jumps to step 3.
 4. **Check a binder:** choose any PDF to audit it.
+5. **File with CSO:** answer three questions (CSO account? logged on? card registered?) and use the buttons to open the right CSO page in your browser. Choose a binder to see whether it can be uploaded directly (up to 20 MB), needs **Upload Large Files** first (20 to 50 MB) or is too large. You log on, add your card and submit yourself; nothing you type on CSO passes through the app.
 
 **Verify the engine without opening the window** (from the `app` folder, environment active):
 ```bash
