@@ -30,6 +30,7 @@ USAGE:
 import os
 import sys
 import re
+import glob
 import json
 import textwrap
 import argparse
@@ -47,6 +48,10 @@ FILENAME_REGEX = re.compile(
 # -----------------------------------------------------------------------------
 # Document metadata and text cleaning helpers
 # -----------------------------------------------------------------------------
+
+PLACEHOLDER_REGISTRY = "[Registry - complete before filing]"
+PLACEHOLDER_FILE_NUMBER = "[Court file number - complete before filing]"
+
 
 def clean_display_title(text: str) -> str:
     """Cleans up document title for the Index table."""
@@ -79,54 +84,96 @@ def escape_pdf_text(text: str) -> str:
     """Escapes backslashes and parentheses for PDF string literals."""
     return text.replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)")
 
+class SourceTextUnavailable(ValueError):
+    """Raised when a filing's text cannot be recovered; never substitute placeholder text."""
+
+
+def resolve_inside(inputs_dir: Path, filename: str) -> Path:
+    """Resolves a manifest filename and refuses anything outside the input folder.
+
+    Args:
+        inputs_dir: The folder the user chose.
+        filename: A filename taken from manifest.json.
+
+    Returns:
+        The resolved path, guaranteed to be inside inputs_dir.
+
+    Raises:
+        ValueError: If the filename is absolute or escapes inputs_dir.
+    """
+    base = inputs_dir.resolve()
+    candidate = (base / filename).resolve()
+    if Path(filename).is_absolute() or not candidate.is_relative_to(base):
+        raise ValueError(f"Manifest filename escapes the input folder: {filename!r}")
+    return candidate
+
+
+def wrap_lines(raw_text: str) -> list[str]:
+    """Wraps text into court-page lines of at most 75 characters."""
+    wrapped: list[str] = []
+    for line in raw_text.splitlines():
+        stripped = line.rstrip()
+        if not stripped:
+            wrapped.append("")
+        elif len(stripped) <= 75:
+            wrapped.append(stripped)
+        else:
+            wrapped.extend(textwrap.wrap(stripped, width=75))
+    return wrapped
+
+
+def extract_pdf_text(pdf_path: Path) -> str:
+    """Extracts text from a PDF with pdftotext when available, else pypdf."""
+    import shutil
+    import subprocess
+
+    if shutil.which("pdftotext"):
+        try:
+            out = subprocess.check_output(["pdftotext", str(pdf_path), "-"])
+            if out.strip():
+                return out.decode("utf-8", errors="ignore")
+        except (OSError, subprocess.SubprocessError):
+            pass
+    try:
+        import pypdf
+        reader = pypdf.PdfReader(str(pdf_path))
+        return "\n".join((page.extract_text() or "") for page in reader.pages)
+    except Exception:
+        return ""
+
+
 def load_document_lines(inputs_dir: Path, filename: str) -> list[str]:
-    """Loads substantive text lines from .txt file, preferring .txt over .pdf."""
-    # 1. Prefer .txt version of filename
+    """Loads substantive text lines for one filing, preferring .txt over .pdf.
+
+    Raises:
+        SourceTextUnavailable: If no text can be recovered. A binder must never
+            contain invented placeholder text in place of a real filing.
+        ValueError: If the filename escapes the input folder.
+    """
+    base = inputs_dir.resolve()
     txt_candidates = [
-        inputs_dir / filename.replace(".pdf", ".txt"),
-        inputs_dir / filename,
+        resolve_inside(inputs_dir, filename.replace(".pdf", ".txt")),
+        resolve_inside(inputs_dir, filename),
     ]
-    # 2. Match by prefix (e.g. 03_*)
-    prefix = filename.split("_")[0]
-    txt_candidates.extend(list(inputs_dir.glob(f"{prefix}_*.txt")))
+    prefix = glob.escape(filename.split("_")[0])
+    txt_candidates.extend(p for p in base.glob(f"{prefix}_*.txt") if p.is_relative_to(base))
 
     for cand in txt_candidates:
         if cand.exists() and cand.suffix == ".txt":
-            raw_text = cand.read_text(encoding="utf-8")
-            raw_lines = raw_text.splitlines()
-            wrapped = []
-            for l in raw_lines:
-                stripped = l.rstrip()
-                if not stripped:
-                    wrapped.append("")
-                elif len(stripped) <= 75:
-                    wrapped.append(stripped)
-                else:
-                    wrapped.extend(textwrap.wrap(stripped, width=75))
+            wrapped = wrap_lines(cand.read_text(encoding="utf-8"))
             if wrapped:
                 return wrapped
 
-    # 3. If only PDF exists, attempt text extraction
-    pdf_path = inputs_dir / filename
+    pdf_path = resolve_inside(inputs_dir, filename)
     if pdf_path.exists() and pdf_path.suffix == ".pdf":
-        try:
-            import subprocess
-            out = subprocess.check_output(["pdftotext", str(pdf_path), "-"]).decode("utf-8", errors="ignore")
-            wrapped = []
-            for l in out.splitlines():
-                stripped = l.rstrip()
-                if not stripped:
-                    wrapped.append("")
-                elif len(stripped) <= 75:
-                    wrapped.append(stripped)
-                else:
-                    wrapped.extend(textwrap.wrap(stripped, width=75))
-            if wrapped:
-                return wrapped
-        except Exception:
-            pass
-
-    return [f"[Document: {filename}]", "Substantive legal content filed with court."]
+        wrapped = wrap_lines(extract_pdf_text(pdf_path))
+        if any(line.strip() for line in wrapped):
+            return wrapped
+        raise SourceTextUnavailable(
+            f"No extractable text in {filename}. If it is a scan, run OCR first, "
+            "or provide a matching .txt file."
+        )
+    raise SourceTextUnavailable(f"Source file not found for {filename} in {inputs_dir}.")
 
 def infer_manifest_from_files(inputs_dir: Path) -> dict:
     """Auto-synthesizes manifest data from conforming Tab filenames when manifest.json is absent."""
@@ -168,11 +215,12 @@ def infer_manifest_from_files(inputs_dir: Path) -> dict:
     documents.sort(key=lambda d: d["item_num"])
     return {
         "court": "SUPREME COURT OF BRITISH COLUMBIA",
-        "registry": "Vancouver",
-        "file_number": "S-240123",
+        "registry": PLACEHOLDER_REGISTRY,
+        "file_number": PLACEHOLDER_FILE_NUMBER,
         "style_of_cause": "IN THE SUPREME COURT OF BRITISH COLUMBIA",
         "hearing_date": "To be scheduled",
         "application_date": "Current Session",
+        "inferred": True,
         "documents": documents
     }
 
@@ -198,8 +246,8 @@ def build_binder(inputs_dir: Path, output_file: Path) -> Path:
     print(f"Loaded {len(docs)} document definitions for assembly.")
 
     court_name = manifest.get("court", "SUPREME COURT OF BRITISH COLUMBIA").upper()
-    registry = manifest.get("registry", "Vancouver")
-    file_no = manifest.get("file_number", "S-240123")
+    registry = manifest.get("registry", PLACEHOLDER_REGISTRY)
+    file_no = manifest.get("file_number", PLACEHOLDER_FILE_NUMBER)
     subtitle_bar = f"{court_name} — {registry} Registry / No. {file_no}"
 
     # -------------------------------------------------------------------------

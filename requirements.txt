@@ -1,2 +1,7 @@
+# Core runtime for the managing-court-binders skill and CLI (Python 3.9+)
 pypdf>=5.0.0
 pdfplumber>=0.11.0
+
+# Desktop app (Python 3.10+) adds pywebview. Install it with:
+#   pip install -r app/requirements-app.txt
+# Not needed for the agent skill or the command-line scripts.

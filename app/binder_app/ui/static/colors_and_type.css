@@ -1,0 +1,342 @@
+/**
+ * B.C. Design System — Color & Typography Tokens
+ * Version: 0.8.1 components / 5.0.0 tokens
+ * Source: B.C. Design System (https://github.com/bcgov/design-system); full generated token set in design-tokens.css
+ *
+ * Font note: BC Sans is the mandatory typeface for BC government services.
+ * It is maintained by GCPE and not available on Google Fonts.
+ * Substitute: Noto Sans (Google Fonts) — closest open-source match.
+ * Download BC Sans: https://www2.gov.bc.ca/gov/content/governments/services-for-government/bc-bid-resources/goods-and-services-catalogue/bc-fonts
+ */
+
+/* ─────────────────────────────────────────────────
+   FONT IMPORTS — Roboto fallback only
+   ───────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+/* ─────────────────────────────────────────────────
+   BC SANS FONT-FACE
+   ───────────────────────────────────────────────── */
+@font-face {
+  font-family: 'BC Sans';
+  src: url('./fonts/BCSans-Regular.woff2') format('woff2'),
+       url('./fonts/BCSans-Regular.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'BC Sans';
+  src: url('./fonts/BCSans-Bold.woff2') format('woff2'),
+       url('./fonts/BCSans-Bold.woff') format('woff');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'BC Sans';
+  src: url('./fonts/BCSans-Italic.woff2') format('woff2'),
+       url('./fonts/BCSans-Italic.woff') format('woff');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'BC Sans';
+  src: url('./fonts/BCSans-BoldItalic.woff2') format('woff2'),
+       url('./fonts/BCSans-BoldItalic.woff') format('woff');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'BC Sans';
+  src: url('./fonts/BCSans-Light.woff2') format('woff2'),
+       url('./fonts/BCSans-Light.woff') format('woff');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'BC Sans';
+  src: url('./fonts/BCSans-LightItalic.woff2') format('woff2'),
+       url('./fonts/BCSans-LightItalic.woff') format('woff');
+  font-weight: 300;
+  font-style: italic;
+  font-display: swap;
+}
+
+:root {
+  /* ─────────────────────────────────────────────────
+     TYPOGRAPHY
+     ───────────────────────────────────────────────── */
+
+  /* Font families */
+  --font-primary: 'BC Sans', sans-serif;
+  --font-secondary: 'Roboto', sans-serif;
+
+  /* Type scale */
+  --text-label-sm:   12px;
+  --text-body-sm:    14px;
+  --text-body:       16px;
+  --text-body-lg:    18px;
+  --text-h6:         18px;
+  --text-h5:         20px;
+  --text-h4:         24px;
+  --text-h3:         28px;
+  --text-h2:         32px;
+  --text-h1:         36px;
+  --text-display:    48px;
+
+  /* Line heights */
+  --lh-label:     18px;   /* 12px → 1.5 */
+  --lh-body-sm:   21px;   /* 14px → 1.5 */
+  --lh-body:      27px;   /* 16px → 1.688 */
+  --lh-body-lg:   30.6px; /* 18px → 1.7 */
+  --lh-h1:        54px;   /* upstream bold h1 3.375rem */
+  --lh-h2:        48px;   /* 3rem */
+  --lh-h3:        48px;   /* 3rem */
+  --lh-h4:        36px;   /* 2.25rem */
+  --lh-h5:        34px;   /* 2.125rem */
+  --lh-h6:        30.6px; /* 1.913rem */
+  --lh-heading:   1.5;    /* generic heading fallback */
+  --lh-display:   normal; /* upstream display has no explicit line height */
+
+  /* Font weights */
+  --fw-regular: 400;
+  --fw-bold:    700;
+
+  /* ─────────────────────────────────────────────────
+     COLOR — BRAND
+     ───────────────────────────────────────────────── */
+
+  --color-brand-primary:        #013366;  /* Primary navy — buttons, header */
+  --color-brand-primary-dark:   #053662;  /* Slightly darker navy variant */
+  --color-brand-primary-hover:  #1E5189;  /* Hover state */
+  --color-brand-primary-pressed:#01264C;  /* Pressed/active state */
+  --color-brand-focus:          #2E5DD7;  /* Focus ring — accessibility critical */
+  --color-brand-link:           #255A90;  /* Text links */
+
+  /* ─────────────────────────────────────────────────
+     COLOR — TEXT / TYPOGRAPHY
+     ───────────────────────────────────────────────── */
+
+  --color-text-primary:         #2D2D2D;  /* Near-black — main text */
+  --color-text-secondary:       #474543;  /* Dark gray — secondary text */
+  --color-text-placeholder:     #9F9D9C;  /* Placeholder / hint text */
+  --color-text-disabled:        #9F9D9C;  /* Disabled text */
+  --color-text-link:            #255A90;  /* Links */
+  --color-text-danger:          #CE3E39;  /* Error / danger text */
+  --color-text-invert:          #FFFFFF;  /* Text on dark backgrounds */
+  --color-text-invert-secondary:#ECEAE8;  /* Secondary text on dark bg */
+
+  /* ─────────────────────────────────────────────────
+     COLOR — SURFACES / BACKGROUNDS
+     ───────────────────────────────────────────────── */
+
+  --color-surface-white:        #FFFFFF;
+  --color-surface-default:      #FAF9F8;  /* Warm off-white — secondary surfaces */
+  --color-surface-hover:        #EDEBE9;  /* Hover bg — tertiary/secondary elements */
+  --color-surface-pressed:      #E0DEDC;  /* Pressed bg */
+  --color-surface-disabled:     #EDEBE9;  /* Disabled element bg */
+  --color-surface-dark:         #252423;  /* Dark — Indigenous acknowledgment band */
+
+  /* ─────────────────────────────────────────────────
+     COLOR — BORDERS
+     ───────────────────────────────────────────────── */
+
+  --color-border:               #D8D8D8;  /* Standard border */
+  --color-border-dark:          #353433;  /* Dark border / divider */
+  --color-border-indigenous:    #FBD389;  /* Amber — Indigenous acknowledgment accent */
+
+  /* ─────────────────────────────────────────────────
+     COLOR — SEMANTIC: DANGER
+     ───────────────────────────────────────────────── */
+
+  --color-danger:               #CE3E39;
+  --color-danger-hover:         #A2312D;
+  --color-danger-bg:            #F4E1E2;
+  --color-danger-border:        #CE3E39;
+
+  /* ─────────────────────────────────────────────────
+     COLOR — SEMANTIC: SUCCESS
+     ───────────────────────────────────────────────── */
+
+  --color-success:              #42814A;
+  --color-success-bg:           #F6FFF8;
+  --color-success-border:       #42814A;
+
+  /* ─────────────────────────────────────────────────
+     COLOR — SEMANTIC: WARNING
+     ───────────────────────────────────────────────── */
+
+  --color-warning:              #F8BB47;
+  --color-warning-bg:           #FEF1D8;
+  --color-warning-border:       #F8BB47;
+
+  /* ─────────────────────────────────────────────────
+     COLOR — SEMANTIC: INFO
+     ───────────────────────────────────────────────── */
+
+  --color-info:                 #2E5DD7;
+  --color-info-bg:              #D8EAFD;
+  --color-info-border:          #2E5DD7;
+
+  /* ─────────────────────────────────────────────────
+     SPACING
+     ───────────────────────────────────────────────── */
+
+  --space-1:   4px;
+  --space-2:   8px;
+  --space-3:   12px;
+  --space-4:   16px;
+  --space-5:   24px;
+  --space-6:   32px;
+  --space-7:   48px;
+  --space-8:   64px;
+  --space-9:   88px;
+  --space-10:  96px;
+
+  /* ─────────────────────────────────────────────────
+     BORDER RADIUS
+     ───────────────────────────────────────────────── */
+
+  --radius-sm:   4px;   /* Buttons, inputs, cards */
+  --radius-md:   8px;   /* Larger cards */
+  --radius-lg:   24px;  /* Doc page frames */
+  --radius-full: 999px; /* Pills / tags */
+
+  /* ─────────────────────────────────────────────────
+     SHADOWS
+     ───────────────────────────────────────────────── */
+
+  /* Upstream elevation tokens (surface.shadow.*) */
+  --shadow-default: 0 0.3px 0.9px 0 #0000001a, 0 1.6px 3.6px 0 #00000021;
+  --shadow-sm: 0 0.6px 1.8px 0 #0000001a, 0 3.2px 7.2px 0 #00000021;
+  --shadow-md: 0 1.2px 3.6px 0 #0000001a, 0 6.4px 14.4px 0 #00000021;
+  --shadow-lg: 0 4.8px 14.4px 0 #0000002e, 0 25.6px 57.6px 0 #00000038; /* emphasis; use sparingly */
+
+  /* ─────────────────────────────────────────────────
+     FOCUS
+     ───────────────────────────────────────────────── */
+
+  --focus-ring: 0 0 0 2px #FFFFFF, 0 0 0 4px #2E5DD7;
+  --focus-ring-offset: 2px;
+
+  /* ─────────────────────────────────────────────────
+     LAYOUT
+     ───────────────────────────────────────────────── */
+
+  --layout-max-width:   1440px;
+  --layout-content-width: 1200px;
+  --layout-px:          36px;
+}
+
+/* ─────────────────────────────────────────────────
+   SEMANTIC ELEMENT STYLES
+   ───────────────────────────────────────────────── */
+
+body {
+  font-family: var(--font-primary);
+  font-size: var(--text-body);
+  line-height: var(--lh-body);
+  color: var(--color-text-primary);
+  background: var(--color-surface-white);
+  -webkit-font-smoothing: antialiased;
+}
+
+.display, h1.display {
+  font-family: var(--font-primary);
+  font-weight: var(--fw-bold);
+  font-size: var(--text-display);
+  line-height: var(--lh-display);
+  color: var(--color-text-primary);
+}
+
+h1, .h1 {
+  font-family: var(--font-primary);
+  font-weight: var(--fw-bold);
+  font-size: var(--text-h1);
+  line-height: var(--lh-h1);
+  color: var(--color-text-primary);
+}
+
+h2, .h2 {
+  font-family: var(--font-primary);
+  font-weight: var(--fw-bold);
+  font-size: var(--text-h2);
+  line-height: var(--lh-h2);
+  color: var(--color-text-primary);
+}
+
+h3, .h3 {
+  font-family: var(--font-primary);
+  font-weight: var(--fw-bold);
+  font-size: var(--text-h3);
+  line-height: var(--lh-h3);
+  color: var(--color-text-primary);
+}
+
+h4, .h4 {
+  font-family: var(--font-primary);
+  font-weight: var(--fw-bold);
+  font-size: var(--text-h4);
+  line-height: var(--lh-h4);
+  color: var(--color-text-primary);
+}
+
+h5, .h5 {
+  font-family: var(--font-primary);
+  font-weight: var(--fw-bold);
+  font-size: var(--text-h5);
+  line-height: var(--lh-h5);
+  color: var(--color-text-primary);
+}
+
+h6, .h6 {
+  font-family: var(--font-primary);
+  font-weight: var(--fw-bold);
+  font-size: var(--text-h6);
+  line-height: var(--lh-h6);
+  color: var(--color-text-primary);
+}
+
+p, .body {
+  font-family: var(--font-primary);
+  font-weight: var(--fw-regular);
+  font-size: var(--text-body);
+  line-height: var(--lh-body);
+  color: var(--color-text-primary);
+}
+
+.body-lg {
+  font-size: var(--text-body-lg);
+  line-height: var(--lh-body-lg);
+}
+
+.body-sm {
+  font-size: var(--text-body-sm);
+  line-height: var(--lh-body-sm);
+}
+
+.label {
+  font-family: var(--font-primary);
+  font-weight: var(--fw-bold);
+  font-size: var(--text-label-sm);
+  line-height: var(--lh-label);
+}
+
+a, .link {
+  color: var(--color-text-link);
+  text-decoration: underline;
+}
+
+a:hover {
+  color: var(--color-brand-primary-hover);
+}
+
+/* Focus visible utility */
+:focus-visible {
+  outline: 2px solid var(--color-brand-focus);
+  outline-offset: var(--focus-ring-offset);
+}

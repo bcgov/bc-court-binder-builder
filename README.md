@@ -33,8 +33,38 @@ Strictly adheres to:
 
 ---
 
+<a id="ways-to-use"></a>
+## 🚀 Four Ways to Use It
+
+All four use the same engine, so a binder built any way passes the same 20 court quality gates. Pick the one that fits you.
+
+| | How | Best for | Status |
+| :---: | :--- | :--- | :--- |
+| **1** | **Install the skill with APM and ask an AI agent** (Claude, GitHub Copilot, Codex, Gemini). Say "build a court binder from this folder" and the agent runs the skill. | Paralegals and lawyers who want to work in plain language. | ✅ Available. [Install steps](#apm-installation) |
+| **2** | **Run the Python commands directly** (`assemble`, `validate`, interactive wizard). | Developers, CI/CD and automation. | ✅ Available. [Command reference](#headless-cli) |
+| **3** | **Run the desktop app from Python.** A native window with three screens: create sample filings, build a binder, check a binder. | People who want a window, not a chat or a terminal. | ✅ Available from source. [Desktop app](#desktop-app) |
+| **4** | **Install a Mac application** (`.dmg`, drag to Applications) with no Python setup. A matching Windows installer is planned after it. | Anyone who just wants to try it. | 🛠️ Planned, not built yet |
+
+```bash
+# 1. AI agent: install the skill once, then talk to your agent
+apm install https://github.com/bcgov/bc-court-binder-builder --global --target claude,copilot,codex,gemini
+
+# 2. Python commands
+pip install -r requirements.txt
+python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py --mode all
+
+# 3. Desktop app (Python 3.10+)
+pip install -r app/requirements-app.txt && cd app && python -m binder_app.main
+```
+
+> [!NOTE]
+> Options 3 and 4 run entirely on your computer, so confidential filings are never uploaded. Details and per-OS Python setup are in [`INSTALL.md`](INSTALL.md).
+
+---
+
 ## 📑 Table of Contents
 
+- [🚀 Four Ways to Use It](#ways-to-use)
 - [🏛️ Strategic Purpose & Benefits (Virtual Courts)](#strategic-purpose)
 - [🤖 The AI-Native Paradigm (Deterministic Execution)](#ai-native-paradigm)
 - [📚 Key Technical Documentation](#technical-docs)
@@ -42,6 +72,7 @@ Strictly adheres to:
 - [🤖 Consolidated Agent Skill (`managing-court-binders`)](#consolidated-skill)
   - [Operational Modes](#operational-modes)
   - [Key Reference Manuals](#reference-manuals)
+- [🖥️ Desktop App (POC)](#desktop-app)
 - [🛠️ Initial Setup, Dependencies & APM Installation](#setup-installation)
   - [1. APM Package Installation for AI Agents](#apm-installation)
   - [2. Python Environment & Zero-Compiler Setup](#python-setup)
@@ -172,6 +203,40 @@ All domain knowledge is modularized inside [`.apm/skills/managing-court-binders/
   * [`paralegal_video_workflow.md`](.apm/skills/managing-court-binders/references/paralegal_video_workflow.md) — Senior Vancouver Paralegal 9-step manual workflow transcript & analysis ([Vimeo Video 836310097](https://vimeo.com/836310097)).
   * [`pdf_instructions.md`](.apm/skills/managing-court-binders/references/pdf_instructions.md) — Technical analysis of all 13 official Supreme Court PDF instructions ([Court Portal](https://www.bccourts.ca/supreme_court/practice_and_procedure/pdf_instructions.aspx)).
   * `references/pdfs/` — Archive of 18 official court PDF instruction guides, schedules, and sample application records.
+
+---
+
+<a id="desktop-app"></a>
+## 🖥️ Desktop App (POC)
+
+Prefer a window to a chat? The **Court binder builder** desktop app (`app/`) wraps the same Python engine as the agent skill in a native window styled with the B.C. Government Design System (BC Sans, official tokens, WCAG 2.1 AA, Indigenous acknowledgment footer). Everything runs locally, so confidential filings never leave your machine.
+
+| Step | What it does |
+| :--- | :--- |
+| **1. Create sample filings** | Generates synthetic Rule 7-1 filings, builds a binder from them, and audits it against the 20 gates. Use it to try the full cycle without client documents. |
+| **2. Build a binder** | Choose a folder of filings, name the file, and get one foliated, bookmarked, hyperlinked binder PDF. |
+| **3. Check a binder** | Choose any binder PDF and get a 20-gate scorecard with failures first and how to fix them. |
+
+A **working folder** (default: `inputs/` in this repo) holds everything the app creates; each sample run gets its own timestamped subfolder. Change it any time from the sidebar.
+
+| | |
+| :---: | :---: |
+| ![Create sample filings](docs/assets/screenshots/desktop-app/01-create-sample-filings.png) | ![Sample run complete](docs/assets/screenshots/desktop-app/02-sample-run-complete.png) |
+| ![Build a binder](docs/assets/screenshots/desktop-app/03-build-binder.png) | ![Binder built](docs/assets/screenshots/desktop-app/04-binder-built.png) |
+| ![Check a binder](docs/assets/screenshots/desktop-app/05-check-binder.png) | ![20-gate scorecard](docs/assets/screenshots/desktop-app/06-gate-scorecard.png) |
+| ![A failing binder: 10 of 20 gates, 3 hard stops](docs/assets/screenshots/desktop-app/07-check-failing-binder.png) | ![Failing gates with authority and how to fix](docs/assets/screenshots/desktop-app/08-failing-gate-details.png) |
+
+The last row shows a non-compliant PDF: hard stops are listed first, each with the court authority it breaks and how to fix it.
+
+Run it from source (macOS or Windows; needs Python 3.10+, with per-OS steps in [INSTALL.md](INSTALL.md#option-4-desktop-app)):
+
+```bash
+python3 -m venv app/.venv && source app/.venv/bin/activate   # Windows: app\.venv\Scripts\activate
+pip install -r app/requirements-app.txt
+cd app && python -m binder_app.main
+```
+
+See [`INSTALL.md`](INSTALL.md#option-4-desktop-app) for details and [`architecture.md`](architecture.md#6-desktop-app-layer) for how it reuses the skill's engine. Installable macOS (`.dmg`) and Windows installers are planned and not built yet.
 
 ---
 

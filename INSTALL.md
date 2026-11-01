@@ -7,6 +7,7 @@ It supports:
 2. **Standard Python Runtime (Zero-Compiler Setup):** Running the interactive terminal wizard, automated assembly, and 20-gate compliance validator directly with Python (`pypdf`, `pdfplumber`).
 3. **Native Acceleration (Optional):** Pre-compiled PyO3 native wheels (`pdfcraft-pyo3`) for high-throughput batch processing.
 4. **Rust Reference Implementation (Optional):** Compiling and executing the native in-process engine (`pdfcraft-sdk`).
+5. **Desktop App (POC):** A native window with three screens (create sample filings, build a binder, check a binder) that reuses the same Python engine. See [Option 4](#option-4-desktop-app).
 
 ---
 
@@ -14,10 +15,11 @@ It supports:
 
 | Component | Minimum Version | Recommended | Purpose |
 | :--- | :--- | :--- | :--- |
-| **Python** | `3.9+` | `3.11`–`3.13` | Core agent skills, document assembly, and 20-gate validator |
+| **Python** | `3.9+` (`3.10+` for the desktop app) | `3.11`–`3.13` | Core agent skills, document assembly, and 20-gate validator |
 | **pip** | `23.0+` | Latest | Dependency installation |
 | **APM CLI** *(Optional)* | `0.33.0+` | `0.35.0+` | Installing the skill into AI agent environments |
 | **Git** | `2.30+` | Latest | Cloning and revision management |
+| **pywebview** *(Desktop app only)* | `5.3+` | Latest | Native window for the desktop app (`app/requirements-app.txt`) |
 | **Rust / Cargo** *(Optional)* | `1.80+` | Latest Stable | Compiling the native `pdfcraft-sdk` reference engine (`src/main.rs`) |
 
 ---
@@ -350,7 +352,7 @@ pip install -r requirements.txt
 ```
 
 > [!NOTE]
-> `requirements.txt` contains only `pypdf` and `pdfplumber`. This lightweight footprint provides 100% of the functionality needed to synthesize filings, assemble binders, stamp folios, inject GoTo links, and execute the 20-gate compliance audit.
+> `requirements.txt` contains only `pypdf` and `pdfplumber` (the desktop app adds `pywebview` through `app/requirements-app.txt`). This lightweight footprint provides 100% of the functionality needed to synthesize filings, assemble binders, stamp folios, inject GoTo links, and execute the 20-gate compliance audit.
 
 ### Step 4 (Optional): High-Performance Native PyO3 Wheel Acceleration
 To enable native Rust acceleration via PyO3 without compiling from source, install the pre-built wheel from GitHub Releases:
@@ -441,6 +443,79 @@ This builds and executes [`src/main.rs`](src/main.rs), which compiles an in-memo
 ```text
 output/01-commercial-discovery/Application_Record_Commercial_Document_Discovery_Rule_7-1_15Nov2026.pdf
 ```
+
+---
+
+<a id="option-4-desktop-app"></a>
+## 🖥️ Option 4: Desktop App (POC)
+
+The desktop app is an alternative to chatting with an agent. It calls the same `managing-court-binders` scripts, so results match the skill exactly. Everything runs locally. It needs this repository checkout (the app finds the skill at `.apm/skills/managing-court-binders/scripts/`).
+
+**Requirements:** Python **3.10 or newer** (3.11–3.13 recommended), Git, and the dependencies in [`app/requirements-app.txt`](app/requirements-app.txt) (`pywebview`, plus `pypdf` and `pdfplumber` from the root [`requirements.txt`](requirements.txt)). No compiler is needed.
+
+### 🍎 macOS
+
+1. **Check for Python 3.10+:** `python3 --version`. If it is older or missing, install one:
+   * Download the macOS installer from [python.org/downloads](https://www.python.org/downloads/), or
+   * `brew install python@3.12` (with [Homebrew](https://brew.sh)).
+2. **Get the code, create an environment, install, launch:**
+   ```bash
+   git clone https://github.com/bcgov/bc-court-binder-builder.git
+   cd bc-court-binder-builder
+   python3 -m venv app/.venv
+   source app/.venv/bin/activate
+   pip install --upgrade pip
+   pip install -r app/requirements-app.txt
+   cd app && python -m binder_app.main
+   ```
+3. The window uses the system WebKit view, so nothing else is required.
+
+### 🪟 Windows 10 / 11
+
+1. **Install Python 3.10+** from [python.org/downloads](https://www.python.org/downloads/windows/) (tick **Add python.exe to PATH**), or in PowerShell: `winget install Python.Python.3.12`. Open a **new** terminal, then check: `py --version`.
+2. **Make sure the WebView2 runtime is installed.** It is preinstalled on Windows 11 and current Windows 10. If the window opens blank or fails to start: `winget install Microsoft.EdgeWebView2Runtime`.
+3. **Get the code, create an environment, install, launch (PowerShell):**
+   ```powershell
+   git clone https://github.com/bcgov/bc-court-binder-builder.git
+   cd bc-court-binder-builder
+   py -m venv app\.venv
+   app\.venv\Scripts\Activate.ps1
+   python -m pip install --upgrade pip
+   pip install -r app\requirements-app.txt
+   cd app
+   python -m binder_app.main
+   ```
+   * If activation is blocked: `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass`.
+   * In Command Prompt use `app\.venv\Scripts\activate.bat`.
+   * Deep clone paths can fail on Windows; clone to a short path such as `C:\src\bc-court-binder` (see [Windows Path Limits](#windows-path-limits--execution-policies)).
+
+### 🐧 Linux (untested)
+
+Install GTK and WebKit first, for example on Debian or Ubuntu: `sudo apt install python3-gi python3-gi-cairo gir1.2-gtk-3.0 gir1.2-webkit2-4.1`, then `pip install "pywebview[gtk]"` in addition to the steps above.
+
+### Using it
+
+1. **Working folder** (sidebar): where the app saves what it creates. Defaults to `inputs/` in the repo; **Change…** remembers your choice in `~/.bc_court_binder_settings.json`.
+2. **Create sample filings → Run full test cycle:** writes `Sample run <timestamp>/` containing `filings/` and `Application_Record_Sample.pdf`, then shows the scorecard (expect 20 / 20).
+3. **Build a binder:** choose a folder of filings, name the file, press **Build binder**. The PDF is saved in the working folder. **Check this binder** jumps to step 3.
+4. **Check a binder:** choose any PDF to audit it.
+
+**Verify the engine without opening the window** (from the `app` folder, environment active):
+```bash
+python -m unittest discover -s tests -t .
+```
+
+### Desktop app troubleshooting
+
+| Symptom | Fix |
+| :--- | :--- |
+| `needs Python 3.10 or newer` | Install a newer Python (steps above) and recreate `app/.venv` with it. |
+| `ModuleNotFoundError: No module named 'webview'` | The environment is not active or dependencies are missing: activate `app/.venv`, then `pip install -r app/requirements-app.txt`. |
+| `ModuleNotFoundError: No module named 'binder_app'` | Run from inside the `app` folder: `cd app && python -m binder_app.main`. |
+| Blank window on Windows | Install the WebView2 runtime (see above). |
+| `Could not find the managing-court-binders scripts` | Run from a full clone, or set `BC_BINDER_SCRIPTS` to the skill's `scripts` folder. |
+
+Packaged installers (`.dmg`, Windows `.exe`) are planned and not built yet.
 
 ---
 

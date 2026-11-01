@@ -178,3 +178,33 @@ The consolidated skill maintains a comprehensive library of domain knowledge tha
 | **Hyperlinking** | Manual bounding-box drawing for every line item | Algorithmic row coordinate projection |
 | **Page Labeling** | Multi-step dialog configuration in Acrobat | Automated ISO 32000 Table 159 injection |
 | **CSO Portal Rejections** | High risk due to missing bookmarks or hyperlinks | Zero rejection risk (pre-flight audited) |
+
+---
+
+<a id="6-desktop-app-layer"></a>
+## 🖥️ 6. Desktop App Layer
+
+The desktop app (`app/`) is a second front end to the same engine. It adds no PDF logic of its own: the skill's scripts remain the single source of truth for generating, assembling and validating binders.
+
+```mermaid
+flowchart LR
+    UI["ui/ (HTML, CSS, JS)<br/>B.C. Design System tokens + BC Sans"] -->|window.pywebview.api| Api["api.py<br/>js_api bridge, friendly errors"]
+    Api --> Engine["engine.py<br/>adapter: locate, import, capture output"]
+    Engine --> Scripts["managing-court-binders/scripts<br/>generating_ | assembling_ | validating_"]
+    Agent["AI agent (Claude, Copilot, Codex)"] --> Skill["managing-court-binders skill"] --> Scripts
+```
+
+| Module | Responsibility |
+| :--- | :--- |
+| `binder_app/main.py` | Creates the native pywebview window and loads `ui/index.html`. |
+| `binder_app/api.py` | Methods the UI can call (pick folder or PDF, run cycle, assemble, validate, reveal, open). Every method returns `{ok: true, ...}` or `{ok: false, error}`. |
+| `binder_app/engine.py` | Finds the scripts (env var `BC_BINDER_SCRIPTS`, PyInstaller bundle, or repo checkout), imports them, captures their console output, and summarises scorecards. Also stores the working folder. |
+| `binder_app/ui/` | Sidebar workflow, results with failures first, built only from design-system tokens (`static/` holds copies of the skill's fonts, logo and `colors_and_type.css`). |
+| `tests/test_engine.py` | End-to-end test: the sample cycle must score 20 / 20. |
+
+**Design decisions**
+- **Local only.** Court filings are confidential; nothing is uploaded.
+- **Engine adapter, not a fork.** A gate fix in the skill reaches the app automatically.
+- **Manifest workaround.** `generate_discovery_preset()` returns the manifest but only the generator's own CLI writes `manifest.json`. `managing_court_binders.py --mode all` therefore builds a binder without exhibit sub-bookmarks and scores 19 / 20 (RULE-18 advisory). The adapter writes the manifest itself and scores 20 / 20.
+- **Rust POC.** `src/main.rs` is an earlier, separate prototype and is not used by the app.
+- **Packaging (planned).** PyInstaller plus `create-dmg` for macOS and Inno Setup for Windows, built per OS in CI.
