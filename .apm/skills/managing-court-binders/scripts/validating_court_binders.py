@@ -94,8 +94,8 @@ def validate_court_binder(pdf_path: Path) -> tuple[bool, list[dict]]:
     try:
         import pypdf
         reader = pypdf.PdfReader(str(pdf_path))
-    except Exception:
-        pass
+    except Exception as exc:
+        raise ValueError(f"Not a readable PDF ({type(exc).__name__}): {pdf_path.name}") from exc
 
     results = []
 
@@ -621,7 +621,7 @@ def validate_court_binder(pdf_path: Path) -> tuple[bool, list[dict]]:
             lines = [l.strip() for l in txt.splitlines() if l.strip()]
             
             # Check 1: Empty or truncated page (minimum 15 words and 2 substantive lines)
-            if words < 15 or len(lines) < 2:
+            if words < 15 or len(lines) < 2 or "Substantive legal content filed with court" in txt:
                 sparse_pages.append((p_idx + 1, words, len(lines)))
             
             # Check 2: OCR legibility heuristic

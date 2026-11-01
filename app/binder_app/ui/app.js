@@ -168,7 +168,8 @@ async function runBuild() {
     selectTab($("tab-check"));
     $("run-check").click();
   });
-  show(target, verdict("success", "Binder built", sub, [...fileActions(res.output_pdf), checkNow]));
+  const notices = (res.warnings || []).map((w) => verdict("warning", "Review before filing", w));
+  show(target, verdict("success", "Binder built", sub, [...fileActions(res.output_pdf), checkNow]), ...notices);
 }
 
 // Feature 3: validate the chosen PDF.

@@ -127,6 +127,9 @@ class Api:
     def open_file(self, path: str) -> dict:
         """Open path with the operating system's default application."""
         def action() -> dict:
+            target = Path(path)
+            if target.suffix.lower() != ".pdf" or not target.is_file():
+                raise ValueError("Only existing PDF files can be opened.")
             if sys.platform == "darwin":
                 subprocess.run(["open", path], check=True)
             elif sys.platform == "win32":
@@ -142,6 +145,8 @@ class Api:
         """Reveal path in the operating system's file manager."""
         def action() -> dict:
             target = Path(path)
+            if not target.exists():
+                raise ValueError("That path no longer exists.")
             if sys.platform == "darwin":
                 subprocess.run(["open", "-R", str(target)], check=True)
             elif sys.platform == "win32":

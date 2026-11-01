@@ -39,6 +39,7 @@ import io
 import json
 import os
 import sys
+import threading
 from datetime import datetime
 from pathlib import Path
 from types import ModuleType
@@ -48,6 +49,9 @@ SCRIPTS_ENV_VAR = "BC_BINDER_SCRIPTS"
 SKILL_RELATIVE_PATH = Path(".apm/skills/managing-court-binders/scripts")
 BUNDLED_FOLDER_NAME = "engine_scripts"
 SAMPLE_PDF_NAME = "Application_Record_Sample.pdf"
+
+# redirect_stdout swaps process-wide state, so concurrent UI calls must not overlap.
+_CAPTURE_LOCK = threading.Lock()
 
 
 # Locate the folder holding the skill scripts (env override, bundle, or repo).
@@ -110,7 +114,7 @@ def _capture(func: Any, *args: Any) -> tuple[Any, str]:
         Tuple of (return value, captured stdout and stderr text).
     """
     buffer = io.StringIO()
-    with contextlib.redirect_stdout(buffer), contextlib.redirect_stderr(buffer):
+    with _CAPTURE_LOCK, contextlib.redirect_stdout(buffer), contextlib.redirect_stderr(buffer):
         value = func(*args)
     return value, buffer.getvalue()
 
@@ -255,10 +259,18 @@ def assemble(inputs_dir: Path, output_pdf: Path) -> dict:
     assembler = _load_module("assembling_court_binders")
     output_pdf.parent.mkdir(parents=True, exist_ok=True)
     _, log = _capture(assembler.build_binder, inputs_dir, output_pdf)
+    warnings: list[str] = []
+    if not (inputs_dir / "manifest.json").exists():
+        warnings.append(
+            "No manifest.json was found, so the court file number and registry on the "
+            "title page are placeholders and exhibits are not bookmarked. Add a "
+            "manifest.json and rebuild before filing."
+        )
     return {
         "output_pdf": str(output_pdf),
         "size_bytes": output_pdf.stat().st_size,
         "log": log,
+        "warnings": warnings,
     }
 
 
