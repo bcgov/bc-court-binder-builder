@@ -7,7 +7,7 @@
  */
 
 const $ = (id) => document.getElementById(id);
-const state = { buildFolder: "", checkFile: "", workspace: "" };
+const state = { buildFolder: "", checkFile: "", workspace: "", outputDir: "", saveDir: "", lastSuggested: "" };
 const SVG_NS = "http://www.w3.org/2000/svg";
 const ICONS = {
   success: "M5 13l4 4L19 7",
@@ -153,14 +153,42 @@ async function runCreate() {
   const res = await window.pywebview.api.run_full_cycle();
   if (!res.ok) return show(target, verdict("danger", "Could not create sample filings", res.error));
   const pdf = res.assembled.output_pdf;
-  const summary = `${res.generated.document_count} filings and a ${formatSize(res.assembled.size_bytes)} binder saved in ${res.run_dir}`;
+  const summary = `${res.generated.document_count} filings saved in ${res.run_dir}. ${formatSize(res.assembled.size_bytes)} binder saved in ${res.output_dir}.`;
   show(target, verdict("info", "Sample run complete", summary, fileActions(pdf)), ...renderValidation(res.validation));
+}
+
+const CASE_INPUTS = {
+  court: "cd-court", registry: "cd-registry", file_number: "cd-file-number", plaintiff: "cd-plaintiff",
+  defendant: "cd-defendant", application_date: "cd-date", time_estimate: "cd-time",
+  counsel_applicant: "cd-counsel-applicant", counsel_respondent: "cd-counsel-respondent",
+};
+
+// Read the case details form.
+function collectCaseDetails() {
+  const details = {};
+  Object.entries(CASE_INPUTS).forEach(([field, id]) => { details[field] = $(id).value; });
+  return details;
+}
+
+// Fill the case details form from the folder's manifest (or empty defaults).
+async function loadCaseDetails(folder) {
+  const res = await window.pywebview.api.case_details(folder);
+  if (!res.ok) return;
+  Object.entries(CASE_INPUTS).forEach(([field, id]) => { $(id).value = res[field] || ""; });
+  $("case-details").hidden = false;
+}
+
+// Keep the suggested file name in step with the hearing date until the user edits the name.
+async function refreshSuggestedName() {
+  if (!state.buildFolder || $("build-name").value !== state.lastSuggested) return;
+  state.lastSuggested = await window.pywebview.api.suggest_binder_name(state.buildFolder, $("cd-date").value);
+  $("build-name").value = state.lastSuggested;
 }
 
 // Feature 2: build a binder from the chosen folder.
 async function runBuild() {
   const target = $("result-build");
-  const res = await window.pywebview.api.assemble(state.buildFolder, $("build-name").value);
+  const res = await window.pywebview.api.assemble(state.buildFolder, $("build-name").value, state.saveDir, collectCaseDetails());
   if (!res.ok) return show(target, verdict("danger", "Could not build the binder", res.error));
   const sub = `${res.output_pdf} (${formatSize(res.size_bytes)})`;
   const checkNow = button("Check this binder", "btn-primary btn-sm", () => {
@@ -205,7 +233,37 @@ async function pickFolder() {
   const chosen = await window.pywebview.api.pick_folder();
   if (!chosen) return;
   setPicked("build", chosen);
+  state.saveDir = "";
+  state.lastSuggested = await window.pywebview.api.suggest_binder_name(chosen);
+  $("build-name").value = state.lastSuggested;
+  await loadCaseDetails(chosen);
+  $("save-folder").textContent = await window.pywebview.api.default_binder_dir(chosen);
+  $("save-picker").classList.add("has-value");
   await previewFolder(chosen);
+}
+
+// Choose a different folder to save this binder in.
+async function pickSaveDir() {
+  const chosen = await window.pywebview.api.pick_folder();
+  if (!chosen) return;
+  state.saveDir = chosen;
+  $("save-folder").textContent = chosen;
+  $("save-picker").classList.add("has-value");
+}
+
+// Choose and save a new output folder.
+async function changeOutput() {
+  const chosen = await window.pywebview.api.pick_folder();
+  if (!chosen) return;
+  const res = await window.pywebview.api.set_output_dir(chosen);
+  if (res.ok) {
+    state.outputDir = res.output_dir;
+    $("output-path").textContent = res.output_dir;
+    $("output-hint").textContent = "Saved. New binders go here, in a subfolder named after your filings.";
+    if (state.buildFolder && !state.saveDir) $("save-folder").textContent = await window.pywebview.api.default_binder_dir(state.buildFolder);
+  } else {
+    $("output-hint").textContent = `Could not use that folder: ${res.error}`;
+  }
 }
 
 // Pick the PDF to check.
@@ -259,12 +317,125 @@ function wireActions() {
   $("pick-folder").addEventListener("click", pickFolder);
   $("pick-pdf").addEventListener("click", pickPdf);
   $("pick-workspace").addEventListener("click", changeWorkspace);
+  $("pick-save-dir").addEventListener("click", pickSaveDir);
+  $("cd-date").addEventListener("change", refreshSuggestedName);
+  $("pick-output").addEventListener("click", changeOutput);
+  $("show-output").addEventListener("click", () => window.pywebview.api.reveal(state.outputDir));
   $("show-workspace").addEventListener("click", () => window.pywebview.api.reveal(state.workspace));
+}
+
+
+// ---------- File with CSO: guided setup ----------
+
+// Build a button that opens one official CSO page in the user's browser.
+function csoButton(key, label, className = "btn-secondary") {
+  const btn = button(label, className, async () => {
+    const res = await window.pywebview.api.open_cso_page(key);
+    note.textContent = res.ok ? "Opened in your browser. Come back here when you are done." : `Could not open the page: ${res.error}`;
+  });
+  const note = el("span", "hint");
+  const wrap = el("span", "link-row");
+  wrap.append(btn, note);
+  return wrap;
+}
+
+// Build a bulleted list from strings.
+function bullets(items) {
+  const list = el("ul");
+  items.forEach((text) => list.append(el("li", null, text)));
+  return list;
+}
+
+// Question 1: account.
+function renderAccount(value) {
+  if (value === "yes") return [el("p", null, "Good. Go to question 2.")];
+  return [
+    el("p", null, "Registering takes two steps. Searching court files needs no account, but filing does."),
+    bullets([
+      "Step A: get an identity CSO accepts. A Basic BCeID suits one person; a Business BCeID suits several people sharing an account; a BC Services Card or a premium BC Registries and Online Services account also work. If you have used other B.C. government online services you may already have one.",
+      "Step B: register that identity with CSO. On the CSO register page, sign in, accept the service agreement and enter your account and account manager details.",
+    ]),
+    el("p", "hint", "Need a BCeID? Apply at bceid.ca/register or call the BCeID Help Desk, 1-888-356-2741 (8:30 a.m. to 4:30 p.m., Monday to Friday)."),
+    csoButton("register", "Open the CSO register page", "btn-primary"),
+  ];
+}
+
+// Question 2: logged on.
+function renderLogon(value) {
+  if (value === "yes") {
+    return [
+      el("p", null, "Open the E-file home page. Its Add Package button is for filing into a court file. For a binder, choose Application Records in the left-hand E-file menu instead."),
+      csoButton("efile_home", "Open CSO E-file home", "btn-primary"),
+      el("p", "hint", "If CSO asks you to log on, use the log on page instead."),
+    ];
+  }
+  return [
+    el("p", null, "Log on with your BCeID or BC Services Card, not your CSO Client ID."),
+    csoButton("logon", "Open the CSO log on page", "btn-primary"),
+    csoButton("logon_bc_service_card", "Log on with BC Services Card"),
+    csoButton("logon_bceid", "Log on with BCeID"),
+  ];
+}
+
+// Question 3: credit card.
+function renderCard(value) {
+  if (value === "yes") return [el("p", null, "Good. You can file once you are on the Application Records page.")];
+  return [
+    el("p", null, "CSO will not let you file until a credit card is registered. Do this before your filing deadline, not on filing day."),
+    bullets([
+      "Log on to CSO. In the left-hand menu choose Profile, then Register Credit Card, then press the Register Credit Card button.",
+      "CSO sends you to the Province's payment page. Enter your card details there only, never in this app. Accepted cards: Visa, Visa Debit, MasterCard, MasterCard Debit and American Express.",
+      "Using a corporate card? CSO warns that it must be registered for government services with your card's bank first.",
+      "A premium BC Registries and Online Services account can pay instead of a card.",
+    ]),
+    el("p", "hint", "Stuck? CSO Support Centre: 1-800-663-6102, 8:30 a.m. to 4:30 p.m. Pacific, Monday to Friday. Email Courts.CSO@gov.bc.ca."),
+    csoButton("register_credit_card", "Open the Register Credit Card page", "btn-primary"),
+    el("p", "hint", "Not logged on yet? CSO will ask you to log on first."),
+    csoButton("logon", "Open the CSO log on page"),
+    csoButton("registration_guide", "CSO registration guide (PDF)"),
+  ];
+}
+
+const RENDERERS = { "q-account": ["answer-account", renderAccount], "q-logon": ["answer-logon", renderLogon], "q-card": ["answer-card", renderCard] };
+
+// Show the guidance for a chosen answer.
+function onQuestionChange(event) {
+  const radio = event.target;
+  const entry = RENDERERS[radio.name];
+  if (entry) show($(entry[0]), ...entry[1](radio.value));
+}
+
+// Pick the binder and show how it must be uploaded.
+async function pickFilePdf() {
+  const chosen = await window.pywebview.api.pick_pdf();
+  if (!chosen) return;
+  $("file-pdf").textContent = chosen;
+  $("file-picker").classList.add("has-value");
+  const res = await window.pywebview.api.filing_route(chosen);
+  const target = $("answer-binder");
+  if (!res.ok) return show(target, verdict("danger", "Could not read the file", res.error));
+  const titles = { direct: "Upload it directly", large_file: "Use Upload Large Files first", too_large: "Too large to file" };
+  show(target, verdict(res.level, titles[res.route], res.message));
+}
+
+// Show when the CSO addresses were last verified.
+async function showCsoVerified() {
+  const res = await window.pywebview.api.cso_pages();
+  if (res.ok) $("cso-verified").textContent = `CSO page addresses last verified ${res.verified_on}. If a page does not match what is described here, check the CSO website.`;
+}
+
+function wireCso() {
+  document.querySelectorAll(".stage input[type=radio]").forEach((r) => r.addEventListener("change", onQuestionChange));
+  $("pick-file-pdf").addEventListener("click", pickFilePdf);
+  showCsoVerified();
 }
 
 window.addEventListener("pywebviewready", async () => {
   wireTabs();
   wireActions();
+  wireCso();
   state.workspace = await window.pywebview.api.workspace();
   $("workspace-path").textContent = state.workspace;
+  state.outputDir = await window.pywebview.api.output_dir();
+  $("output-path").textContent = state.outputDir;
 });

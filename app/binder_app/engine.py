@@ -40,6 +40,7 @@ import json
 import os
 import sys
 import threading
+from urllib.parse import urlparse
 from datetime import datetime
 from pathlib import Path
 from types import ModuleType
@@ -119,6 +120,84 @@ def _capture(func: Any, *args: Any) -> tuple[Any, str]:
     return value, buffer.getvalue()
 
 
+CSO_HOST = "justice.gov.bc.ca"
+DEFAULT_DIRECT_UPLOAD_MB = 20
+DEFAULT_MAX_MB = 50
+
+
+# Load the shared list of official CSO pages from the skill's references.
+def load_cso_links() -> dict:
+    """Return the CSO links file shared with the agent skill.
+
+    Every address must be https on justice.gov.bc.ca; anything else is rejected
+    so the app can never be pointed at an arbitrary site.
+
+    Returns:
+        The parsed cso_links.json dictionary.
+
+    Raises:
+        ValueError: If a page address is not an https justice.gov.bc.ca URL.
+    """
+    path = locate_scripts_dir().parent / "references" / "cso_links.json"
+    links = json.loads(path.read_text(encoding="utf-8"))
+    for key, page in links["pages"].items():
+        if not is_official_cso_url(page["url"]):
+            raise ValueError(f"CSO link '{key}' must be an https {CSO_HOST} address.")
+    return links
+
+
+# Strictly check that a URL can only ever lead to the official CSO host.
+def is_official_cso_url(url: str) -> bool:
+    """Return True only for plain https URLs whose host is exactly CSO_HOST.
+
+    Python and web browsers parse some malformed URLs differently (for example
+    a backslash before an "@"), so anything unusual is rejected outright:
+    whitespace, control characters, backslashes, user info and ports.
+
+    Args:
+        url: The address to check.
+
+    Returns:
+        True if the URL is safe to open in the user's browser.
+    """
+    if not isinstance(url, str) or any(ch in url for ch in "\\@") or any(ord(ch) <= 32 or ord(ch) == 127 for ch in url):
+        return False
+    parsed = urlparse(url)
+    return parsed.scheme == "https" and parsed.netloc == CSO_HOST and parsed.port is None
+
+
+# Decide how a binder of a given size must be uploaded to CSO.
+def filing_route(size_bytes: int, links: dict | None = None) -> dict:
+    """Return the CSO upload route for a binder of size_bytes.
+
+    Up to the direct-upload limit the file is uploaded as normal; above it the
+    Upload Large Files step comes first; above the maximum it cannot be filed.
+
+    Args:
+        size_bytes: Size of the binder PDF.
+        links: Parsed cso_links.json (limits are read from it when given).
+
+    Returns:
+        Dictionary with the route, size in MB, a UI level and a plain message.
+    """
+    limits = (links or {}).get("limits", {})
+    direct_mb = limits.get("direct_upload_mb", DEFAULT_DIRECT_UPLOAD_MB)
+    max_mb = limits.get("max_mb", DEFAULT_MAX_MB)
+    size_mb = size_bytes / (1024 * 1024)
+    if size_mb > max_mb:
+        route, level = "too_large", "danger"
+        message = f"{size_mb:.1f} MB is over the {max_mb} MB limit. Reduce the file size before filing."
+    elif size_mb > direct_mb:
+        route, level = "large_file", "warning"
+        message = (f"{size_mb:.1f} MB is over {direct_mb} MB. Use Upload Large Files in the CSO E-file "
+                   "menu first, then pick the file from the Select Large File list. The upload stays "
+                   "available for 3 hours.")
+    else:
+        route, level = "direct", "success"
+        message = f"{size_mb:.1f} MB is under {direct_mb} MB, so you can upload it directly."
+    return {"route": route, "size_mb": round(size_mb, 2), "level": level, "message": message}
+
+
 # Default folder where the app writes everything it creates.
 def default_workspace() -> Path:
     """Return the default working folder.
@@ -132,35 +211,91 @@ def default_workspace() -> Path:
     return Path.home() / "Documents" / "BC Court Binder"
 
 
-# Where the chosen working folder is remembered between launches.
+# Where the chosen folders are remembered between launches.
 def _settings_file() -> Path:
     """Return the path of the per-user settings file."""
     return Path.home() / ".bc_court_binder_settings.json"
 
 
+# Read all remembered settings (empty if none or unreadable).
+def _read_settings() -> dict:
+    """Return the saved settings dictionary, or {} if it cannot be read."""
+    try:
+        data = json.loads(_settings_file().read_text(encoding="utf-8"))
+        return data if isinstance(data, dict) else {}
+    except (OSError, ValueError):
+        return {}
+
+
+# Merge one setting into the saved settings without losing the others.
+def _save_setting(key: str, value: str) -> None:
+    """Save one setting, keeping every other saved setting."""
+    settings = _read_settings()
+    settings[key] = value
+    _settings_file().write_text(json.dumps(settings), encoding="utf-8")
+
+
 # Read the remembered working folder, falling back to the default.
 def load_workspace() -> Path:
     """Return the saved working folder, or the default if none is saved."""
-    try:
-        saved = json.loads(_settings_file().read_text(encoding="utf-8"))
-        return Path(saved["workspace"])
-    except (OSError, ValueError, KeyError):
-        return default_workspace()
+    saved = _read_settings().get("workspace")
+    return Path(saved) if saved else default_workspace()
 
 
 # Remember a working folder, creating it if needed.
 def save_workspace(folder: Path) -> Path:
-    """Create folder if needed, remember it, and return it.
+    """Create folder if needed, remember it, and return it."""
+    folder.mkdir(parents=True, exist_ok=True)
+    _save_setting("workspace", str(folder))
+    return folder
+
+
+# Default folder for finished binders, kept apart from source filings.
+def default_output_dir() -> Path:
+    """Return the default output folder for finished binders.
+
+    In a repository checkout this is the repository's output/ folder (the
+    repository keeps source filings in inputs/ and binders in output/); in a
+    packaged app it is "Output" inside the Documents "BC Court Binder" folder.
+    """
+    repo_root = Path(__file__).resolve().parents[2]
+    if (repo_root / SKILL_RELATIVE_PATH).is_dir():
+        return repo_root / "output"
+    return Path.home() / "Documents" / "BC Court Binder" / "Output"
+
+
+# Read the remembered output folder, falling back to the default.
+def load_output_dir() -> Path:
+    """Return the saved output folder, or the default if none is saved."""
+    saved = _read_settings().get("output_dir")
+    return Path(saved) if saved else default_output_dir()
+
+
+# Remember an output folder, creating it if needed.
+def save_output_dir(folder: Path) -> Path:
+    """Create folder if needed, remember it, and return it."""
+    folder.mkdir(parents=True, exist_ok=True)
+    _save_setting("output_dir", str(folder))
+    return folder
+
+
+# Pick a binder path that never silently overwrites an existing file.
+def unique_pdf_path(folder: Path, name: str) -> Path:
+    """Return folder/name, or folder/'name 2.pdf' (3, 4...) if that file exists.
 
     Args:
-        folder: The working folder chosen by the user.
+        folder: Destination folder.
+        name: Desired file name ending in .pdf.
 
     Returns:
-        The folder that was saved.
+        A path that does not exist yet.
     """
-    folder.mkdir(parents=True, exist_ok=True)
-    _settings_file().write_text(json.dumps({"workspace": str(folder)}), encoding="utf-8")
-    return folder
+    candidate = folder / name
+    stem, counter = candidate.stem, 2
+    while candidate.exists():
+        candidate = folder / f"{stem} {counter}.pdf"
+        counter += 1
+    return candidate
 
 
 # Turn a raw scorecard into totals and a plain-language verdict.
@@ -215,6 +350,22 @@ def inspect_folder(folder: Path) -> dict:
         "txt_count": sum(n.endswith(".txt") for n in names),
         "has_manifest": "manifest.json" in names,
     }
+
+
+# Case details, manifest writing and naming live in the skill (single engine).
+def read_case_details(folder: Path) -> dict:
+    """Return the title-page case details for folder (see the skill's assembler)."""
+    return _load_module("assembling_court_binders").read_case_details(folder)
+
+
+def save_case_details(folder: Path, details: dict) -> Path:
+    """Validate details and write folder/manifest.json (see the skill's assembler)."""
+    return _load_module("assembling_court_binders").save_case_details(folder, details)
+
+
+def suggest_binder_name(folder: Path, application_date: str | None = None) -> str:
+    """Suggest a binder file name for folder (see the skill's assembler)."""
+    return _load_module("assembling_court_binders").suggest_binder_name(folder, application_date)
 
 
 # Create the sample filings used for a full test cycle.
@@ -292,22 +443,29 @@ def validate(pdf_path: Path) -> dict:
 
 
 # Run generate, assemble and validate in a fresh timestamped folder.
-def run_full_cycle(workspace: Path) -> dict:
+def run_full_cycle(workspace: Path, output_root: Path | None = None) -> dict:
     """Run a complete test cycle: generate, assemble, then validate.
 
+    Source filings go in a timestamped subfolder of workspace; the finished
+    binder goes in a matching subfolder of output_root.
+
     Args:
-        workspace: Parent folder; a timestamped run folder is created inside.
+        workspace: Parent folder for the generated filings.
+        output_root: Parent folder for the binder (the saved output folder if omitted).
 
     Returns:
-        Dictionary with the run folder, generation, assembly and validation.
+        Dictionary with both folders, generation, assembly and validation.
     """
     stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-    run_dir = workspace / f"Sample run {stamp}"
+    run_name = f"Sample run {stamp}"
+    run_dir = workspace / run_name
+    output_dir = (output_root if output_root is not None else load_output_dir()) / run_name
     generated = generate_sample(run_dir / "filings")
-    assembled = assemble(run_dir / "filings", run_dir / SAMPLE_PDF_NAME)
+    assembled = assemble(run_dir / "filings", output_dir / SAMPLE_PDF_NAME)
     validation = validate(Path(assembled["output_pdf"]))
     return {
         "run_dir": str(run_dir),
+        "output_dir": str(output_dir),
         "generated": generated,
         "assembled": assembled,
         "validation": validation,
