@@ -308,6 +308,9 @@ class CaseDetailsTest(unittest.TestCase):
             with self.assertRaises(ValueError) as ctx:
                 engine.save_case_details(folder, {**self.FULL, "file_number": " "})
             self.assertIn("court file number", str(ctx.exception))
+            _make_filing_pdf(folder, "Tab01_Notice_15Nov2026.pdf", "OPTIONAL-FIELD")
+            engine.save_case_details(Path(tmp), {**self.FULL, "time_estimate": ""})
+            self.assertNotIn("time_estimate", json.loads((Path(tmp) / "manifest.json").read_text()))
 
     def test_building_with_details_writes_manifest_and_real_title_page(self) -> None:
         """The API saves manifest.json and the binder shows the entered details, not placeholders."""
@@ -324,6 +327,34 @@ class CaseDetailsTest(unittest.TestCase):
             self.assertIn("Roe Holdings Ltd.", text)
             self.assertNotIn("[Court file number", text)
             self.assertNotIn("S-240123", text)
+
+    def test_optional_details_are_left_off_the_title_page(self) -> None:
+        """A blank time estimate and blank counsel must not print invented defaults."""
+        with tempfile.TemporaryDirectory() as tmp:
+            filings = Path(tmp) / "filings"
+            filings.mkdir()
+            _make_filing_pdf(filings, "Tab01_Notice_15Nov2026.pdf", "OPTIONAL-TEST")
+            details = {**self.FULL, "time_estimate": "", "counsel_applicant": "", "counsel_respondent": ""}
+            result = Api().assemble(str(filings), "Binder", str(Path(tmp) / "out"), details)
+            self.assertTrue(result["ok"], result)
+            text = _binder_text(Path(result["output_pdf"]))
+            self.assertIn("S-98765", text)
+            self.assertNotIn("Time Estimate", text)
+            self.assertNotIn("25 min", text)
+            self.assertNotIn("Counsel of Record", text)
+            self.assertNotIn("Counsel for", text)
+
+    def test_provided_optional_details_are_printed(self) -> None:
+        """A time estimate and counsel that the user entered appear on the title page."""
+        with tempfile.TemporaryDirectory() as tmp:
+            filings = Path(tmp) / "filings"
+            filings.mkdir()
+            _make_filing_pdf(filings, "Tab01_Notice_15Nov2026.pdf", "OPTIONAL-TEST")
+            details = {**self.FULL, "time_estimate": "20 minutes", "counsel_applicant": "A. Lawyer"}
+            result = Api().assemble(str(filings), "Binder", str(Path(tmp) / "out"), details)
+            text = _binder_text(Path(result["output_pdf"]))
+            self.assertIn("Time Estimate: 20 minutes", text)
+            self.assertIn("Counsel for Applicant: A. Lawyer", text)
 
     def test_saving_keeps_existing_documents_and_exhibits(self) -> None:
         """Editing details in an existing manifest must not lose its documents."""

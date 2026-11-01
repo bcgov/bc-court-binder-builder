@@ -65,7 +65,6 @@ REQUIRED_CASE_FIELDS = {
     "plaintiff": "applicant or plaintiff",
     "defendant": "respondent or defendant",
     "application_date": "hearing date",
-    "time_estimate": "time estimate",
 }
 DEFAULT_COURT = "Supreme Court of British Columbia"
 
@@ -437,6 +436,14 @@ def build_binder(inputs_dir: Path, output_file: Path) -> Path:
                 cover_lines.extend(textwrap.wrap(l, width=75))
         cover_lines = cover_lines[:32]
     else:
+        # Optional details are left off the title page when blank; nothing is invented.
+        time_est = str(manifest.get("time_estimate", "")).strip()
+        time_line = f"Time Estimate: {time_est} | Practice Direction 72 (PD-72)" if time_est else "Practice Direction 72 (PD-72)"
+        counsel_lines = [
+            f"{label}: {str(manifest.get(key, '')).strip()}"
+            for label, key in (("Counsel for Applicant", "counsel_applicant"), ("Counsel for Respondent", "counsel_respondent"))
+            if str(manifest.get(key, "")).strip()
+        ]
         cover_lines = [
             f"No. {file_no}",
             f"{registry} Registry",
@@ -451,11 +458,10 @@ def build_binder(inputs_dir: Path, output_file: Path) -> Path:
             "=========================================================================",
             "                 ELECTRONIC APPLICATION RECORD                           ",
             f"Hearing Date: {manifest.get('application_date', 'Chambers')} before an Associate Judge",
-            f"Time Estimate: {manifest.get('time_estimate', '25 min')} | Practice Direction 72 (PD-72)",
+            time_line,
             "=========================================================================",
             "",
-            f"Counsel for Applicant: {manifest.get('counsel_applicant', 'Counsel of Record')}",
-            f"Counsel for Respondent: {manifest.get('counsel_respondent', 'Counsel of Record')}"
+            *counsel_lines,
         ]
 
     page_entries.append({
