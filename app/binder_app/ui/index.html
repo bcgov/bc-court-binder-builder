@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en-CA">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Court binder builder</title>
+  <link rel="stylesheet" href="static/colors_and_type.css">
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <header class="site-header">
+    <img src="static/icons/bc-logo.png" width="166" height="64" alt="Government of British Columbia">
+    <div class="header-title">
+      <h1>Court binder builder</h1>
+      <p>BC Supreme Court electronic application records (PD-72 and PD-73)</p>
+    </div>
+  </header>
+
+  <div class="shell">
+    <aside class="sidebar">
+      <nav aria-label="Main">
+        <div role="tablist" aria-orientation="vertical" class="steps">
+          <button class="nav-item" role="tab" id="tab-create" aria-controls="panel-create" aria-selected="true">
+            <span class="nav-num" aria-hidden="true">1</span>
+            <span class="nav-text"><b>Create sample filings</b><small>Try the full cycle with synthetic documents</small></span>
+          </button>
+          <button class="nav-item" role="tab" id="tab-build" aria-controls="panel-build" aria-selected="false" tabindex="-1">
+            <span class="nav-num" aria-hidden="true">2</span>
+            <span class="nav-text"><b>Build a binder</b><small>Combine your own filings into one PDF</small></span>
+          </button>
+          <button class="nav-item" role="tab" id="tab-check" aria-controls="panel-check" aria-selected="false" tabindex="-1">
+            <span class="nav-num" aria-hidden="true">3</span>
+            <span class="nav-text"><b>Check a binder</b><small>Audit a PDF against 20 court gates</small></span>
+          </button>
+        </div>
+      </nav>
+
+      <section class="workfolder" aria-labelledby="wf-title">
+        <h2 id="wf-title">Working folder</h2>
+        <p class="path" id="workspace-path">Loading…</p>
+        <p class="hint" id="workspace-hint">Everything the app creates is saved here.</p>
+        <div class="wf-actions">
+          <button class="btn btn-secondary btn-sm" id="pick-workspace" type="button">Change…</button>
+          <button class="btn btn-tertiary btn-sm" id="show-workspace" type="button">Show in folder</button>
+        </div>
+      </section>
+    </aside>
+
+    <main id="main" class="content">
+
+      <section class="panel" role="tabpanel" id="panel-create" aria-labelledby="tab-create">
+        <h2>Create sample filings</h2>
+        <p class="lead">Try the whole process without real client documents. The app writes a set of synthetic filings, builds a binder from them, and audits the result.</p>
+        <div class="card">
+          <h3>What happens when you run it</h3>
+          <ol class="how">
+            <li><span class="how-num" aria-hidden="true">1</span><span><b>Generate filings.</b> A notice of application, application response, affidavit with exhibits, draft order and a case authority.</span></li>
+            <li><span class="how-num" aria-hidden="true">2</span><span><b>Build the binder.</b> Cover, index with links, page numbers at top centre, and bookmarks.</span></li>
+            <li><span class="how-num" aria-hidden="true">3</span><span><b>Check 20 court gates.</b> You get a pass or fail result for each one.</span></li>
+          </ol>
+          <div class="actions">
+            <button class="btn btn-primary" id="run-create" type="button">Run full test cycle</button>
+            <span class="hint">Saved in a new subfolder of your working folder.</span>
+          </div>
+        </div>
+        <div class="result" id="result-create" aria-live="polite"></div>
+      </section>
+
+      <section class="panel" role="tabpanel" id="panel-build" aria-labelledby="tab-build" hidden>
+        <h2>Build a binder</h2>
+        <p class="lead">Choose the folder that holds your filings. The app numbers the pages, adds an index and bookmarks, and saves one binder PDF in your working folder.</p>
+        <div class="card">
+          <div class="picker" id="build-picker">
+            <svg class="picker-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+            <div class="picker-text">
+              <span class="picker-label">Folder of filings</span>
+              <span class="picker-value" id="build-folder">No folder chosen</span>
+              <span class="picker-meta" id="build-meta"></span>
+            </div>
+            <button class="btn btn-secondary" id="pick-folder" type="button">Choose folder…</button>
+          </div>
+          <div class="field">
+            <label for="build-name">Binder file name</label>
+            <input id="build-name" type="text" value="Application_Record" aria-describedby="build-name-hint">
+            <p class="hint" id="build-name-hint">“.pdf” is added for you.</p>
+          </div>
+          <div class="actions">
+            <button class="btn btn-primary" id="run-build" type="button" disabled>Build binder</button>
+          </div>
+        </div>
+        <div class="result" id="result-build" aria-live="polite"></div>
+      </section>
+
+      <section class="panel" role="tabpanel" id="panel-check" aria-labelledby="tab-check" hidden>
+        <h2>Check a binder</h2>
+        <p class="lead">Choose a binder PDF to audit it against the 20 BC court quality gates before you file it with Court Services Online.</p>
+        <div class="card">
+          <div class="picker" id="check-picker">
+            <svg class="picker-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l6 6v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zM14 2v6h6"/></svg>
+            <div class="picker-text">
+              <span class="picker-label">Binder PDF</span>
+              <span class="picker-value" id="check-file">No file chosen</span>
+            </div>
+            <button class="btn btn-secondary" id="pick-pdf" type="button">Choose PDF…</button>
+          </div>
+          <div class="actions">
+            <button class="btn btn-primary" id="run-check" type="button" disabled>Check binder</button>
+          </div>
+        </div>
+        <div class="result" id="result-check" aria-live="polite"></div>
+      </section>
+
+    </main>
+  </div>
+
+  <footer class="site-footer">
+    <p>The B.C. Public Service acknowledges the territories of First Nations around B.C. and is grateful to carry out our work on these lands. We acknowledge the rights, interests, priorities, and concerns of all Indigenous Peoples — First Nations, Métis, and Inuit — respecting and acknowledging their distinct cultures, histories, rights, laws, and governments.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

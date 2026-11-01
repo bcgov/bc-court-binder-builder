@@ -20,3 +20,4 @@ apm.lock.yaml
 .agents/
 .gemini/
 .codex/
+.venv/
