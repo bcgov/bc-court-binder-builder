@@ -208,7 +208,7 @@ def main():
     case.add_argument("--plaintiff", help="Applicant or plaintiff")
     case.add_argument("--defendant", help="Respondent or defendant")
     case.add_argument("--hearing-date", dest="hearing_date", help="Hearing date, for example 'November 15, 2026'")
-    case.add_argument("--time-estimate", dest="time_estimate", help="Time estimate, for example '25 minutes'")
+    case.add_argument("--time-estimate", dest="time_estimate", help="Time estimate, for example '25 minutes' (optional; left off the title page if omitted)")
     case.add_argument("--counsel-applicant", dest="counsel_applicant", help="Counsel for the applicant (optional)")
     case.add_argument("--counsel-respondent", dest="counsel_respondent", help="Counsel for the respondent (optional)")
 

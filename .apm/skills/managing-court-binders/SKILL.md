@@ -59,7 +59,7 @@ python3 "$DRIVER" --interactive
 When invoked without explicit flags (e.g. bare `/managing-court-binders`), conduct an interactive conversational intake:
 1. Prompt the operator to select: **Case 1 (Assemble Application Record)**, **Case 2 (Validate Existing PDF)**, or **Case 3 (Demo Test Loop)**.
 2. If assembling: prompt for input folder path, inspect files, confirm statutory filing sequence (Form 32 $\to$ Form 33 $\to$ Form 35 affidavits with exhibits $\to$ Draft Order), compile, and immediately execute the 20-gate pre-flight audit.
-   - **Case details first.** If the folder has no `manifest.json`, ask for the court, registry, court file number, applicant/plaintiff, respondent/defendant, hearing date and time estimate (counsel optional) and pass them as `--registry`, `--file-number`, `--plaintiff`, `--defendant`, `--hearing-date`, `--time-estimate`, which write `manifest.json`. Never guess them or reuse sample values such as `S-240123`.
+   - **Case details first.** If the folder has no `manifest.json`, ask for the registry, court file number, applicant/plaintiff, respondent/defendant and hearing date (time estimate and counsel are optional; leave them off if unknown) and pass them as `--registry`, `--file-number`, `--plaintiff`, `--defendant`, `--hearing-date` (plus `--time-estimate` if given), which write `manifest.json`. Never guess them or reuse sample values such as `S-240123`.
    - **Where it goes.** Keep source filings in `inputs/<matter>/` and save binders in `output/<matter>/` as `Application_Record_<matter>_<DDMmmYYYY>.pdf` ([naming](references/filename-conventions.md)). Never overwrite an existing binder.
 3. If validating: prompt for target PDF path and display the complete 20-gate compliance scorecard.
 
