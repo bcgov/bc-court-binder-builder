@@ -27,6 +27,7 @@ Consumed by:
 import os
 import subprocess
 import sys
+import webbrowser
 from pathlib import Path
 from typing import Any, Callable
 
@@ -95,21 +96,64 @@ class Api:
     # Feature 1: generate sample filings and run the whole cycle.
     def run_full_cycle(self) -> dict:
         """Generate sample filings, assemble a binder and validate it."""
-        return _safe(lambda: engine.run_full_cycle(engine.load_workspace()))
+        return _safe(lambda: engine.run_full_cycle(engine.load_workspace(), engine.load_output_dir()))
+
+    # Output folder shown in the UI.
+    def output_dir(self) -> str:
+        """Return the current output folder as text."""
+        return str(engine.load_output_dir())
+
+    # Change the output folder (browsed).
+    def set_output_dir(self, folder: str) -> dict:
+        """Save a new output folder, creating it if it does not exist."""
+        def action() -> dict:
+            if not folder.strip():
+                raise ValueError("Enter a folder path.")
+            return {"output_dir": str(engine.save_output_dir(Path(folder.strip()).expanduser()))}
+
+        return _safe(action)
+
+    # Suggested file name for a binder built from this folder.
+    def suggest_binder_name(self, inputs_dir: str, application_date: str = "") -> str:
+        """Return the suggested binder file name (without .pdf)."""
+        return engine.suggest_binder_name(Path(inputs_dir), application_date or None)
+
+    # Case details to prefill the form for a folder.
+    def case_details(self, inputs_dir: str) -> dict:
+        """Return the case details found in the folder's manifest, or empty defaults."""
+        return _safe(lambda: engine.read_case_details(Path(inputs_dir)))
+
+    # Where a binder built from this folder will be saved by default.
+    def default_binder_dir(self, inputs_dir: str) -> str:
+        """Return output folder / source folder name, the default save location."""
+        return str(engine.load_output_dir() / Path(inputs_dir).name)
 
     # Feature 2: assemble a user's folder into a binder.
-    def assemble(self, inputs_dir: str, output_name: str) -> dict:
-        """Assemble a binder from a folder; the PDF is saved in the working folder.
+    def assemble(self, inputs_dir: str, output_name: str, save_dir: str = "", details: dict | None = None) -> dict:
+        """Assemble a binder from a folder and save it in a chosen or default folder.
 
         Args:
             inputs_dir: Folder containing the filings.
             output_name: File name for the binder (".pdf" added if missing).
+            save_dir: Folder to save into; empty means the output folder plus a
+                subfolder named after the filings folder.
+            details: Case details from the form; saved as manifest.json first.
         """
         def action() -> dict:
             name = Path(output_name.strip() or "Application_Record").name
             if not name.lower().endswith(".pdf"):
                 name += ".pdf"
-            return engine.assemble(Path(inputs_dir), engine.load_workspace() / name)
+            if details is not None:
+                engine.save_case_details(Path(inputs_dir), details)
+            folder = Path(save_dir).expanduser() if save_dir.strip() else Path(self.default_binder_dir(inputs_dir))
+            folder.mkdir(parents=True, exist_ok=True)
+            target = engine.unique_pdf_path(folder, name)
+            result = engine.assemble(Path(inputs_dir), target)
+            if target.name != name:
+                result["warnings"] = [
+                    f"A file named {name} already existed, so this binder was saved as {target.name}."
+                ] + result.get("warnings", [])
+            return result
 
         return _safe(action)
 
@@ -117,6 +161,40 @@ class Api:
     def validate(self, pdf_path: str) -> dict:
         """Validate a binder PDF against the 20 quality gates."""
         return _safe(lambda: engine.validate(Path(pdf_path)))
+
+    # Labels and verification date for the CSO page buttons.
+    def cso_pages(self) -> dict:
+        """Return the CSO page labels and when the addresses were verified."""
+        def action() -> dict:
+            links = engine.load_cso_links()
+            labels = {key: page["label"] for key, page in links["pages"].items()}
+            return {"verified_on": links["verified_on"], "labels": labels}
+
+        return _safe(action)
+
+    # Open one official CSO page in the user's own browser.
+    def open_cso_page(self, key: str) -> dict:
+        """Open a CSO page by key. Only addresses in cso_links.json can be opened."""
+        def action() -> dict:
+            page = engine.load_cso_links()["pages"].get(key)
+            if page is None:
+                raise ValueError("Unknown CSO page.")
+            if not webbrowser.open(page["url"]):
+                raise RuntimeError("Could not open your web browser.")
+            return {"url": page["url"]}
+
+        return _safe(action)
+
+    # Work out how a binder must be uploaded to CSO.
+    def filing_route(self, pdf_path: str) -> dict:
+        """Return the CSO upload route for the chosen binder PDF."""
+        def action() -> dict:
+            target = Path(pdf_path)
+            if not target.is_file():
+                raise FileNotFoundError(f"File not found: {pdf_path}")
+            return engine.filing_route(target.stat().st_size, engine.load_cso_links())
+
+        return _safe(action)
 
     # Preview a folder before building.
     def inspect_folder(self, folder: str) -> dict:

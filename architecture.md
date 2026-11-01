@@ -200,7 +200,9 @@ flowchart LR
 | `binder_app/api.py` | Methods the UI can call (pick folder or PDF, run cycle, assemble, validate, reveal, open). Every method returns `{ok: true, ...}` or `{ok: false, error}`. |
 | `binder_app/engine.py` | Finds the scripts (env var `BC_BINDER_SCRIPTS`, PyInstaller bundle, or repo checkout), imports them, captures their console output, and summarises scorecards. Also stores the working folder. |
 | `binder_app/ui/` | Sidebar workflow, results with failures first, built only from design-system tokens (`static/` holds copies of the skill's fonts, logo and `colors_and_type.css`). |
-| `tests/test_engine.py` | End-to-end test: the sample cycle must score 20 / 20. |
+| `tests/test_engine.py` | End-to-end tests: the sample cycle must score 20 / 20, plus regression tests for each audit finding and the CSO guide. |
+
+**CSO filing guide.** The fourth screen only opens pages listed in the skill's `references/cso_links.json` (https on `justice.gov.bc.ca`, enforced by `engine.load_cso_links`) in the user's default browser. The same file and the skill's `references/cso-account-and-efiling.md` serve agents, so the app and agents give the same guidance. The app never handles credentials, payment details or submission.
 
 **Design decisions**
 - **Local only.** Court filings are confidential; nothing is uploaded.

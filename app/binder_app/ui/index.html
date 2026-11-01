@@ -34,18 +34,33 @@
             <span class="nav-num" aria-hidden="true">3</span>
             <span class="nav-text"><b>Check a binder</b><small>Audit a PDF against 20 court gates</small></span>
           </button>
+          <button class="nav-item" role="tab" id="tab-file" aria-controls="panel-file" aria-selected="false" tabindex="-1">
+            <span class="nav-num" aria-hidden="true">4</span>
+            <span class="nav-text"><b>File with CSO</b><small>Get set up and find the right filing page</small></span>
+          </button>
         </div>
       </nav>
 
-      <section class="workfolder" aria-labelledby="wf-title">
-        <h2 id="wf-title">Working folder</h2>
-        <p class="path" id="workspace-path">Loading…</p>
-        <p class="hint" id="workspace-hint">Everything the app creates is saved here.</p>
-        <div class="wf-actions">
-          <button class="btn btn-secondary btn-sm" id="pick-workspace" type="button">Change…</button>
-          <button class="btn btn-tertiary btn-sm" id="show-workspace" type="button">Show in folder</button>
-        </div>
-      </section>
+      <div class="folders">
+        <section class="workfolder" aria-labelledby="wf-title">
+          <h2 id="wf-title">Working folder</h2>
+          <p class="path" id="workspace-path">Loading…</p>
+          <p class="hint" id="workspace-hint">Sample filings are created here.</p>
+          <div class="wf-actions">
+            <button class="btn btn-secondary btn-sm" id="pick-workspace" type="button">Change…</button>
+            <button class="btn btn-tertiary btn-sm" id="show-workspace" type="button">Show in folder</button>
+          </div>
+        </section>
+        <section class="workfolder" aria-labelledby="of-title">
+          <h2 id="of-title">Output folder</h2>
+          <p class="path" id="output-path">Loading…</p>
+          <p class="hint" id="output-hint">Finished binders are saved here, in a subfolder named after your filings.</p>
+          <div class="wf-actions">
+            <button class="btn btn-secondary btn-sm" id="pick-output" type="button">Change…</button>
+            <button class="btn btn-tertiary btn-sm" id="show-output" type="button">Show in folder</button>
+          </div>
+        </section>
+      </div>
     </aside>
 
     <main id="main" class="content">
@@ -70,7 +85,7 @@
 
       <section class="panel" role="tabpanel" id="panel-build" aria-labelledby="tab-build" hidden>
         <h2>Build a binder</h2>
-        <p class="lead">Choose the folder that holds your filings. The app numbers the pages, adds an index and bookmarks, and saves one binder PDF in your working folder.</p>
+        <p class="lead">Choose the folder that holds your filings. The app numbers the pages, adds an index and bookmarks, and saves one binder PDF. You choose where it is saved.</p>
         <div class="card">
           <div class="picker" id="build-picker">
             <svg class="picker-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
@@ -81,10 +96,46 @@
             </div>
             <button class="btn btn-secondary" id="pick-folder" type="button">Choose folder…</button>
           </div>
+          <fieldset class="case-details" id="case-details" hidden>
+            <legend>Case details for the title page</legend>
+            <p class="hint">These appear on the binder's title page. They are saved as manifest.json in your filings folder, so you only enter them once.</p>
+            <div class="form-grid">
+              <div class="field"><label for="cd-court">Court</label>
+                <select id="cd-court"><option>Supreme Court of British Columbia</option><option>Court of Appeal for British Columbia</option></select></div>
+              <div class="field"><label for="cd-registry">Registry</label>
+                <input id="cd-registry" type="text" list="registries" placeholder="For example Vancouver"></div>
+              <div class="field"><label for="cd-file-number">Court file number</label>
+                <input id="cd-file-number" type="text" placeholder="As shown on your court documents"></div>
+              <div class="field"><label for="cd-date">Hearing date</label>
+                <input id="cd-date" type="text" placeholder="For example November 15, 2026"></div>
+              <div class="field"><label for="cd-plaintiff">Applicant or plaintiff</label>
+                <input id="cd-plaintiff" type="text"></div>
+              <div class="field"><label for="cd-defendant">Respondent or defendant</label>
+                <input id="cd-defendant" type="text"></div>
+              <div class="field"><label for="cd-time">Time estimate</label>
+                <input id="cd-time" type="text" placeholder="For example 25 minutes"></div>
+              <div class="field"><label for="cd-counsel-applicant">Counsel for applicant (optional)</label>
+                <input id="cd-counsel-applicant" type="text"></div>
+              <div class="field"><label for="cd-counsel-respondent">Counsel for respondent (optional)</label>
+                <input id="cd-counsel-respondent" type="text"></div>
+            </div>
+            <datalist id="registries">
+              <option value="Vancouver"><option value="New Westminster"><option value="Victoria"><option value="Nanaimo"><option value="Kelowna"><option value="Kamloops"><option value="Prince George"><option value="Abbotsford"><option value="Chilliwack"><option value="Campbell River"><option value="Courtenay"><option value="Duncan"><option value="Port Alberni"><option value="Powell River"><option value="Cranbrook"><option value="Nelson"><option value="Penticton"><option value="Rossland"><option value="Salmon Arm"><option value="Vernon"><option value="Dawson Creek"><option value="Fort St. John"><option value="Quesnel"><option value="Smithers"><option value="Terrace">
+            </datalist>
+          </fieldset>
+          <div class="picker" id="save-picker">
+            <svg class="picker-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+            <div class="picker-text">
+              <span class="picker-label">Save binder in</span>
+              <span class="picker-value" id="save-folder">Choose a folder of filings first</span>
+              <span class="picker-meta">New subfolder in your output folder by default. A file is never overwritten; a number is added to the name instead.</span>
+            </div>
+            <button class="btn btn-secondary" id="pick-save-dir" type="button">Choose folder…</button>
+          </div>
           <div class="field">
             <label for="build-name">Binder file name</label>
             <input id="build-name" type="text" value="Application_Record" aria-describedby="build-name-hint">
-            <p class="hint" id="build-name-hint">“.pdf” is added for you.</p>
+            <p class="hint" id="build-name-hint">Suggested from your filings folder and application date. “.pdf” is added for you.</p>
           </div>
           <div class="actions">
             <button class="btn btn-primary" id="run-build" type="button" disabled>Build binder</button>
@@ -110,6 +161,63 @@
           </div>
         </div>
         <div class="result" id="result-check" aria-live="polite"></div>
+      </section>
+
+      <section class="panel" role="tabpanel" id="panel-file" aria-labelledby="tab-file" hidden>
+        <h2>File with Court Services Online</h2>
+        <p class="lead">Answer a few questions and the app opens the right Court Services Online (CSO) page in your own browser. You log on, add your card and submit yourself. This app never sees your password or card details.</p>
+
+        <div class="stages">
+          <fieldset class="stage" id="stage-account">
+            <legend><span class="how-num" aria-hidden="true">1</span> Do you have a CSO account that can e-file?</legend>
+            <div class="choices" role="radiogroup">
+              <label class="choice"><input type="radio" name="q-account" value="yes"> Yes</label>
+              <label class="choice"><input type="radio" name="q-account" value="no"> No</label>
+              <label class="choice"><input type="radio" name="q-account" value="unsure"> Not sure</label>
+            </div>
+            <div class="stage-answer" id="answer-account" aria-live="polite"></div>
+          </fieldset>
+
+          <fieldset class="stage" id="stage-logon">
+            <legend><span class="how-num" aria-hidden="true">2</span> Are you logged on to CSO in your browser?</legend>
+            <div class="choices" role="radiogroup">
+              <label class="choice"><input type="radio" name="q-logon" value="yes"> Yes</label>
+              <label class="choice"><input type="radio" name="q-logon" value="no"> No</label>
+            </div>
+            <div class="stage-answer" id="answer-logon" aria-live="polite"></div>
+          </fieldset>
+
+          <fieldset class="stage" id="stage-card">
+            <legend><span class="how-num" aria-hidden="true">3</span> Is a credit card registered on your CSO account?</legend>
+            <div class="choices" role="radiogroup">
+              <label class="choice"><input type="radio" name="q-card" value="yes"> Yes</label>
+              <label class="choice"><input type="radio" name="q-card" value="no"> No</label>
+              <label class="choice"><input type="radio" name="q-card" value="unsure"> Not sure</label>
+            </div>
+            <div class="stage-answer" id="answer-card" aria-live="polite"></div>
+          </fieldset>
+
+          <fieldset class="stage" id="stage-binder">
+            <legend><span class="how-num" aria-hidden="true">4</span> Check your binder before you upload</legend>
+            <div class="picker" id="file-picker">
+              <svg class="picker-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h8l6 6v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zM14 2v6h6"/></svg>
+              <div class="picker-text">
+                <span class="picker-label">Binder PDF</span>
+                <span class="picker-value" id="file-pdf">No file chosen</span>
+              </div>
+              <button class="btn btn-secondary" id="pick-file-pdf" type="button">Choose PDF…</button>
+            </div>
+            <div class="stage-answer" id="answer-binder" aria-live="polite"></div>
+            <h3 class="checklist-title">When you file</h3>
+            <ul class="checklist">
+              <li>In the CSO E-file menu choose <b>Application Records</b>, not Submit Package.</li>
+              <li>Submit the binder as <b>one PDF</b>. Give it sequence number <b>1</b>; a book of authorities is <b>2</b>. Reusing a number overwrites the earlier upload, and a corrected record must reuse the same number.</li>
+              <li>Deadline: <b>4:00 p.m. one full business day before the hearing</b>. Late records are not placed on the hearing list.</li>
+              <li>Fee: <b>$7.00</b> transaction fee plus any statutory fees, charged to your registered card. Keep the confirmation email.</li>
+            </ul>
+            <p class="hint" id="cso-verified"></p>
+          </fieldset>
+        </div>
       </section>
 
     </main>

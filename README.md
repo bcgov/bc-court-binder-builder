@@ -42,7 +42,7 @@ All four use the same engine, so a binder built any way passes the same 20 court
 | :---: | :--- | :--- | :--- |
 | **1** | **Install the skill with APM and ask an AI agent** (Claude, GitHub Copilot, Codex, Gemini). Say "build a court binder from this folder" and the agent runs the skill. | Paralegals and lawyers who want to work in plain language. | ✅ Available. [Install steps](#apm-installation) |
 | **2** | **Run the Python commands directly** (`assemble`, `validate`, interactive wizard). | Developers, CI/CD and automation. | ✅ Available. [Command reference](#headless-cli) |
-| **3** | **Run the desktop app from Python.** A native window with three screens: create sample filings, build a binder, check a binder. | People who want a window, not a chat or a terminal. | ✅ Available from source. [Desktop app](#desktop-app) |
+| **3** | **Run the desktop app from Python.** A native window with four screens: create sample filings, build a binder, check a binder, and file with CSO. | People who want a window, not a chat or a terminal. | ✅ Available from source. [Desktop app](#desktop-app) |
 | **4** | **Install a Mac application** (`.dmg`, drag to Applications) with no Python setup. A matching Windows installer is planned after it. | Anyone who just wants to try it. | 🛠️ Planned, not built yet |
 
 ```bash
@@ -214,10 +214,11 @@ Prefer a window to a chat? The **Court binder builder** desktop app (`app/`) wra
 | Step | What it does |
 | :--- | :--- |
 | **1. Create sample filings** | Generates synthetic Rule 7-1 filings, builds a binder from them, and audits it against the 20 gates. Use it to try the full cycle without client documents. |
-| **2. Build a binder** | Choose a folder of filings, name the file, and get one foliated, bookmarked, hyperlinked binder PDF. |
+| **2. Build a binder** | Choose a folder of filings and fill in a short **Case details** form (court file number, registry, parties, hearing date, time estimate). The app saves them as `manifest.json`, suggests a file name, and builds one foliated, bookmarked, hyperlinked binder PDF in a subfolder of your output folder. |
 | **3. Check a binder** | Choose any binder PDF and get a 20-gate scorecard with failures first and how to fix them. |
+| **4. File with CSO** | Asks whether you have a Court Services Online account, are logged on, and have a credit card registered, then opens the right CSO page (register, log on, register card, E-file home) in your own browser. Also shows the upload route for your binder's size and a filing checklist. You do every CSO step yourself; the app never sees credentials or card details. |
 
-A **working folder** (default: `inputs/` in this repo) holds everything the app creates; each sample run gets its own timestamped subfolder. Change it any time from the sidebar.
+Two folders keep source files and results apart, as this repo does with `inputs/` and `output/`. The **working folder** (default `inputs/`) holds sample filings the app creates. The **output folder** (default `output/`) holds finished binders, each in a subfolder named after the filings folder you built from, and you can pick a different save location for any build. A binder is never overwritten: if the name exists, a number is added. Change either folder from the sidebar.
 
 | | |
 | :---: | :---: |

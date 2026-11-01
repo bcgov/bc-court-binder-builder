@@ -29,6 +29,7 @@ from unittest import mock
 import pypdf
 
 from binder_app import engine
+from binder_app.api import Api
 
 
 class EngineCycleTest(unittest.TestCase):
@@ -37,7 +38,7 @@ class EngineCycleTest(unittest.TestCase):
     def test_full_cycle_passes_all_gates(self) -> None:
         """The sample cycle must produce a binder that passes all 20 gates."""
         with tempfile.TemporaryDirectory() as tmp:
-            result = engine.run_full_cycle(Path(tmp))
+            result = engine.run_full_cycle(Path(tmp), Path(tmp) / "out")
             validation = result["validation"]
             self.assertTrue(Path(result["assembled"]["output_pdf"]).exists())
             self.assertEqual(validation["total"], 20)
@@ -143,7 +144,7 @@ class ValidatorAccuracyTest(unittest.TestCase):
         """Builds one sample binder shared by the tests in this class."""
         cls._tmp = tempfile.TemporaryDirectory()
         cls.workspace = Path(cls._tmp.name)
-        result = engine.run_full_cycle(cls.workspace)
+        result = engine.run_full_cycle(cls.workspace, cls.workspace / "out")
         cls.good_pdf = Path(result["assembled"]["output_pdf"])
 
     @classmethod
@@ -225,6 +226,230 @@ class ValidatorAccuracyTest(unittest.TestCase):
         )
         self.assertNotEqual(proc.returncode, 0)
         self.assertFalse((self.workspace / "fam" / "manifest.json").exists())
+
+
+class OutputFolderTest(unittest.TestCase):
+    """Tests for where binders are saved."""
+
+    def test_sample_cycle_keeps_filings_and_binder_in_separate_folders(self) -> None:
+        """Filings go to the working folder and the binder to the output folder."""
+        with tempfile.TemporaryDirectory() as tmp:
+            work, out = Path(tmp) / "work", Path(tmp) / "out"
+            result = engine.run_full_cycle(work, out)
+            self.assertTrue(Path(result["run_dir"]).is_relative_to(work))
+            self.assertTrue(Path(result["assembled"]["output_pdf"]).is_relative_to(out))
+            self.assertFalse(list(work.rglob("*.pdf.pdf")))
+            self.assertFalse(list(work.glob("*/Application_Record_Sample.pdf")))
+
+    def test_unique_pdf_path_never_overwrites(self) -> None:
+        """An existing binder is kept; the new one gets a numbered name."""
+        with tempfile.TemporaryDirectory() as tmp:
+            folder = Path(tmp)
+            (folder / "Binder.pdf").write_bytes(b"x")
+            self.assertEqual(engine.unique_pdf_path(folder, "Binder.pdf").name, "Binder 2.pdf")
+            (folder / "Binder 2.pdf").write_bytes(b"x")
+            self.assertEqual(engine.unique_pdf_path(folder, "Binder.pdf").name, "Binder 3.pdf")
+            self.assertEqual(engine.unique_pdf_path(folder, "Other.pdf").name, "Other.pdf")
+
+    def test_api_saves_binder_in_chosen_folder_not_the_filings_folder(self) -> None:
+        """The API builds into the folder the user chose and reports a renamed file."""
+        with tempfile.TemporaryDirectory() as tmp:
+            filings = Path(tmp) / "filings"
+            filings.mkdir()
+            _make_filing_pdf(filings, "Tab01_Notice_15Nov2026.pdf", "SAVE-LOCATION-TEST")
+            save = Path(tmp) / "chosen"
+            api = Api()
+            first = api.assemble(str(filings), "Binder", str(save))
+            second = api.assemble(str(filings), "Binder", str(save))
+            self.assertTrue(first["ok"] and second["ok"], (first, second))
+            self.assertEqual(Path(first["output_pdf"]).parent, save)
+            self.assertEqual(Path(second["output_pdf"]).name, "Binder 2.pdf")
+            self.assertTrue(any("already existed" in w for w in second["warnings"]))
+            self.assertEqual(list(filings.glob("*.pdf")), [filings / "Tab01_Notice_15Nov2026.pdf"])
+
+    def test_suggested_binder_name_uses_folder_and_application_date(self) -> None:
+        """The suggested name is Application_Record_<folder>, plus DDMmmYYYY when the manifest has a date."""
+        with tempfile.TemporaryDirectory() as tmp:
+            plain = Path(tmp) / "02 amendment (draft)"
+            plain.mkdir()
+            self.assertEqual(engine.suggest_binder_name(plain), "Application_Record_02_amendment_draft")
+            dated = Path(tmp) / "01-commercial-discovery"
+            dated.mkdir()
+            (dated / "manifest.json").write_text(json.dumps({"application_date": "December 4, 2026 at 9:45 AM"}))
+            self.assertEqual(engine.suggest_binder_name(dated), "Application_Record_01-commercial-discovery_04Dec2026")
+
+    def test_settings_keep_both_folders(self) -> None:
+        """Saving one folder setting must not erase the other."""
+        with tempfile.TemporaryDirectory() as tmp, mock.patch.object(
+            engine, "_settings_file", return_value=Path(tmp) / "settings.json"
+        ):
+            engine.save_workspace(Path(tmp) / "work")
+            engine.save_output_dir(Path(tmp) / "out")
+            self.assertEqual(engine.load_workspace(), Path(tmp) / "work")
+            self.assertEqual(engine.load_output_dir(), Path(tmp) / "out")
+
+
+class CaseDetailsTest(unittest.TestCase):
+    """Tests for the case-details form and manifest writing."""
+
+    FULL = {
+        "court": "Supreme Court of British Columbia", "registry": "Kelowna", "file_number": "S-98765",
+        "plaintiff": "Roe Holdings Ltd.", "defendant": "Doe Corp.", "application_date": "March 3, 2027",
+        "time_estimate": "20 minutes", "counsel_applicant": "", "counsel_respondent": "",
+    }
+
+    def test_details_are_required_and_defaults_empty(self) -> None:
+        """Without a manifest the form starts empty (court prefilled) and blanks are refused."""
+        with tempfile.TemporaryDirectory() as tmp:
+            folder = Path(tmp)
+            details = engine.read_case_details(folder)
+            self.assertFalse(details["has_manifest"])
+            self.assertEqual(details["file_number"], "")
+            with self.assertRaises(ValueError) as ctx:
+                engine.save_case_details(folder, {**self.FULL, "file_number": " "})
+            self.assertIn("court file number", str(ctx.exception))
+
+    def test_building_with_details_writes_manifest_and_real_title_page(self) -> None:
+        """The API saves manifest.json and the binder shows the entered details, not placeholders."""
+        with tempfile.TemporaryDirectory() as tmp:
+            filings = Path(tmp) / "filings"
+            filings.mkdir()
+            _make_filing_pdf(filings, "Tab01_Notice_15Nov2026.pdf", "FORM-TEST")
+            result = Api().assemble(str(filings), "Binder", str(Path(tmp) / "out"), self.FULL)
+            self.assertTrue(result["ok"], result)
+            self.assertTrue((filings / "manifest.json").is_file())
+            self.assertEqual(result["warnings"], [])
+            text = _binder_text(Path(result["output_pdf"]))
+            self.assertIn("S-98765", text)
+            self.assertIn("Roe Holdings Ltd.", text)
+            self.assertNotIn("[Court file number", text)
+            self.assertNotIn("S-240123", text)
+
+    def test_saving_keeps_existing_documents_and_exhibits(self) -> None:
+        """Editing details in an existing manifest must not lose its documents."""
+        with tempfile.TemporaryDirectory() as tmp:
+            folder = Path(tmp)
+            doc = {"item_num": 1, "title": "Tab 1 - X", "short_title": "X", "filename": "a.pdf",
+                   "exhibits": [{"letter": "A", "description": "Agreement", "rel_page": 2}]}
+            (folder / "manifest.json").write_text(json.dumps({"documents": [doc], "extra": "keep"}))
+            engine.save_case_details(folder, self.FULL)
+            saved = json.loads((folder / "manifest.json").read_text())
+            self.assertEqual(saved["documents"], [doc])
+            self.assertEqual(saved["extra"], "keep")
+            self.assertEqual(saved["file_number"], "S-98765")
+
+    def test_cli_case_flags_write_manifest_and_real_title_page(self) -> None:
+        """The skill's command line accepts case details, writes manifest.json and never uses sample values."""
+        with tempfile.TemporaryDirectory() as tmp:
+            filings = Path(tmp) / "filings"
+            filings.mkdir()
+            _make_filing_pdf(filings, "Tab01_Notice_15Nov2026.pdf", "CLI-FORM-TEST")
+            out = Path(tmp) / "Binder.pdf"
+            script = engine.locate_scripts_dir() / "managing_court_binders.py"
+            proc = subprocess.run(
+                [sys.executable, str(script), "--mode", "assemble", "--inputs", str(filings), "--output", str(out),
+                 "--registry", "Kelowna", "--file-number", "S-55555", "--plaintiff", "A Ltd.", "--defendant", "B Corp.",
+                 "--hearing-date", "March 3, 2027", "--time-estimate", "20 minutes"],
+                capture_output=True, text=True, timeout=120,
+            )
+            self.assertEqual(proc.returncode, 0, proc.stdout[-400:] + proc.stderr[-400:])
+            self.assertTrue((filings / "manifest.json").is_file())
+            text = _binder_text(out)
+            self.assertIn("S-55555", text)
+            self.assertNotIn("S-240123", text)
+            self.assertNotIn("WARNING", proc.stdout)
+
+    def test_cli_warns_when_no_case_details_exist(self) -> None:
+        """With no manifest and no case flags the CLI must warn that the title page has placeholders."""
+        with tempfile.TemporaryDirectory() as tmp:
+            filings = Path(tmp) / "filings"
+            filings.mkdir()
+            _make_filing_pdf(filings, "Tab01_Notice_15Nov2026.pdf", "NO-DETAILS")
+            script = engine.locate_scripts_dir() / "managing_court_binders.py"
+            proc = subprocess.run(
+                [sys.executable, str(script), "--mode", "assemble", "--inputs", str(filings), "--output", str(Path(tmp) / "b.pdf")],
+                capture_output=True, text=True, timeout=120,
+            )
+            self.assertIn("WARNING: no manifest.json", proc.stdout)
+
+    def test_suggested_name_uses_typed_date(self) -> None:
+        """A date typed in the form overrides the manifest date in the suggested name."""
+        with tempfile.TemporaryDirectory() as tmp:
+            folder = Path(tmp) / "matter"
+            folder.mkdir()
+            self.assertEqual(engine.suggest_binder_name(folder, "March 3, 2027"), "Application_Record_matter_03Mar2027")
+
+
+class CsoGuideTest(unittest.TestCase):
+    """Tests for the CSO links, upload route and the page-opening API."""
+
+    def test_links_file_only_contains_official_cso_addresses(self) -> None:
+        """Every shared CSO address must be https on justice.gov.bc.ca."""
+        links = engine.load_cso_links()
+        self.assertTrue({"register", "logon", "efile_home"} <= set(links["pages"]))
+        for page in links["pages"].values():
+            self.assertTrue(page["url"].startswith("https://justice.gov.bc.ca/"))
+
+    def test_loader_rejects_foreign_hosts(self) -> None:
+        """A links file pointing at another site must be refused."""
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / "scripts").mkdir()
+            refs = Path(tmp) / "references"
+            refs.mkdir()
+            bad = {"verified_on": "x", "pages": {"evil": {"label": "x", "url": "https://example.com/cso"}}}
+            (refs / "cso_links.json").write_text(json.dumps(bad))
+            with mock.patch.object(engine, "locate_scripts_dir", return_value=Path(tmp) / "scripts"):
+                with self.assertRaises(ValueError):
+                    engine.load_cso_links()
+
+    def test_filing_route_boundaries(self) -> None:
+        """20 MB and under uploads directly; over 20 needs large file upload; over 50 is blocked."""
+        mb = 1024 * 1024
+        links = engine.load_cso_links()
+        self.assertEqual(engine.filing_route(5 * mb, links)["route"], "direct")
+        self.assertEqual(engine.filing_route(20 * mb, links)["route"], "direct")
+        self.assertEqual(engine.filing_route(21 * mb, links)["route"], "large_file")
+        self.assertEqual(engine.filing_route(50 * mb, links)["route"], "large_file")
+        self.assertEqual(engine.filing_route(51 * mb, links)["route"], "too_large")
+
+    def test_url_guard_rejects_parser_differentials(self) -> None:
+        """Addresses that Python and browsers read differently must be rejected."""
+        good = "https://justice.gov.bc.ca/cso/register.do"
+        self.assertTrue(engine.is_official_cso_url(good))
+        for bad in (
+            "https://evil.com\\@justice.gov.bc.ca/cso",
+            "https://justice.gov.bc.ca\\@evil.com/",
+            "https://user@justice.gov.bc.ca/cso",
+            "https://justice.gov.bc.ca:8443/cso",
+            "https://justice.gov.bc.ca/cso\nhttps://evil.com",
+            "http://justice.gov.bc.ca/cso",
+            "https://justice.gov.bc.ca.evil.com/cso",
+        ):
+            self.assertFalse(engine.is_official_cso_url(bad), bad)
+
+    def test_ambiguous_prefix_text_files_are_refused(self) -> None:
+        """Two text files sharing a filing's prefix must raise, not pick one silently."""
+        with tempfile.TemporaryDirectory() as tmp:
+            folder = Path(tmp) / "in"
+            folder.mkdir()
+            doc = {"item_num": 1, "title": "Tab 1 - X", "short_title": "X", "filename": "01_Notice.pdf", "exhibits": []}
+            (folder / "manifest.json").write_text(json.dumps({"documents": [doc]}))
+            (folder / "01_Draft_one.txt").write_text("alpha " * 30)
+            (folder / "01_Draft_two.txt").write_text("beta " * 30)
+            with self.assertRaises(ValueError):
+                engine.assemble(folder, Path(tmp) / "out.pdf")
+
+    def test_open_cso_page_opens_only_listed_pages(self) -> None:
+        """The API opens a known page and refuses any other key without opening a browser."""
+        api = Api()
+        with mock.patch("webbrowser.open", return_value=True) as opener:
+            ok = api.open_cso_page("register")
+            self.assertTrue(ok["ok"])
+            opener.assert_called_once_with("https://justice.gov.bc.ca/cso/register.do")
+            opener.reset_mock()
+            refused = api.open_cso_page("https://example.com")
+            self.assertFalse(refused["ok"])
+            opener.assert_not_called()
 
 
 if __name__ == "__main__":
