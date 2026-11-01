@@ -215,6 +215,27 @@ This repository publishes its legal-ops capabilities as an [APM](https://github.
 | `copilot` | **GitHub Copilot CLI & Desktop App** | `copilot` / `copilot app` | `~/.agents/skills/managing-court-binders/` |
 | `agy` / `gemini` | **Antigravity / Gemini CLI** | Natural Language / Skill | `~/.gemini/antigravity-cli/skills/managing-court-binders/` |
 
+#### GitHub Copilot App Walkthrough
+
+The screenshots below show the skill being discovered, invoked, and used to assemble and validate a chambers motion from the GitHub Copilot desktop app. The example uses a Copilot worktree, so generated files are saved under that worktree's repository path; use the absolute path returned by the agent to open the output.
+
+1. Open the repository in GitHub Copilot and confirm the skill appears in slash-command autocomplete:
+
+   ![GitHub Copilot app home with bc-court-binder workspace](docs/assets/screenshots/copilot/01-copilot-desktop-home.jpg)
+   ![managing-court-binders slash command autocomplete](docs/assets/screenshots/copilot/02-copilot-slash-autocomplete.jpg)
+
+2. Request a chambers motion and let the skill generate filings, assemble the PDF, and run the 20-gate audit:
+
+   ![Copilot chambers motion request](docs/assets/screenshots/copilot/04-copilot-custom-motion-prompt.jpg)
+   ![Copilot executing the chambers motion workflow](docs/assets/screenshots/copilot/05-copilot-custom-motion-executing.jpg)
+
+3. Review the generated binder and successful audit, then ask Copilot for its full path if needed:
+
+   ![Copilot chambers motion audit results part one](docs/assets/screenshots/copilot/06-copilot-custom-motion-results-part1.jpg)
+   ![Copilot chambers motion audit results part two](docs/assets/screenshots/copilot/07-copilot-custom-motion-results-part2.jpg)
+
+   ![Copilot full workflow success](docs/assets/screenshots/copilot/03-copilot-mode-all-success.jpg)
+
 > [!NOTE]
 > **Microsoft Copilot vs. GitHub Copilot:**  
 > The developer-facing **GitHub Copilot** (CLI `copilot` and `GitHub Copilot.app`) natively discovers and executes APM skills. In contrast, the consumer/enterprise **Microsoft Copilot** app (`com.microsoft.m365copilot` for Bing/Office 365) operates in a restricted webview without local workspace access or skill execution capabilities.

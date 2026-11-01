@@ -61,6 +61,8 @@ When invoked without explicit flags (e.g. bare `/managing-court-binders`), condu
 2. If assembling: prompt for input folder path, inspect files, confirm statutory filing sequence (Form 32 $\to$ Form 33 $\to$ Form 35 affidavits with exhibits $\to$ Draft Order), compile, and immediately execute the 20-gate pre-flight audit.
 3. If validating: prompt for target PDF path and display the complete 20-gate compliance scorecard.
 
+For generation or assembly requests, use any input and output paths the user already supplied. If an output location is missing, ask where to save the generated source filings and/or assembled binder before creating those outputs. Resolve relative paths against the active workspace (which may be a Copilot or other agent worktree), not an assumed main checkout. After writing the binder, verify that the file exists and report its absolute path as a clickable Markdown link so the user can open it. State plainly when the file is inside a worktree.
+
 ## Verification
 
 ```bash
