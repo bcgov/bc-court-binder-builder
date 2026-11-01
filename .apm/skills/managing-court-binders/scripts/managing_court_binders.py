@@ -28,6 +28,7 @@ USAGE:
 
 import sys
 import argparse
+import json
 from pathlib import Path
 
 # Module-level default path constants
@@ -219,10 +220,16 @@ def main():
     # Mode 1: Generate
     if mode in ("generate", "all"):
         print(f"=== [Step 1: Generating Input Filings ({matter})] ===")
+        if matter != "discovery":
+            print(f"ERROR: no synthetic filing preset exists for matter type '{matter}'. "
+                  "Only 'discovery' can be generated; supply your own filings and manifest.json for others.")
+            sys.exit(2)
         out_dir = Path(inputs_dir)
         out_dir.mkdir(parents=True, exist_ok=True)
-        if hasattr(generating_court_documents, "generate_discovery_preset"):
-            generating_court_documents.generate_discovery_preset(out_dir)
+        # The generator returns the manifest; only its own CLI used to write it.
+        # Without manifest.json the assembler cannot create exhibit bookmarks.
+        manifest = generating_court_documents.generate_discovery_preset(out_dir)
+        (out_dir / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
 
     # Mode 2: Assemble
     if mode in ("assemble", "all"):
@@ -238,7 +245,6 @@ def main():
         out_path = Path(output_pdf)
         passed, scorecard = validating_court_binders.validate_court_binder(out_path)
         if emit_json:
-            import json
             print(json.dumps({"passed": passed, "scorecard": scorecard}, indent=2))
         else:
             for c in scorecard:
