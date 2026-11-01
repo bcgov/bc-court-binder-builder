@@ -81,6 +81,82 @@ def evaluate_ocr_quality(text: str) -> dict:
         "is_garbled": is_garbled
     }
 
+FOLIO_PAGE_COUNT = 5
+PART_SUFFIX = re.compile(r"\(Part \d+\)\s*$")
+
+
+def collect_folio_evidence(reader, first_index: int = 2, count: int = FOLIO_PAGE_COUNT) -> list[dict]:
+    """Inspects the folio actually stamped on the first substantive pages.
+
+    Args:
+        reader: An open pypdf reader.
+        first_index: Zero-based index of the first substantive page.
+        count: How many substantive pages to inspect.
+
+    Returns:
+        One dict per page: page number, expected folio, whether it was found
+        top-centre or in the footer, and the font name and size used.
+    """
+    evidence: list[dict] = []
+    for p_idx in range(first_index, min(first_index + count, len(reader.pages))):
+        page = reader.pages[p_idx]
+        page_w, page_h = float(page.mediabox.width), float(page.mediabox.height)
+        entry = {"page": p_idx + 1, "expected": str(p_idx - 1), "top_center": False,
+                 "footer": False, "font": "", "size": 0.0}
+
+        def visitor(text, cm, tm, font_dict, font_size, entry=entry, page_w=page_w, page_h=page_h):
+            st = text.strip()
+            if not st:
+                return
+            tx, ty = tm[4], tm[5]
+            centred = 0.35 <= tx / page_w <= 0.65
+            is_folio = st == entry["expected"] or st.startswith(entry["expected"] + " ")
+            if ty > page_h - 100 and centred and is_folio and not entry["top_center"]:
+                entry["top_center"] = True
+                entry["font"] = str(font_dict.get("/BaseFont", "")) if font_dict else ""
+                entry["size"] = float(font_size or 0)
+            elif ty < 100 and (entry["expected"] in st):
+                entry["footer"] = True
+
+        try:
+            page.extract_text(visitor_text=visitor)
+        except Exception:
+            pass
+        evidence.append(entry)
+    return evidence
+
+
+def document_final_pages(reader) -> set[int]:
+    """Returns zero-based indexes of pages that end a document.
+
+    A page ends a document when the next page's bookmark is not a
+    "(Part N)" continuation, or when it is the last page.
+    """
+    titles: dict[int, str] = {}
+
+    def walk(items) -> None:
+        for item in items:
+            if isinstance(item, list):
+                walk(item)
+            else:
+                try:
+                    titles[reader.get_destination_page_number(item)] = str(item.title)
+                except Exception:
+                    continue
+
+    try:
+        walk(reader.outline)
+    except Exception:
+        return {len(reader.pages) - 1}
+    last = len(reader.pages) - 1
+    final = {last}
+    for idx in range(last):
+        nxt = titles.get(idx + 1)
+        if nxt is not None and not PART_SUFFIX.search(nxt):
+            final.add(idx)
+    return final
+
+
 def validate_court_binder(pdf_path: Path) -> tuple[bool, list[dict]]:
     if not pdf_path.exists():
         raise FileNotFoundError(f"File not found: {pdf_path}")
@@ -121,14 +197,7 @@ def validate_court_binder(pdf_path: Path) -> tuple[bool, list[dict]]:
     # =========================================================================
     # GATE 0: Security & Encryption Disabled (JAG PD72-R5)
     # =========================================================================
-    is_encrypted = False
-    if reader is not None:
-        try:
-            is_encrypted = reader.is_encrypted
-        except Exception:
-            pass
-    if not is_encrypted:
-        is_encrypted = "/Encrypt" in raw_text
+    is_encrypted = bool(reader is not None and reader.is_encrypted)
 
     add_check(
         0,
@@ -140,6 +209,16 @@ def validate_court_binder(pdf_path: Path) -> tuple[bool, list[dict]]:
         else "Document is password-protected or encrypted (CSO registry cannot open it)",
         "Remove all password security and permissions encryption before submission."
     )
+
+    if is_encrypted and reader is not None:
+        # Gate 0 already fails. Try the empty user password so the remaining
+        # gates can still be assessed; otherwise they run without page access.
+        try:
+            decrypted = reader.decrypt("") != 0
+        except Exception:
+            decrypted = False
+        if not decrypted:
+            reader = None
 
     # =========================================================================
     # GATE 1: Single Consolidated PDF File
@@ -165,7 +244,8 @@ def validate_court_binder(pdf_path: Path) -> tuple[bool, list[dict]]:
         "CSO Instructions §3; Video 07:47",
         size_passed,
         "HARD_STOP",
-        f"File size is {file_size_mb:.4f} MB ({file_size_bytes:,} bytes), well below 50.0 MB threshold",
+        (f"File size is {file_size_mb:.4f} MB ({file_size_bytes:,} bytes), well below 50.0 MB threshold" if size_passed
+         else f"File size is {file_size_mb:.4f} MB ({file_size_bytes:,} bytes), which exceeds the 50.0 MB threshold"),
         "Downsample raster imagery or apply Flate stream compression."
     )
 
@@ -249,10 +329,9 @@ def validate_court_binder(pdf_path: Path) -> tuple[bool, list[dict]]:
     # =========================================================================
     index_has_numbers = False
     if reader and len(reader.pages) > 1:
-        p2_raw = reader.pages[1].extract_text()
-        index_has_numbers = bool(re.search(r'\b(?:Page\s+\d+|\.\.\.\s*\d+|\d+\s*$)|\b1\b', p2_raw, re.MULTILINE))
-    if not index_has_numbers:
-        index_has_numbers = bool(re.search(r'INDEX.*?\.\.\.\s*\d+', raw_text, re.DOTALL | re.IGNORECASE) or ("Page" in raw_text and re.search(r'\b1\b', raw_text)))
+        index_lines = [l.strip() for l in reader.pages[1].extract_text().splitlines() if l.strip()]
+        entry_rows = [l for l in index_lines if re.match(r"^\d+\s", l)]
+        index_has_numbers = bool(entry_rows) and all(re.search(r"\s\d+\s*$", l) for l in entry_rows)
 
     add_check(
         6,
@@ -353,60 +432,13 @@ def validate_court_binder(pdf_path: Path) -> tuple[bool, list[dict]]:
     # GATE 10: Spatial Margin Analysis: Top-Center Folio Placement
     # (Adapted from JAG-CSO-Assistant spatial margin bounding box coordinate logic)
     # =========================================================================
-    has_top_center = False
+    folio_evidence = collect_folio_evidence(reader) if reader else []
     spatial_evidence = ""
-    
-    if reader and len(reader.pages) > 2:
-        # Check first 5 substantive pages
-        matching_substantive = 0
-        inspected = 0
-        for p_idx in range(2, min(7, len(reader.pages))):
-            inspected += 1
-            page = reader.pages[p_idx]
-            page_w = float(page.mediabox.width)
-            page_h = float(page.mediabox.height)
-            expected_fol = str(p_idx - 1)
-            
-            top_header_entries = []
-            footer_entries = []
-
-            def visitor(text, cm, tm, font_dict, font_size):
-                st = text.strip()
-                if not st:
-                    return
-                # tm[4] = x, tm[5] = y
-                tx, ty = tm[4], tm[5]
-                # Header: top 100 pt (ty > page_h - 100)
-                if ty > (page_h - 100):
-                    cx_pct = tx / page_w
-                    pos = "center" if (0.35 <= cx_pct <= 0.65) else ("left" if cx_pct < 0.35 else "right")
-                    top_header_entries.append((st, tx, ty, font_size, pos))
-                # Footer: bottom 100 pt (ty < 100)
-                elif ty < 100:
-                    cx_pct = tx / page_w
-                    pos = "center" if (0.35 <= cx_pct <= 0.65) else ("left" if cx_pct < 0.35 else "right")
-                    footer_entries.append((st, tx, ty, font_size, pos))
-
-            try:
-                page.extract_text(visitor_text=visitor)
-            except Exception:
-                pass
-
-            # Check if expected folio is in top header and centered
-            is_top_centered = any(
-                (entry[0] == expected_fol or entry[0].startswith(f"{expected_fol} ")) and entry[4] == "center"
-                for entry in top_header_entries
-            )
-            if is_top_centered:
-                matching_substantive += 1
-            elif any(expected_fol in entry[0] or "000" in entry[0] for entry in footer_entries):
-                spatial_evidence = f"Page {p_idx + 1} stamps folio in bottom footer margin instead of top-center"
-
-        if inspected > 0 and matching_substantive >= (inspected - 1):
-            has_top_center = True
-    
-    if not has_top_center:
-        has_top_center = bool(re.search(r'(?:28\d|29\d|30\d|31\d)\s+(?:75\d|76\d|77\d)\s+Td', raw_text))
+    for ev in folio_evidence:
+        if not ev["top_center"] and ev["footer"]:
+            spatial_evidence = f"Page {ev['page']} stamps folio in bottom footer margin instead of top-center"
+    matching = sum(1 for ev in folio_evidence if ev["top_center"])
+    has_top_center = bool(folio_evidence) and matching >= len(folio_evidence) - 1
 
     add_check(
         10,
@@ -422,7 +454,8 @@ def validate_court_binder(pdf_path: Path) -> tuple[bool, list[dict]]:
     # =========================================================================
     # GATE 11: Page Number Font Family (Arial / Helvetica)
     # =========================================================================
-    has_arial_helvetica = "Helvetica" in raw_text or "Arial" in raw_text
+    folio_fonts = [ev["font"] for ev in folio_evidence if ev["top_center"]]
+    has_arial_helvetica = bool(folio_fonts) and all("HELVETICA" in f.upper() or "ARIAL" in f.upper() for f in folio_fonts)
     add_check(
         11,
         "Page Number Font Family (Arial / Helvetica)",
@@ -437,7 +470,7 @@ def validate_court_binder(pdf_path: Path) -> tuple[bool, list[dict]]:
     # =========================================================================
     # GATE 12: Page Number Font Style (Bold)
     # =========================================================================
-    has_bold = "Helvetica-Bold" in raw_text or "Arial-Bold" in raw_text or "Bold" in raw_text
+    has_bold = bool(folio_fonts) and all("BOLD" in f.upper() for f in folio_fonts)
     add_check(
         12,
         "Page Number Font Style (Bold)",
@@ -452,19 +485,8 @@ def validate_court_binder(pdf_path: Path) -> tuple[bool, list[dict]]:
     # =========================================================================
     # GATE 13: Page Number Font Size (14 pt or 16 pt)
     # =========================================================================
-    has_font_size = bool(re.search(r'/F\d+\s+(?:14|15|16)(?:\.0+)?\s+Tf', raw_text))
-    if not has_font_size and reader and len(reader.pages) > 2:
-        # Check font sizes extracted in top header of page 3
-        sizes = []
-        def size_visitor(text, cm, tm, font_dict, font_size):
-            if text.strip() in ("1", "0001", "001") and tm[5] > 600:
-                sizes.append(font_size)
-        try:
-            reader.pages[2].extract_text(visitor_text=size_visitor)
-            if any(14.0 <= s <= 16.5 for s in sizes):
-                has_font_size = True
-        except Exception:
-            pass
+    folio_sizes = [ev["size"] for ev in folio_evidence if ev["top_center"]]
+    has_font_size = bool(folio_sizes) and all(14.0 <= sz <= 16.5 for sz in folio_sizes)
 
     add_check(
         13,
@@ -480,11 +502,7 @@ def validate_court_binder(pdf_path: Path) -> tuple[bool, list[dict]]:
     # =========================================================================
     # GATE 14: Page 1 Start Location on First Substantive Document
     # =========================================================================
-    has_st_1 = "/St 1" in raw_text
-    if not has_st_1 and reader and len(reader.pages) > 2:
-        p3_lines = [l.strip() for l in reader.pages[2].extract_text().splitlines() if l.strip()]
-        if p3_lines and (p3_lines[0] == "1" or p3_lines[0].startswith("1 ")):
-            has_st_1 = True
+    has_st_1 = bool(folio_evidence) and folio_evidence[0]["expected"] == "1" and folio_evidence[0]["top_center"]
 
     add_check(
         14,
@@ -589,10 +607,16 @@ def validate_court_binder(pdf_path: Path) -> tuple[bool, list[dict]]:
         outline_titles = bookmark_matches
 
     has_good_bookmarks = bookmarks_count >= 3
-    has_disambiguation = any(
-        "OF" in b.upper() or "APPLICANT" in b.upper() or "RESPONDENT" in b.upper() or "CLAIMANT" in b.upper()
-        for b in outline_titles
-    )
+    # Disambiguation: every affidavit bookmark must name its deponent or party;
+    # without affidavits, at least one bookmark must name a party role.
+    base_titles = [PART_SUFFIX.sub("", b).strip() for b in outline_titles]
+    party_role = re.compile(r"\b(applicant|respondent|claimant|plaintiff|defendant|petitioner)\b", re.I)
+    deponent = re.compile(r"(?i:affidavit)\W*(?:#?\d+\W+)?(?:(?i:of)\s+)?[A-Z][a-z]+\s+[A-Z][a-z]+")
+    affidavits = [t for t in base_titles if re.search(r"\baffidavit\b", t, re.I)]
+    if affidavits:
+        has_disambiguation = all(party_role.search(t) or deponent.search(t) for t in affidavits)
+    else:
+        has_disambiguation = any(party_role.search(t) for t in base_titles)
 
     add_check(
         17,
@@ -615,13 +639,18 @@ def validate_court_binder(pdf_path: Path) -> tuple[bool, list[dict]]:
     sparse_pages = []
     garbled_pages = []
     if reader and len(reader.pages) > 2:
+        final_pages = document_final_pages(reader)
         for p_idx in range(2, len(reader.pages)):
             txt = reader.pages[p_idx].extract_text()
             words = len(txt.split())
             lines = [l.strip() for l in txt.splitlines() if l.strip()]
-            
-            # Check 1: Empty or truncated page (minimum 15 words and 2 substantive lines)
-            if words < 15 or len(lines) < 2 or "Substantive legal content filed with court" in txt:
+
+            # Check 1: Empty or truncated page. The last page of a filing may be
+            # short, so it only needs some real content; other pages need 15 words
+            # and 2 lines. Placeholder text always fails.
+            minimum_words, minimum_lines = (3, 1) if p_idx in final_pages else (15, 2)
+            if (words < minimum_words or len(lines) < minimum_lines
+                    or "Substantive legal content filed with court" in txt):
                 sparse_pages.append((p_idx + 1, words, len(lines)))
             
             # Check 2: OCR legibility heuristic
@@ -679,7 +708,8 @@ def validate_court_binder(pdf_path: Path) -> tuple[bool, list[dict]]:
                 non_standard_pages.append(p_idx + 1)
     
     non_std_pct = (len(non_standard_pages) / len(reader.pages) * 100.0) if (reader and len(reader.pages) > 0) else 0.0
-    geometry_passed = non_std_pct <= 10.0
+    pages_assessed = bool(reader and len(reader.pages) > 0)
+    geometry_passed = pages_assessed and non_std_pct <= 10.0
 
     add_check(
         19,
@@ -687,8 +717,9 @@ def validate_court_binder(pdf_path: Path) -> tuple[bool, list[dict]]:
         "JAG PD72-R4; Arlington Model §7.7",
         geometry_passed,
         "SOFT_WARNING",
-        f"All pages conform to standard 8.5 x 11 inch Letter dimensions ({len(reader.pages)} pages)" if geometry_passed
-        else f"{non_std_pct:.1f}% of pages exceed standard 8.5 x 11 inch bounds (Pages: {non_standard_pages[:5]})",
+        (f"All pages conform to standard 8.5 x 11 inch Letter dimensions ({len(reader.pages)} pages)" if geometry_passed
+         else f"{non_std_pct:.1f}% of pages exceed standard 8.5 x 11 inch bounds (Pages: {non_standard_pages[:5]})" if pages_assessed
+         else "Page dimensions could not be assessed (the file's pages are not readable, for example because it is password-protected)"),
         "Normalize oversized or non-Letter pages to standard 8.5 x 11 inch dimensions."
     )
 
