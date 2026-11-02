@@ -58,7 +58,8 @@ program, so no console window opens), runs the self-test, signs the executable, 
 the **built MSI** (`test-msi.ps1`: version, upgrade code, icon id, file count, shortcuts), signs it, and makes the
 portable zip. The workflow then runs `test-install.ps1`: install silently, self-test the installed app, reinstall
 over it (a same-version upgrade) and uninstall, checking the files and registration are gone. See
-`packaging/windows/INSTALLATION.md` for the scope rules.
+`packaging/windows/INSTALLATION.md` for the scope rules and `packaging/windows/SIGNING.md` for local and production
+signing instructions.
 
 ### PdfCraft native engine
 

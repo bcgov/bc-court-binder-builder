@@ -9,10 +9,9 @@ release process in [`docs/releasing.md`](../../docs/releasing.md): a dual-scope 
 PE-header, signing and MSI-inspection steps, and a portable zip. Installers are built by CI and published as GitHub
 Release assets; they are never committed.
 
-> **Status: written on a Mac and not yet run on Windows.** The PowerShell scripts parse and the PyInstaller spec was
-> test-built on macOS, but the MSI has never been compiled or installed. The **Packaging build** workflow builds it
-> on a clean Windows runner, installs it, self-tests the installed app, reinstalls over it and uninstalls. Treat its
-> first run as the real test and fix what it finds.
+> **Status: verified in CI.** The **Packaging build** workflow builds the MSI on a clean Windows runner, installs it
+> silently, self-tests the installed app (all 20 court gates), reinstalls over it and uninstalls. See [`SIGNING.md`](SIGNING.md)
+> to sign the package on Windows.
 
 ## Build it
 
@@ -28,13 +27,21 @@ Needs Python 3.10+ (64-bit) on `PATH` and WiX v5 (`dotnet tool install --global 
 2. Builds the app with PyInstaller (`binder_app.spec`) and checks the executable's PE header (x64, GUI subsystem).
 3. Runs the packaged app's **self-test**, `Court binder builder.exe --selftest --selftest-log <file>`: a sample binder
    must pass all 20 gates. (A windowed app has no console, so the result goes to a file.)
-4. Signs the executable and the MSI if a certificate is configured (`sign.ps1`).
+4. Signs the executable and the MSI if a certificate is configured (`sign.ps1`; see [`SIGNING.md`](SIGNING.md)).
 5. Builds the MSI with WiX, then inspects the built MSI (`test-msi.ps1`).
 6. Makes the portable zip.
 
 Then `pwsh packaging/windows/test-install.ps1` installs the MSI silently for the current user, self-tests the
 installed app, reinstalls over it, and uninstalls. See [`INSTALLATION.md`](INSTALLATION.md) for scopes and silent
-install options.
+install options, and [`SIGNING.md`](SIGNING.md) for signing details.
+
+## Code signing
+
+The app executable and the MSI installer can both be signed with an Authenticode certificate or Azure Trusted Signing. See [`SIGNING.md`](SIGNING.md) for step-by-step instructions:
+- Generating and trusting a local self-signed certificate on Windows to eliminate SmartScreen warnings during testing.
+- Building and signing end-to-end via `package.ps1`.
+- Post-signing pre-built MSIs using `Set-AuthenticodeSignature` or `signtool.exe`.
+- Setting up production secrets in GitHub Actions.
 
 ## PdfCraft native engine
 
