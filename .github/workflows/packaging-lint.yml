@@ -1,0 +1,49 @@
+# Quick static checks for the release pipeline (seconds, no app build): workflow syntax, the
+# packaging shell and PowerShell scripts, and the WiX / plist XML. Modelled on the PdfCraft
+# packaging-lint workflow (https://github.com/richfrem/pdfcraft).
+name: Packaging lint
+
+on:
+  push:
+    branches: [main, release]
+    paths: [".github/workflows/**", "packaging/**"]
+  pull_request:
+    paths: [".github/workflows/**", "packaging/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: packaging-lint-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: actionlint (workflow syntax)
+        run: docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:1.7.7 -color
+      - name: shellcheck (packaging scripts)
+        run: shellcheck packaging/env.sh packaging/macos/*.sh
+      - name: PowerShell parse (Windows packaging scripts)
+        shell: pwsh
+        run: |
+          $failed = $false
+          foreach ($file in Get-ChildItem packaging/windows -Filter *.ps1) {
+            $errors = $null
+            [void][System.Management.Automation.Language.Parser]::ParseFile($file.FullName, [ref]$null, [ref]$errors)
+            foreach ($e in $errors) { Write-Output "::error file=$($file.FullName),line=$($e.Extent.StartLineNumber)::$($e.Message)"; $failed = $true }
+          }
+          if ($failed) { exit 1 }
+      - name: xmllint (WiX and plist)
+        run: xmllint --noout packaging/windows/*.wxs packaging/windows/*.wxi packaging/macos/entitlements.plist
+      - name: MSI icon id ends in .exe or .ico
+        # Windows Installer shows a blank icon otherwise (also checked on the built MSI by test-msi.ps1).
+        run: grep -E '<Icon Id="[^"]+\.(ico|exe)"' packaging/windows/court-binder-builder.wxs
+      - name: PyInstaller specs and launchers parse
+        run: python3 -c "import ast,sys; [ast.parse(open(f).read()) for f in sys.argv[1:]]" packaging/macos/binder_app.spec packaging/windows/binder_app.spec packaging/macos/launcher.py packaging/windows/launcher.py packaging/macos/dmg/generate.py
