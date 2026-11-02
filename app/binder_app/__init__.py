@@ -11,6 +11,8 @@ Layer: Application
 
 import sys
 
+__version__ = "0.1.0"
+
 MIN_PYTHON = (3, 10)
 
 if sys.version_info < MIN_PYTHON:

@@ -75,9 +75,26 @@
             <li><span class="how-num" aria-hidden="true">2</span><span><b>Build the binder.</b> Cover, index with links, page numbers at top centre, and bookmarks.</span></li>
             <li><span class="how-num" aria-hidden="true">3</span><span><b>Check 20 court gates.</b> You get a pass or fail result for each one.</span></li>
           </ol>
+          <div class="picker has-value" id="create-work-picker">
+            <svg class="picker-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+            <div class="picker-text">
+              <span class="picker-label">Save sample filings in</span>
+              <span class="picker-value" id="create-work-folder">Loading…</span>
+              <span class="picker-meta">A new “Sample run” subfolder is created inside it. Defaults to your working folder.</span>
+            </div>
+            <button class="btn btn-secondary" id="pick-create-work" type="button">Choose folder…</button>
+          </div>
+          <div class="picker has-value" id="create-out-picker">
+            <svg class="picker-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+            <div class="picker-text">
+              <span class="picker-label">Save the binder in</span>
+              <span class="picker-value" id="create-out-folder">Loading…</span>
+              <span class="picker-meta">A new “Sample run” subfolder is created inside it. Defaults to your output folder.</span>
+            </div>
+            <button class="btn btn-secondary" id="pick-create-out" type="button">Choose folder…</button>
+          </div>
           <div class="actions">
             <button class="btn btn-primary" id="run-create" type="button">Run full test cycle</button>
-            <span class="hint">Saved in a new subfolder of your working folder.</span>
           </div>
         </div>
         <div class="result" id="result-create" aria-live="polite"></div>
@@ -96,9 +113,10 @@
             </div>
             <button class="btn btn-secondary" id="pick-folder" type="button">Choose folder…</button>
           </div>
-          <fieldset class="case-details" id="case-details" hidden>
-            <legend>Case details for the title page</legend>
-            <p class="hint">These appear on the binder's title page. Optional fields are left off the page when blank. They are saved as manifest.json in your filings folder, so you only enter them once.</p>
+          <details class="case-details" id="case-details" hidden>
+            <summary>Title page details (optional)</summary>
+            <p class="hint">These print on the binder's own title page; nothing here is sent to CSO. Anything you leave blank is marked as a placeholder to complete before filing. Saved as manifest.json in your filings folder, so you only enter them once.</p>
+            <p class="hint" id="cover-note" hidden>Your own cover page (000_Application_Record_Title_Page.txt) is used as the title page, so only the court, registry and file number are needed here. They still appear in the page headers.</p>
             <div class="form-grid">
               <div class="field"><label for="cd-court">Court</label>
                 <select id="cd-court"><option>Supreme Court of British Columbia</option><option>Court of Appeal for British Columbia</option></select></div>
@@ -106,23 +124,23 @@
                 <input id="cd-registry" type="text" list="registries" placeholder="For example Vancouver"></div>
               <div class="field"><label for="cd-file-number">Court file number</label>
                 <input id="cd-file-number" type="text" placeholder="As shown on your court documents"></div>
-              <div class="field"><label for="cd-date">Hearing date</label>
+              <div class="field" data-title-only><label for="cd-date">Hearing date</label>
                 <input id="cd-date" type="text" placeholder="For example November 15, 2026"></div>
-              <div class="field"><label for="cd-plaintiff">Applicant or plaintiff</label>
+              <div class="field" data-title-only><label for="cd-plaintiff">Applicant or plaintiff</label>
                 <input id="cd-plaintiff" type="text"></div>
-              <div class="field"><label for="cd-defendant">Respondent or defendant</label>
+              <div class="field" data-title-only><label for="cd-defendant">Respondent or defendant</label>
                 <input id="cd-defendant" type="text"></div>
-              <div class="field"><label for="cd-time">Time estimate (optional)</label>
+              <div class="field" data-title-only><label for="cd-time">Time estimate (optional)</label>
                 <input id="cd-time" type="text" placeholder="For example 25 minutes"></div>
-              <div class="field"><label for="cd-counsel-applicant">Counsel for applicant (optional)</label>
+              <div class="field" data-title-only><label for="cd-counsel-applicant">Counsel for applicant (optional)</label>
                 <input id="cd-counsel-applicant" type="text"></div>
-              <div class="field"><label for="cd-counsel-respondent">Counsel for respondent (optional)</label>
+              <div class="field" data-title-only><label for="cd-counsel-respondent">Counsel for respondent (optional)</label>
                 <input id="cd-counsel-respondent" type="text"></div>
             </div>
             <datalist id="registries">
               <option value="Vancouver"><option value="New Westminster"><option value="Victoria"><option value="Nanaimo"><option value="Kelowna"><option value="Kamloops"><option value="Prince George"><option value="Abbotsford"><option value="Chilliwack"><option value="Campbell River"><option value="Courtenay"><option value="Duncan"><option value="Port Alberni"><option value="Powell River"><option value="Cranbrook"><option value="Nelson"><option value="Penticton"><option value="Rossland"><option value="Salmon Arm"><option value="Vernon"><option value="Dawson Creek"><option value="Fort St. John"><option value="Quesnel"><option value="Smithers"><option value="Terrace">
             </datalist>
-          </fieldset>
+          </details>
           <div class="picker" id="save-picker">
             <svg class="picker-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
             <div class="picker-text">

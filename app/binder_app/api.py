@@ -94,9 +94,19 @@ class Api:
         return _safe(action)
 
     # Feature 1: generate sample filings and run the whole cycle.
-    def run_full_cycle(self) -> dict:
-        """Generate sample filings, assemble a binder and validate it."""
-        return _safe(lambda: engine.run_full_cycle(engine.load_workspace(), engine.load_output_dir()))
+    def run_full_cycle(self, filings_dir: str = "", output_root: str = "") -> dict:
+        """Generate sample filings, assemble a binder and validate it.
+
+        Args:
+            filings_dir: Folder for the sample filings; empty means the working folder.
+            output_root: Folder for the binder; empty means the output folder.
+        """
+        def action() -> dict:
+            work = Path(filings_dir).expanduser() if filings_dir.strip() else engine.load_workspace()
+            out = Path(output_root).expanduser() if output_root.strip() else engine.load_output_dir()
+            return engine.run_full_cycle(work, out)
+
+        return _safe(action)
 
     # Output folder shown in the UI.
     def output_dir(self) -> str:
@@ -143,8 +153,8 @@ class Api:
             name = Path(output_name.strip() or "Application_Record").name
             if not name.lower().endswith(".pdf"):
                 name += ".pdf"
-            if details is not None:
-                engine.save_case_details(Path(inputs_dir), details)
+            if details is not None and any(str(v).strip() for k, v in details.items() if k != "court"):
+                engine.save_case_details(Path(inputs_dir), details, require_all=False)
             folder = Path(save_dir).expanduser() if save_dir.strip() else Path(self.default_binder_dir(inputs_dir))
             folder.mkdir(parents=True, exist_ok=True)
             target = engine.unique_pdf_path(folder, name)
