@@ -60,8 +60,8 @@ def create_multipage_pdf(pages: list[dict]) -> bytes:
     objects[pages_root_id] = f"<< /Type /Pages /Kids [{kids_str}] /Count {num_pages} >>"
 
     # 3. Fonts
-    objects[f_bold_id] = "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>"
-    objects[f_reg_id] = "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>"
+    objects[f_bold_id] = "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>"
+    objects[f_reg_id] = "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>"
 
     # 4. Page and Content Objects
     for i, p_info in enumerate(pages):
@@ -97,7 +97,7 @@ def create_multipage_pdf(pages: list[dict]) -> bytes:
                 stream += f"T*\n({esc_l}) Tj\n"
         stream += "ET\n"
 
-        stream_bytes = stream.encode("utf-8")
+        stream_bytes = stream.encode("cp1252", errors="replace")
         c_str = f"<< /Length {len(stream_bytes)} >>\nstream\n{stream}endstream"
 
         p_str = (
@@ -117,7 +117,7 @@ def create_multipage_pdf(pages: list[dict]) -> bytes:
 
     for obj_num in range(1, total_objs + 1):
         offsets[obj_num] = pos
-        body = f"{obj_num} 0 obj\n{objects[obj_num]}\nendobj\n".encode("utf-8")
+        body = f"{obj_num} 0 obj\n{objects[obj_num]}\nendobj\n".encode("cp1252", errors="replace")
         out.append(body)
         pos += len(body)
 

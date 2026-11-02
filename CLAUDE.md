@@ -32,7 +32,7 @@ python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py --m
 
 ## ⚖️ Core Invariants for Changes
 
-- **The 20 Quality Gates Must Pass (100%)**: Never mark work complete if `validating_court_binders.py` reports any `HARD_STOP` or `SOFT_WARNING`.
+- **The 20 Quality Gates Must Pass (100%)**: Never mark work complete if `validating_court_binders.py` reports any `HARD_STOP` or `SOFT_WARNING` for the repository's own sample and reference binders (the `inputs/` to `output/` samples and the app's sample cycle). For a user's own binder, a `SOFT_WARNING` is advisory (CSO-acceptable) but must always be reported to the user; add `--strict` to treat it as a failure.
 - **Top-Center Folios**: Always stamp top-center in Arial/Helvetica Bold 14–16 pt on substantive pages. Cover & Index remain unnumbered.
 - **Synchronized `/PageLabels`**: Always maintain ISO 32000 Table 159 empty dict `0 << >>` for front matter so page searching aligns with printed folios.
 - **Invisible Rectangle Links**: Index lines must use `/Border [0 0 0]`, `/H /N`, and universal GoTo `/A << /S /GoTo /D [target R /FitH 792] >>` actions.

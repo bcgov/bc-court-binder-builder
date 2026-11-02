@@ -1,0 +1,5 @@
+# Extra dependencies for building the installers (not needed to run the app).
+-r requirements-app.txt
+pyinstaller>=6.10
+# Needed by the optional pdfcraft wheel (its Python layer imports it); harmless without it.
+pillow>=10.0.0

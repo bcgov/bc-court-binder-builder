@@ -67,6 +67,8 @@ REQUIRED_CASE_FIELDS = {
     "application_date": "hearing date",
 }
 DEFAULT_COURT = "Supreme Court of British Columbia"
+COVER_FILE_NAME = "000_Application_Record_Title_Page.txt"
+COVER_CASE_FIELDS = ("court", "registry", "file_number")  # still used in page headers when a custom cover is supplied
 
 
 def read_case_details(folder: Path) -> dict:
@@ -88,10 +90,11 @@ def read_case_details(folder: Path) -> dict:
         for field in CASE_FIELDS:
             details[field] = str(manifest.get(field, details[field]))
     details["has_manifest"] = has_manifest
+    details["has_cover_file"] = (folder / COVER_FILE_NAME).is_file()
     return details
 
 
-def save_case_details(folder: Path, details: dict) -> Path:
+def save_case_details(folder: Path, details: dict, require_all: bool = True) -> Path:
     """Validates case details and writes them into folder/manifest.json.
 
     Never invents values: a blank required field is refused. An existing
@@ -101,6 +104,9 @@ def save_case_details(folder: Path, details: dict) -> Path:
     Args:
         folder: Folder of filings.
         details: Case fields supplied by the user.
+        require_all: When False, blank required fields are simply left out of the
+            manifest (the title page then shows a marked placeholder) instead of
+            being refused.
 
     Returns:
         The path of the written manifest.json.
@@ -109,8 +115,14 @@ def save_case_details(folder: Path, details: dict) -> Path:
         ValueError: If a required field is blank or the filenames cannot be read.
     """
     cleaned = {f: str(details.get(f, "")).strip() for f in CASE_FIELDS}
-    missing = [label for field, label in REQUIRED_CASE_FIELDS.items() if not cleaned[field]]
-    if missing:
+    # A custom cover page supplies the parties, hearing date and the rest;
+    # only the details used in page headers are still needed.
+    required = (
+        {f: REQUIRED_CASE_FIELDS[f] for f in COVER_CASE_FIELDS}
+        if (folder / COVER_FILE_NAME).is_file() else REQUIRED_CASE_FIELDS
+    )
+    missing = [label for field, label in required.items() if not cleaned[field]]
+    if missing and require_all:
         raise ValueError("Enter the " + ", ".join(missing) + " before building.")
     manifest_path = folder / "manifest.json"
     if manifest_path.is_file():
@@ -119,7 +131,7 @@ def save_case_details(folder: Path, details: dict) -> Path:
         manifest = infer_manifest_from_files(folder)
         manifest.pop("inferred", None)
     for field, value in cleaned.items():
-        if value or field in REQUIRED_CASE_FIELDS:
+        if value or field in required:
             manifest[field] = value
         else:
             manifest.pop(field, None)
@@ -186,6 +198,80 @@ def extract_date_str(text: str, default: str = "") -> str:
     if m_year:
         return m_year.group(1)
     return default
+
+PDF_TEXT_ENCODING = "cp1252"  # Windows ANSI, matches /Encoding /WinAnsiEncoding on the fonts
+
+
+def pdf_title_string(text: str) -> str:
+    """Returns a PDF string for a bookmark title.
+
+    Plain ASCII titles are written as escaped literals. Anything else is written
+    as a UTF-16BE hex string with a byte-order mark, which every PDF viewer reads
+    correctly (accents, dashes, curly quotes).
+    """
+    if text.isascii():
+        return f"({escape_pdf_text(text)})"
+    return "<FEFF" + text.encode("utf-16-be").hex().upper() + ">"
+
+
+def unsupported_characters(texts: list[str]) -> list[str]:
+    """Returns the distinct characters that the Windows ANSI (cp1252) text encoding cannot show.
+
+    Helvetica as used here shows Western European text; anything else is replaced
+    with '?', so callers warn the user.
+    """
+    bad: set[str] = set()
+    for text in texts:
+        for ch in text:
+            try:
+                ch.encode(PDF_TEXT_ENCODING)
+            except UnicodeEncodeError:
+                bad.add(ch)
+    return sorted(bad)
+
+
+# The quote marks around the exhibit letter may be straight, curly or garbled
+# (older PDFs were written with the wrong text encoding), so allow any run of
+# up to 8 non-alphanumeric characters around the letter.
+_JUNK = r"[^A-Za-z0-9\n]{0,8}"
+EXHIBIT_STAMP = re.compile(rf"this is exhibit{_JUNK}([A-Z0-9]{{1,3}}){_JUNK}referred to", re.IGNORECASE)
+EXHIBIT_HEADER = re.compile(
+    rf"^exhibit{_JUNK}([A-Z0-9]{{1,3}}){_JUNK}[-\u2013\u2014:]\s*(.+?)(?:\s*\(page \d+ of \d+\))?$",
+    re.IGNORECASE)
+
+
+def detect_exhibits(doc_pages: list[dict]) -> list[dict]:
+    """Finds exhibits in a document from their exhibit stamps.
+
+    A page carrying "This is Exhibit "A" referred to in ..." starts exhibit A. The
+    description comes from an "EXHIBIT "A" - DESCRIPTION" heading on that page when
+    one exists. Body text such as "marked as Exhibit A" is not a stamp and is ignored.
+
+    Args:
+        doc_pages: The paginated pages of one document (each has a "lines" list).
+
+    Returns:
+        Exhibit dictionaries (letter, description, rel_page), the same shape as a
+        manifest exhibit list.
+    """
+    found: list[dict] = []
+    seen: set[str] = set()
+    for rel_page, page in enumerate(doc_pages, start=1):
+        stamp = EXHIBIT_STAMP.search(" ".join(line.strip() for line in page["lines"]))
+        if not stamp or stamp.group(1).upper() in seen:
+            continue
+        letter = stamp.group(1).upper()
+        seen.add(letter)
+        description = ""
+        for line in page["lines"]:
+            header = EXHIBIT_HEADER.match(line.strip())
+            if header and header.group(1).upper() == letter:
+                description = header.group(2).strip()
+                description = description.title() if description.isupper() else description
+                break
+        found.append({"letter": letter, "description": description, "rel_page": rel_page})
+    return found
+
 
 def escape_pdf_text(text: str) -> str:
     """Escapes backslashes and parentheses for PDF string literals."""
@@ -390,6 +476,11 @@ def build_binder(inputs_dir: Path, output_file: Path) -> Path:
                 "title": f"{page_title} (Part {p_idx + 1})" if p_idx > 0 else page_title
             })
 
+        # Without a manifest exhibit list, find exhibits from their stamps
+        # ("This is Exhibit "A" referred to in ...") so they are still bookmarked.
+        if not d.get("exhibits"):
+            d["exhibits"] = detect_exhibits(doc_pages)
+
         # Apply Exhibit Sub-Bookmark Titles to Exhibit starting pages
         for ex in d.get("exhibits", []):
             rel_p = ex.get("rel_page") or ex.get("page_offset", 1)
@@ -398,9 +489,14 @@ def build_binder(inputs_dir: Path, output_file: Path) -> Path:
                 if not ex_name.upper().startswith("EXHIBIT"):
                     ex_name = f"Exhibit {ex_name}"
                 desc = ex.get("description", "")
-                doc_pages[rel_p - 1]["title"] = f"   - {ex_name}: {desc}"
+                doc_pages[rel_p - 1]["title"] = f"   - {ex_name}: {desc}" if desc else f"   - {ex_name}"
 
         doc_pages_map.append(doc_pages)
+
+    bad_chars = unsupported_characters([line for pages in doc_pages_map for pg in pages for line in pg["lines"]])
+    if bad_chars:
+        print("WARNING: these characters cannot be shown in the binder font and were replaced with '?': "
+              + " ".join(bad_chars))
 
     # -------------------------------------------------------------------------
     # Pass 1: Probing page counts and calculating folios across multi-page docs
@@ -424,7 +520,7 @@ def build_binder(inputs_dir: Path, output_file: Path) -> Path:
     page_entries = [] # list of page dicts
 
     # 1. Cover Page (Item 1)
-    cover_txt_file = inputs_dir / "000_Application_Record_Title_Page.txt"
+    cover_txt_file = inputs_dir / COVER_FILE_NAME
     if cover_txt_file.exists():
         raw_lines = [l.rstrip() for l in cover_txt_file.read_text(encoding="utf-8").splitlines()]
         # wrap lines to <= 75
@@ -511,7 +607,10 @@ def build_binder(inputs_dir: Path, output_file: Path) -> Path:
             ex_desc = ex.get("description", "")
             ex_date = extract_date_str(ex_desc)
             clean_ex_desc = clean_display_title(ex_desc)
-            ex_label = f"- {ex.get('letter', 'Exhibit')}: {clean_ex_desc}"
+            ex_name = str(ex.get("letter", "Exhibit"))
+            if not ex_name.upper().startswith("EXHIBIT"):
+                ex_name = f"Exhibit {ex_name}"
+            ex_label = f"- {ex_name}: {clean_ex_desc}" if clean_ex_desc else f"- {ex_name}"
             if len(ex_label) > 44:
                 ex_label = ex_label[:41] + "..."
             ex_target_page = ex_folio + 2
@@ -593,8 +692,8 @@ def build_binder(inputs_dir: Path, output_file: Path) -> Path:
     pages_root_str = f"<< /Type /Pages /Kids [{kids_str}] /Count {num_pages} >>"
 
     # Fonts
-    font_bold_str = "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>"
-    font_reg_str = "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>"
+    font_bold_str = "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>"
+    font_reg_str = "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>"
 
     # Outlines Root Object
     outlines_count = len(page_entries)
@@ -722,7 +821,7 @@ def build_binder(inputs_dir: Path, output_file: Path) -> Path:
                     stream_text += f"T*\n({esc_l}) Tj\n"
             stream_text += "ET\n"
 
-        stream_bytes = stream_text.encode("utf-8")
+        stream_bytes = stream_text.encode(PDF_TEXT_ENCODING, errors="replace")
         c_str = f"<< /Length {len(stream_bytes)} >>\nstream\n{stream_text}endstream"
         content_objects.append((c_obj_id, c_str))
 
@@ -741,10 +840,10 @@ def build_binder(inputs_dir: Path, output_file: Path) -> Path:
         prev_str = f"/Prev {this_id - 1} 0 R " if o_idx > 0 else ""
         next_str = f"/Next {this_id + 1} 0 R " if o_idx < outlines_count - 1 else ""
         target_page_obj = page_obj_start + o_idx
-        title_esc = escape_pdf_text(page_entries[o_idx]["title"])
+        title_str = pdf_title_string(page_entries[o_idx]["title"])
 
         outline_item_str = (
-            f"<< /Title ({title_esc}) "
+            f"<< /Title {title_str} "
             f"/Parent {outlines_root_idx} 0 R "
             f"{prev_str}{next_str}"
             f"/Dest [{target_page_obj} 0 R /Fit] >>"
@@ -774,7 +873,7 @@ def build_binder(inputs_dir: Path, output_file: Path) -> Path:
 
     for obj_id, obj_body in ordered_objects:
         offsets[obj_id] = len(out)
-        obj_bytes = f"{obj_id} 0 obj\n{obj_body}\nendobj\n".encode("utf-8")
+        obj_bytes = f"{obj_id} 0 obj\n{obj_body}\nendobj\n".encode(PDF_TEXT_ENCODING, errors="replace")
         out.extend(obj_bytes)
 
     total_objects = len(ordered_objects)

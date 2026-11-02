@@ -241,6 +241,16 @@ class OutputFolderTest(unittest.TestCase):
             self.assertFalse(list(work.rglob("*.pdf.pdf")))
             self.assertFalse(list(work.glob("*/Application_Record_Sample.pdf")))
 
+    def test_api_sample_cycle_uses_the_folders_chosen_on_that_screen(self) -> None:
+        """The sample screen's own pickers override the sidebar folders for one run."""
+        with tempfile.TemporaryDirectory() as tmp:
+            work, out = Path(tmp) / "my filings", Path(tmp) / "my binders"
+            result = Api().run_full_cycle(str(work), str(out))
+            self.assertTrue(result["ok"], result)
+            self.assertTrue(Path(result["run_dir"]).is_relative_to(work))
+            self.assertTrue(Path(result["assembled"]["output_pdf"]).is_relative_to(out))
+            self.assertEqual(result["validation"]["passed_count"], 20)
+
     def test_unique_pdf_path_never_overwrites(self) -> None:
         """An existing binder is kept; the new one gets a numbered name."""
         with tempfile.TemporaryDirectory() as tmp:
@@ -328,6 +338,31 @@ class CaseDetailsTest(unittest.TestCase):
             self.assertNotIn("[Court file number", text)
             self.assertNotIn("S-240123", text)
 
+    def test_building_without_any_details_still_works_and_names_the_placeholders(self) -> None:
+        """Title page details are optional: a build with none succeeds and warns about what is missing."""
+        with tempfile.TemporaryDirectory() as tmp:
+            filings = Path(tmp) / "filings"
+            filings.mkdir()
+            _make_filing_pdf(filings, "Tab01_Notice_15Nov2026.pdf", "NO-DETAILS-FORM")
+            blank = {"court": "Supreme Court of British Columbia", **{f: "" for f in engine.read_case_details(filings) if f not in ("court", "has_manifest", "has_cover_file")}}
+            result = Api().assemble(str(filings), "Binder", str(Path(tmp) / "out"), blank)
+            self.assertTrue(result["ok"], result)
+            self.assertFalse((filings / "manifest.json").exists())
+            self.assertTrue(any("court file number" in w for w in result["warnings"]), result["warnings"])
+            self.assertNotIn("S-240123", _binder_text(Path(result["output_pdf"])))
+
+    def test_partial_details_are_saved_and_only_missing_ones_flagged(self) -> None:
+        """Entering only the file number saves it and warns only about the registry."""
+        with tempfile.TemporaryDirectory() as tmp:
+            filings = Path(tmp) / "filings"
+            filings.mkdir()
+            _make_filing_pdf(filings, "Tab01_Notice_15Nov2026.pdf", "PARTIAL")
+            details = {"court": "Supreme Court of British Columbia", "file_number": "S-4242"}
+            result = Api().assemble(str(filings), "Binder", str(Path(tmp) / "out"), details)
+            self.assertTrue(result["ok"], result)
+            self.assertIn("S-4242", _binder_text(Path(result["output_pdf"])))
+            self.assertTrue(any("registry" in w and "court file number" not in w for w in result["warnings"]), result["warnings"])
+
     def test_optional_details_are_left_off_the_title_page(self) -> None:
         """A blank time estimate and blank counsel must not print invented defaults."""
         with tempfile.TemporaryDirectory() as tmp:
@@ -355,6 +390,20 @@ class CaseDetailsTest(unittest.TestCase):
             text = _binder_text(Path(result["output_pdf"]))
             self.assertIn("Time Estimate: 20 minutes", text)
             self.assertIn("Counsel for Applicant: A. Lawyer", text)
+
+    def test_custom_cover_page_needs_only_header_details_and_is_used(self) -> None:
+        """With a custom cover file, only court/registry/file number are required and the cover text is printed."""
+        with tempfile.TemporaryDirectory() as tmp:
+            filings = Path(tmp) / "filings"
+            filings.mkdir()
+            _make_filing_pdf(filings, "Tab01_Notice_15Nov2026.pdf", "COVER-TEST")
+            (filings / "000_Application_Record_Title_Page.txt").write_text("MY OWN COVER PAGE TEXT\nFor the hearing")
+            self.assertTrue(engine.read_case_details(filings)["has_cover_file"])
+            self.assertTrue(engine.inspect_folder(filings)["has_cover_file"])
+            minimal = {"court": "Supreme Court of British Columbia", "registry": "Kelowna", "file_number": "S-1"}
+            result = Api().assemble(str(filings), "Binder", str(Path(tmp) / "out"), minimal)
+            self.assertTrue(result["ok"], result)
+            self.assertIn("MY OWN COVER PAGE TEXT", _binder_text(Path(result["output_pdf"])))
 
     def test_saving_keeps_existing_documents_and_exhibits(self) -> None:
         """Editing details in an existing manifest must not lose its documents."""
@@ -409,6 +458,116 @@ class CaseDetailsTest(unittest.TestCase):
             folder = Path(tmp) / "matter"
             folder.mkdir()
             self.assertEqual(engine.suggest_binder_name(folder, "March 3, 2027"), "Application_Record_matter_03Mar2027")
+
+
+class Gate18AndStrictTest(unittest.TestCase):
+    """Tests for the exhibit bookmark rule and --strict."""
+
+    FULL = CaseDetailsTest.FULL
+
+    def _build(self, tmp: str, lines: list[str]) -> Path:
+        """Builds a one-filing binder whose text is lines and returns its path."""
+        filings = Path(tmp) / "filings"
+        filings.mkdir()
+        generator = engine._load_module("generating_court_documents")
+        page = {"header": "AFFIDAVIT", "subtitle": "Affidavit #1 of Jane Roe", "lines": lines}
+        (filings / "Tab01_Affidavit_1_Jane_Roe_15Nov2026.pdf").write_bytes(generator.create_multipage_pdf([page]))
+        result = Api().assemble(str(filings), "Binder", str(Path(tmp) / "out"), self.FULL)
+        self.assertTrue(result["ok"], result)
+        return Path(result["output_pdf"])
+
+    def _rule18(self, pdf: Path) -> dict:
+        """Returns the RULE-18 check for pdf."""
+        return next(c for c in engine.validate(pdf)["checks"] if c["rule"] == "RULE-18")
+
+    def test_binder_without_exhibits_is_not_penalised(self) -> None:
+        """No exhibit stamps means no exhibit bookmarks are required."""
+        with tempfile.TemporaryDirectory() as tmp:
+            pdf = self._build(tmp, ["I, Jane Roe, swear that the facts below are true and within my knowledge. " * 2] * 3)
+            check = self._rule18(pdf)
+            self.assertTrue(check["passed"], check["details"])
+
+    def test_exhibit_stamp_without_bookmark_is_flagged(self) -> None:
+        """An exhibit stamp in the text with no exhibit bookmark must fail the gate."""
+        with tempfile.TemporaryDirectory() as tmp:
+            lines = ['This is Exhibit "A" referred to in the affidavit of Jane Roe sworn on March 3, 2027.'] + ["Further text of the affidavit goes here for the record. " * 2] * 3
+            built = self._build(tmp, lines)
+            writer = pypdf.PdfWriter()  # copy only the pages: a binder made elsewhere with no bookmarks
+            for page in pypdf.PdfReader(str(built)).pages:
+                writer.add_page(page)
+            stripped = Path(tmp) / "no_bookmarks.pdf"
+            writer.write(str(stripped))
+            check = self._rule18(stripped)
+            self.assertFalse(check["passed"])
+            self.assertIn("Exhibit stamps", check["details"])
+
+    def test_strict_flag_fails_on_soft_warnings(self) -> None:
+        """--strict must exit non-zero when a SOFT_WARNING exists, while the default exits zero."""
+        pdf = Path(__file__).resolve().parents[2] / "output" / "02-amendment" / "Application_Record.pdf"
+        if not pdf.is_file():
+            self.skipTest("sample output not present")
+        script = engine.locate_scripts_dir() / "validating_court_binders.py"
+        failing = [c for c in engine.validate(pdf)["checks"] if not c["passed"]]
+        if not any(c["severity"] == "SOFT_WARNING" for c in failing):
+            self.skipTest("sample has no soft warnings")
+        normal = subprocess.run([sys.executable, str(script), "--file", str(pdf), "--json"], capture_output=True, text=True)
+        strict = subprocess.run([sys.executable, str(script), "--file", str(pdf), "--json", "--strict"], capture_output=True, text=True)
+        self.assertEqual(normal.returncode, 0)
+        self.assertEqual(strict.returncode, 1)
+
+
+class EncodingAndExhibitTest(unittest.TestCase):
+    """Tests for non-ASCII text and automatic exhibit bookmarks."""
+
+    FULL = CaseDetailsTest.FULL
+
+    def _build_from_text(self, tmp: str, text: str) -> tuple[dict, Path]:
+        """Builds a one-filing binder from text and returns the API result and the PDF path."""
+        filings = Path(tmp) / "filings"
+        filings.mkdir()
+        doc = {"item_num": 1, "title": "Tab 1 - Affidavit", "short_title": "Affidavit #1 of Jane Roe",
+               "filename": "Tab01_Affidavit.pdf", "exhibits": []}
+        (filings / "manifest.json").write_text(json.dumps({"documents": [doc]}))
+        (filings / "Tab01_Affidavit.txt").write_text(text, encoding="utf-8")
+        result = Api().assemble(str(filings), "Binder", str(Path(tmp) / "out"), self.FULL)
+        self.assertTrue(result["ok"], result)
+        return result, Path(result["output_pdf"])
+
+    def test_accents_dashes_and_curly_quotes_render_correctly(self) -> None:
+        """Western European text must survive intact, not become mojibake."""
+        with tempfile.TemporaryDirectory() as tmp:
+            text = "Françoise Côté swore \u201cI agree\u201d \u2014 see the café agreement. " * 6
+            _, pdf = self._build_from_text(tmp, text)
+            out = _binder_text(pdf)
+            self.assertIn("Françoise Côté", out)
+            self.assertIn("\u201cI agree\u201d", out)
+            self.assertNotIn("â€", out)
+
+    def test_unsupported_characters_are_reported_not_silently_lost(self) -> None:
+        """Characters the font cannot show produce a warning naming them."""
+        with tempfile.TemporaryDirectory() as tmp:
+            result, _ = self._build_from_text(tmp, "Plain English sentence for the filing record. " * 8 + "Łódź")
+            self.assertTrue(any("Ł" in w for w in result["warnings"]), result["warnings"])
+
+    def test_exhibits_are_bookmarked_from_their_stamps_without_a_manifest_list(self) -> None:
+        """An exhibit stamp creates an Exhibit bookmark automatically."""
+        with tempfile.TemporaryDirectory() as tmp:
+            body = ["The deponent states the following facts under oath for this application. " * 2] * 30
+            exhibit = ['EXHIBIT \u201cA\u201d - JOINT VENTURE AGREEMENT (PAGE 1 OF 1)',
+                       'Commissioner Stamp: This is Exhibit \u201cA\u201d referred to in Affidavit #1 of Jane Roe.',
+                       "Agreement text follows here and continues for the record of the court. " * 2]
+            _, pdf = self._build_from_text(tmp, "\n".join(body + exhibit))
+            titles = []
+            reader = pypdf.PdfReader(str(pdf))
+            stack = list(reader.outline)
+            while stack:
+                item = stack.pop(0)
+                stack = (item if isinstance(item, list) else []) + stack
+                if not isinstance(item, list):
+                    titles.append(str(item.title))
+            self.assertTrue(any("Exhibit A" in t and "Joint Venture Agreement" in t for t in titles), titles)
+            check = next(c for c in engine.validate(pdf)["checks"] if c["rule"] == "RULE-18")
+            self.assertTrue(check["passed"], check["details"])
 
 
 class CsoGuideTest(unittest.TestCase):

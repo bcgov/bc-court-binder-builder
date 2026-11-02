@@ -349,6 +349,7 @@ def inspect_folder(folder: Path) -> dict:
         "pdf_count": sum(n.endswith(".pdf") for n in names),
         "txt_count": sum(n.endswith(".txt") for n in names),
         "has_manifest": "manifest.json" in names,
+        "has_cover_file": _load_module("assembling_court_binders").COVER_FILE_NAME.lower() in names,
     }
 
 
@@ -358,9 +359,9 @@ def read_case_details(folder: Path) -> dict:
     return _load_module("assembling_court_binders").read_case_details(folder)
 
 
-def save_case_details(folder: Path, details: dict) -> Path:
+def save_case_details(folder: Path, details: dict, require_all: bool = True) -> Path:
     """Validate details and write folder/manifest.json (see the skill's assembler)."""
-    return _load_module("assembling_court_binders").save_case_details(folder, details)
+    return _load_module("assembling_court_binders").save_case_details(folder, details, require_all)
 
 
 def suggest_binder_name(folder: Path, application_date: str | None = None) -> str:
@@ -410,13 +411,15 @@ def assemble(inputs_dir: Path, output_pdf: Path) -> dict:
     assembler = _load_module("assembling_court_binders")
     output_pdf.parent.mkdir(parents=True, exist_ok=True)
     _, log = _capture(assembler.build_binder, inputs_dir, output_pdf)
-    warnings: list[str] = []
-    if not (inputs_dir / "manifest.json").exists():
-        warnings.append(
-            "No manifest.json was found, so the court file number and registry on the "
-            "title page are placeholders and exhibits are not bookmarked. Add a "
-            "manifest.json and rebuild before filing."
-        )
+    warnings: list[str] = [line[len("WARNING: "):] for line in log.splitlines() if line.startswith("WARNING: ")]
+    details = read_case_details(inputs_dir)
+    if not details["has_cover_file"]:
+        missing = [label for field, label in (("registry", "registry"), ("file_number", "court file number")) if not details[field].strip()]
+        if missing:
+            warnings.insert(0,
+                f"The title page shows a placeholder for the {' and '.join(missing)}. Add them under "
+                "Title page details and build again before filing."
+            )
     return {
         "output_pdf": str(output_pdf),
         "size_bytes": output_pdf.stat().st_size,

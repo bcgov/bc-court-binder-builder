@@ -43,7 +43,7 @@ All four use the same engine, so a binder built any way passes the same 20 court
 | **1** | **Install the skill with APM and ask an AI agent** (Claude, GitHub Copilot, Codex, Gemini). Say "build a court binder from this folder" and the agent runs the skill. | Paralegals and lawyers who want to work in plain language. | ✅ Available. [Install steps](#apm-installation) |
 | **2** | **Run the Python commands directly** (`assemble`, `validate`, interactive wizard). | Developers, CI/CD and automation. | ✅ Available. [Command reference](#headless-cli) |
 | **3** | **Run the desktop app from Python.** A native window with four screens: create sample filings, build a binder, check a binder, and file with CSO. | People who want a window, not a chat or a terminal. | ✅ Available from source. [Desktop app](#desktop-app) |
-| **4** | **Install a Mac application** (`.dmg`, drag to Applications) with no Python setup. A matching Windows installer is planned after it. | Anyone who just wants to try it. | 🛠️ Planned, not built yet |
+| **4** | **Install a Mac application** (`.dmg`, drag to Applications) with no Python setup. A matching Windows installer is planned. | Anyone who just wants to try it. | ✅ Build it with [`packaging/macos/build_dmg.sh`](packaging/macos/README.md) (unsigned; a downloadable release is not published yet) |
 
 ```bash
 # 1. AI agent: install the skill once, then talk to your agent
@@ -214,7 +214,7 @@ Prefer a window to a chat? The **Court binder builder** desktop app (`app/`) wra
 | Step | What it does |
 | :--- | :--- |
 | **1. Create sample filings** | Generates synthetic Rule 7-1 filings, builds a binder from them, and audits it against the 20 gates. Use it to try the full cycle without client documents. |
-| **2. Build a binder** | Choose a folder of filings and fill in a short **Case details** form (court file number, registry, parties, hearing date; time estimate and counsel optional). The app saves them as `manifest.json`, suggests a file name, and builds one foliated, bookmarked, hyperlinked binder PDF in a subfolder of your output folder. |
+| **2. Build a binder** | Choose a folder of filings, optionally add **Title page details** (court file number, registry, parties, hearing date; blanks are marked as placeholders with a warning), and the app suggests a file name and builds one foliated, bookmarked, hyperlinked binder PDF in a folder you choose. Exhibits are bookmarked automatically from their exhibit stamps. |
 | **3. Check a binder** | Choose any binder PDF and get a 20-gate scorecard with failures first and how to fix them. |
 | **4. File with CSO** | Asks whether you have a Court Services Online account, are logged on, and have a credit card registered, then opens the right CSO page (register, log on, register card, E-file home) in your own browser. Also shows the upload route for your binder's size and a filing checklist. You do every CSO step yourself; the app never sees credentials or card details. |
 
@@ -237,7 +237,15 @@ pip install -r app/requirements-app.txt
 cd app && python -m binder_app.main
 ```
 
-See [`INSTALL.md`](INSTALL.md#option-4-desktop-app) for details and [`architecture.md`](architecture.md#6-desktop-app-layer) for how it reuses the skill's engine. Installable macOS (`.dmg`) and Windows installers are planned and not built yet.
+**Install the Mac app (no Python needed):**
+
+```bash
+packaging/macos/build_dmg.sh          # writes packaging/macos/dist/Court-binder-builder-<version>-macos-<arch>.dmg
+```
+
+Open the `.dmg`, drag **Court binder builder** to **Applications**, and open it. The image bundles Python, `pypdf` and the PdfCraft native engine (a pinned, hash-checked wheel), and the build runs a self-test on the packaged app (a sample binder must pass all 20 gates and the native engine must merge two PDFs). The app is unsigned, so a copy downloaded from the internet needs right-click → **Open** the first time; a Mac build runs only on the same processor type (Apple Silicon or Intel). A published download is not available yet. Details: [`packaging/macos/README.md`](packaging/macos/README.md).
+
+See [`INSTALL.md`](INSTALL.md#option-4-desktop-app) for details and [`architecture.md`](architecture.md#6-desktop-app-layer) for how it reuses the skill's engine. To avoid Python altogether on a Mac, build the installer with [`packaging/macos/build_dmg.sh`](packaging/macos/README.md) (see below); a Windows installer is planned.
 
 ---
 

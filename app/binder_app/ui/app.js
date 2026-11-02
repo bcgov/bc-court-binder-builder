@@ -7,7 +7,7 @@
  */
 
 const $ = (id) => document.getElementById(id);
-const state = { buildFolder: "", checkFile: "", workspace: "", outputDir: "", saveDir: "", lastSuggested: "" };
+const state = { buildFolder: "", checkFile: "", workspace: "", outputDir: "", saveDir: "", lastSuggested: "", createWork: "", createOut: "" };
 const SVG_NS = "http://www.w3.org/2000/svg";
 const ICONS = {
   success: "M5 13l4 4L19 7",
@@ -150,7 +150,7 @@ function renderValidation(v, actions = []) {
 // Feature 1: generate sample filings and run the full cycle.
 async function runCreate() {
   const target = $("result-create");
-  const res = await window.pywebview.api.run_full_cycle();
+  const res = await window.pywebview.api.run_full_cycle(state.createWork, state.createOut);
   if (!res.ok) return show(target, verdict("danger", "Could not create sample filings", res.error));
   const pdf = res.assembled.output_pdf;
   const summary = `${res.generated.document_count} filings saved in ${res.run_dir}. ${formatSize(res.assembled.size_bytes)} binder saved in ${res.output_dir}.`;
@@ -175,6 +175,8 @@ async function loadCaseDetails(folder) {
   const res = await window.pywebview.api.case_details(folder);
   if (!res.ok) return;
   Object.entries(CASE_INPUTS).forEach(([field, id]) => { $(id).value = res[field] || ""; });
+  document.querySelectorAll("[data-title-only]").forEach((node) => { node.hidden = Boolean(res.has_cover_file); });
+  $("cover-note").hidden = !res.has_cover_file;
   $("case-details").hidden = false;
 }
 
@@ -224,6 +226,7 @@ async function previewFolder(path) {
   if (!res.ok) return (meta.textContent = res.error);
   const parts = [`${res.pdf_count} PDF${res.pdf_count === 1 ? "" : "s"}`];
   if (res.txt_count) parts.push(`${res.txt_count} text file${res.txt_count === 1 ? "" : "s"}`);
+  if (res.has_cover_file) parts.push("your own cover page found");
   parts.push(res.has_manifest ? "manifest.json found" : "no manifest.json (order is inferred from file names)");
   meta.textContent = parts.join(" · ");
 }
@@ -251,6 +254,22 @@ async function pickSaveDir() {
   $("save-picker").classList.add("has-value");
 }
 
+// Choose a different folder for this run's sample filings.
+async function pickCreateWork() {
+  const chosen = await window.pywebview.api.pick_folder();
+  if (!chosen) return;
+  state.createWork = chosen;
+  $("create-work-folder").textContent = chosen;
+}
+
+// Choose a different folder for this run's binder.
+async function pickCreateOut() {
+  const chosen = await window.pywebview.api.pick_folder();
+  if (!chosen) return;
+  state.createOut = chosen;
+  $("create-out-folder").textContent = chosen;
+}
+
 // Choose and save a new output folder.
 async function changeOutput() {
   const chosen = await window.pywebview.api.pick_folder();
@@ -259,6 +278,7 @@ async function changeOutput() {
   if (res.ok) {
     state.outputDir = res.output_dir;
     $("output-path").textContent = res.output_dir;
+    if (!state.createOut) $("create-out-folder").textContent = res.output_dir;
     $("output-hint").textContent = "Saved. New binders go here, in a subfolder named after your filings.";
     if (state.buildFolder && !state.saveDir) $("save-folder").textContent = await window.pywebview.api.default_binder_dir(state.buildFolder);
   } else {
@@ -280,6 +300,7 @@ async function changeWorkspace() {
   if (res.ok) {
     state.workspace = res.workspace;
     $("workspace-path").textContent = res.workspace;
+    if (!state.createWork) $("create-work-folder").textContent = res.workspace;
     $("workspace-hint").textContent = "Saved. New files go here.";
   } else {
     $("workspace-hint").textContent = `Could not use that folder: ${res.error}`;
@@ -318,6 +339,8 @@ function wireActions() {
   $("pick-pdf").addEventListener("click", pickPdf);
   $("pick-workspace").addEventListener("click", changeWorkspace);
   $("pick-save-dir").addEventListener("click", pickSaveDir);
+  $("pick-create-work").addEventListener("click", pickCreateWork);
+  $("pick-create-out").addEventListener("click", pickCreateOut);
   $("cd-date").addEventListener("change", refreshSuggestedName);
   $("pick-output").addEventListener("click", changeOutput);
   $("show-output").addEventListener("click", () => window.pywebview.api.reveal(state.outputDir));
@@ -438,4 +461,6 @@ window.addEventListener("pywebviewready", async () => {
   $("workspace-path").textContent = state.workspace;
   state.outputDir = await window.pywebview.api.output_dir();
   $("output-path").textContent = state.outputDir;
+  $("create-work-folder").textContent = state.workspace;
+  $("create-out-folder").textContent = state.outputDir;
 });
