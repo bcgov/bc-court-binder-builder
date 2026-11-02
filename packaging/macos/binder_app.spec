@@ -11,7 +11,7 @@ Purpose:
       * the CSO links file from the skill's references (references/).
 
 Layer: Packaging
-Run with: packaging/macos/build_dmg.sh (not directly).
+Run with: packaging/macos/package.sh (not directly).
 """
 
 from pathlib import Path

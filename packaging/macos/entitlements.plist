@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Hardened-runtime entitlements for Court binder builder. Unlike a pure-native app, a PyInstaller
+     bundle loads its own Python and libraries, which are not signed by the same developer team as
+     the app, so library validation is switched off. Anything more needs a reason in a comment.
+     (Format and approach adapted from the PdfCraft packaging.) -->
+<plist version="1.0">
+<dict>
+  <key>com.apple.security.cs.disable-library-validation</key>
+  <true/>
+</dict>
+</plist>
