@@ -41,7 +41,10 @@ jobs:
           }
           if ($failed) { exit 1 }
       - name: xmllint (WiX and plist)
-        run: xmllint --noout packaging/windows/*.wxs packaging/windows/*.wxi packaging/macos/entitlements.plist
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq libxml2-utils
+          xmllint --noout packaging/windows/*.wxs packaging/windows/*.wxi packaging/macos/entitlements.plist
       - name: MSI icon id ends in .exe or .ico
         # Windows Installer shows a blank icon otherwise (also checked on the built MSI by test-msi.ps1).
         run: grep -E '<Icon Id="[^"]+\.(ico|exe)"' packaging/windows/court-binder-builder.wxs
