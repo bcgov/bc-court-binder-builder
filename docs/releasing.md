@@ -20,9 +20,10 @@ them on clean runners and attaches them to a GitHub Release together with `SHA25
 Pushing to `release` again before you publish rebuilds the draft and replaces its assets. Once the draft is
 published, the workflow refuses to touch that version; bump it first.
 
-**Test runs:** *Actions > Release > Run workflow* runs the pipeline by hand. The optional `version` input
-(such as `0.2.0-rc.1`) overrides `__version__` for that run only. Run it on a branch other than `release` for a
-**dry run**: the installers are built and tested, and no draft is created.
+**Test runs & manual release:** *Actions > Release > Run workflow* runs the pipeline by hand. The optional `version` input
+(such as `0.2.0-rc.1`) overrides `__version__` for that run only. Run it with `dry_run: true` for a
+**dry run**: the installers are built and tested, and no draft is created. With `dry_run: false` (default),
+a draft release is created or updated on GitHub with the macOS `.dmg`, Windows `.msi` and portable `.zip`, and `SHA256SUMS.txt`.
 
 Pull requests that touch `packaging/`, `app/` or the skill scripts run **Packaging build** (both installers,
 unsigned) and **Packaging lint**, so installer problems show up before a release.
