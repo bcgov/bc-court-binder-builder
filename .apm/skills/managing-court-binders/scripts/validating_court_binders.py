@@ -86,7 +86,26 @@ EXHIBIT_STAMP = re.compile(r"this is exhibit[^A-Za-z0-9\n]{0,8}[A-Z0-9]{1,3}[^A-
 PART_SUFFIX = re.compile(r"\(Part \d+\)\s*$")
 
 
-def collect_folio_evidence(reader, first_index: int = 2, count: int = FOLIO_PAGE_COUNT) -> list[dict]:
+def front_matter_count(reader) -> int:
+    """Returns how many unnumbered front-matter pages (cover and index pages) the binder has.
+
+    The /PageLabels entry that starts decimal numbering marks the first content page.
+    Binders with no usable labels are treated as having the standard two pages.
+    """
+    try:
+        root = reader.trailer["/Root"]
+        labels = root["/PageLabels"].get_object() if hasattr(root["/PageLabels"], "get_object") else root["/PageLabels"]
+        nums = list(labels.get("/Nums", []))
+        for position in range(2, len(nums), 2):
+            start = int(nums[position])
+            if start > 0:
+                return start
+    except Exception:
+        pass
+    return 2
+
+
+def collect_folio_evidence(reader, first_index: int | None = None, count: int = FOLIO_PAGE_COUNT) -> list[dict]:
     """Inspects the folio actually stamped on the first substantive pages.
 
     Args:
@@ -99,24 +118,43 @@ def collect_folio_evidence(reader, first_index: int = 2, count: int = FOLIO_PAGE
         top-centre or in the footer, and the font name and size used.
     """
     evidence: list[dict] = []
+    if first_index is None:
+        first_index = front_matter_count(reader)
     for p_idx in range(first_index, min(first_index + count, len(reader.pages))):
         page = reader.pages[p_idx]
-        page_w, page_h = float(page.mediabox.width), float(page.mediabox.height)
-        entry = {"page": p_idx + 1, "expected": str(p_idx - 1), "top_center": False,
+        box = page.mediabox
+        left, bottom, width, height = float(box.left), float(box.bottom), float(box.width), float(box.height)
+        rotation = int(page.rotation or 0) % 360
+        entry = {"page": p_idx + 1, "expected": str(p_idx - first_index + 1), "top_center": False,
                  "footer": False, "font": "", "size": 0.0}
 
-        def visitor(text, cm, tm, font_dict, font_size, entry=entry, page_w=page_w, page_h=page_h):
+        def to_display(x, y, left=left, bottom=bottom, width=width, height=height, rotation=rotation):
+            """Maps a point in page space to the page as displayed (after /Rotate).
+
+            Returns (x, y, displayed width, displayed height) with y measured upward from
+            the displayed bottom, so portrait, landscape and rotated pages are judged alike.
+            """
+            u, v = x - left, y - bottom
+            if rotation == 90:
+                return v, width - u, height, width
+            if rotation == 180:
+                return width - u, height - v, width, height
+            if rotation == 270:
+                return height - v, u, height, width
+            return u, v, width, height
+
+        def visitor(text, cm, tm, font_dict, font_size, entry=entry, to_display=to_display):
             st = text.strip()
             if not st:
                 return
-            tx, ty = tm[4], tm[5]
-            centred = 0.35 <= tx / page_w <= 0.65
+            dx, dy, disp_w, disp_h = to_display(tm[4], tm[5])
+            centred = 0.35 <= dx / disp_w <= 0.65
             is_folio = st == entry["expected"] or st.startswith(entry["expected"] + " ")
-            if ty > page_h - 100 and centred and is_folio and not entry["top_center"]:
+            if dy > disp_h - 100 and centred and is_folio and not entry["top_center"]:
                 entry["top_center"] = True
                 entry["font"] = str(font_dict.get("/BaseFont", "")) if font_dict else ""
                 entry["size"] = float(font_size or 0)
-            elif ty < 100 and (entry["expected"] in st):
+            elif dy < 100 and (entry["expected"] in st):
                 entry["footer"] = True
 
         try:
@@ -130,29 +168,26 @@ def collect_folio_evidence(reader, first_index: int = 2, count: int = FOLIO_PAGE
 def document_final_pages(reader) -> set[int]:
     """Returns zero-based indexes of pages that end a document.
 
-    A page ends a document when the next page's bookmark is not a
-    "(Part N)" continuation, or when it is the last page.
+    Only top-level bookmarks start a document (child bookmarks, such as exhibits,
+    start inside one). A page ends a document when the next page starts a new
+    top-level bookmark that is not a "(Part N)" continuation, or when it is the
+    last page.
     """
-    titles: dict[int, str] = {}
-
-    def walk(items) -> None:
-        for item in items:
-            if isinstance(item, list):
-                walk(item)
-            else:
-                try:
-                    titles[reader.get_destination_page_number(item)] = str(item.title)
-                except Exception:
-                    continue
-
+    starts: dict[int, str] = {}
     try:
-        walk(reader.outline)
+        for item in reader.outline:
+            if isinstance(item, list):
+                continue  # children of the previous bookmark
+            try:
+                starts[reader.get_destination_page_number(item)] = str(item.title)
+            except Exception:
+                continue
     except Exception:
         return {len(reader.pages) - 1}
     last = len(reader.pages) - 1
     final = {last}
     for idx in range(last):
-        nxt = titles.get(idx + 1)
+        nxt = starts.get(idx + 1)
         if nxt is not None and not PART_SUFFIX.search(nxt):
             final.add(idx)
     return final
@@ -640,9 +675,10 @@ def validate_court_binder(pdf_path: Path) -> tuple[bool, list[dict]]:
     sparse_pages = []
     garbled_pages = []
     exhibit_stamp_pages = []
-    if reader and len(reader.pages) > 2:
+    front_pages = front_matter_count(reader) if reader else 2
+    if reader and len(reader.pages) > front_pages:
         final_pages = document_final_pages(reader)
-        for p_idx in range(2, len(reader.pages)):
+        for p_idx in range(front_pages, len(reader.pages)):
             txt = reader.pages[p_idx].extract_text()
             words = len(txt.split())
             lines = [l.strip() for l in txt.splitlines() if l.strip()]

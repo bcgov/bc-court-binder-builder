@@ -94,6 +94,22 @@ python3 .apm/skills/managing-court-binders/scripts/assembling_court_binders.py \
 
 ---
 
+## True Copies, Bookmarks and the Index
+
+CSO requires every document in an application record to be a **true copy** of the original. The assembler therefore:
+
+- **Uses each filing's original PDF pages.** A filing that is a readable PDF goes into the binder with its content, page size, rotation and annotations untouched. Only the cover page, the index and the folio numbers are added. A filing that exists only as text (no PDF) is typeset from the text and the assembler prints a `WARNING` that it is not a true copy. `--retypeset` forces typesetting for every filing (not recommended for filing).
+- **Stamps the folio on top of the original page**: Helvetica-Bold 15 pt, top centre, upright even on pages rotated 90, 180 or 270 degrees.
+- **Builds the bookmark tree.** The cover, the index and each filing are top-level bookmarks. A filing's exhibits are child bookmarks under it, found from the manifest or from their "This is Exhibit ... referred to" stamps, including an exhibit that starts on the filing's first page.
+- **Spills a long index onto more pages.** Roughly 24 rows fit on a page; further pages are headed "(continued)", every link points at the right page, and `/PageLabels` leaves all the cover and index pages unnumbered. The validator reads the number of front-matter pages from the page labels.
+- **Keeps scans as they are.** A filing with no text (a scan) is included unchanged and gate 18 flags it: run OCR on it first. Text typeset by the assembler uses Western European characters only; anything else is reported.
+
+How it works: the assembler writes the cover, index, bookmarks, links and page labels around blank placeholder pages, then copies each original page into its placeholder. Nothing that points at a page (links, bookmarks) has to change.
+
+**Orientation.** Pages may be portrait, landscape or rotated. The folio is placed, and the validator looks for it, at the top centre of the page *as displayed* (after `/Rotate`), so no orientation is assumed. None of the court guides in this repository states an orientation rule; gate 19 accepts Letter size in either orientation (612 x 792 or 792 x 612 pt, within 15 pt) and warns on other sizes.
+
+Known limit: links inside original PDFs (including web links in authorities) are kept as they are.
+
 ## Case Details and manifest.json
 
 The title page prints the court, registry, court file number, both parties and hearing date, plus the time estimate and counsel for each side when provided (those three are optional and left off the page when blank; nothing is invented). These come from `manifest.json` in the input folder, which the assembler cannot guess from filenames. Without it the title page carries clearly marked placeholders and exhibits are not bookmarked, and the assembler prints a warning.

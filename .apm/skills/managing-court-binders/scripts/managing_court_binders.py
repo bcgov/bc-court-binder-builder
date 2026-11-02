@@ -198,6 +198,11 @@ def main():
         help="Emit structured JSON verification receipt"
     )
     parser.add_argument(
+        "--retypeset",
+        action="store_true",
+        help="Typeset filings from their text instead of using their original PDF pages (not true copies)"
+    )
+    parser.add_argument(
         "--strict",
         action="store_true",
         help="Treat any SOFT_WARNING as a failure when validating (exit code 1)"
@@ -272,7 +277,7 @@ def main():
             print("WARNING: no manifest.json and no case details given, so the court file number and "
                   "registry on the title page will be placeholders. Pass --registry, --file-number, "
                   "--plaintiff, --defendant, --hearing-date and --time-estimate, or create manifest.json.")
-        assembling_court_binders.build_binder(in_path, out_path)
+        assembling_court_binders.build_binder(in_path, out_path, use_originals=not args.retypeset)
 
     # Mode 3: Validate
     if mode in ("validate", "all"):

@@ -31,6 +31,7 @@ import os
 import sys
 import re
 import glob
+import io
 from datetime import datetime
 import json
 import textwrap
@@ -172,6 +173,158 @@ def suggest_binder_name(folder: Path, application_date: str | None = None) -> st
     return name
 
 
+INDEX_START_Y = 632      # first row on every index page
+INDEX_ROW_STEP = 22      # vertical space one index row uses
+INDEX_BOTTOM_Y = 60      # rows stop above this
+
+
+def paginate_index_rows(rows: list[dict]) -> list[list[dict]]:
+    """Splits index rows into pages by the vertical space each row uses.
+
+    A heading row (such as AUTHORITIES) uses a little more space than a normal row.
+    There is always at least one page.
+
+    Args:
+        rows: Index rows in order.
+
+    Returns:
+        A list of pages, each a list of rows.
+    """
+    pages: list[list[dict]] = []
+    current: list[dict] = []
+    y = INDEX_START_Y
+    for row in rows:
+        cost = 4 + (INDEX_ROW_STEP - 2) if row["type"] == "heading" else INDEX_ROW_STEP
+        if current and y - cost < INDEX_BOTTOM_Y:
+            pages.append(current)
+            current, y = [], INDEX_START_Y
+        current.append(row)
+        y -= cost
+    pages.append(current)
+    return pages
+
+
+def open_original_pdf(inputs_dir: Path, filename: str):
+    """Opens a filing's original PDF so its real pages can go in the binder.
+
+    Args:
+        inputs_dir: Folder of filings.
+        filename: The filing's file name from the manifest.
+
+    Returns:
+        (path, reader) when the file is a readable PDF with at least one page
+        inside inputs_dir, otherwise None (the caller then re-typesets the text).
+    """
+    try:
+        path = resolve_inside(inputs_dir, filename)
+    except ValueError:
+        return None
+    if path.suffix.lower() != ".pdf" or not path.is_file():
+        return None
+    try:
+        import pypdf
+        reader = pypdf.PdfReader(str(path))
+        if reader.is_encrypted and not reader.decrypt(""):
+            return None
+        return (path, reader) if len(reader.pages) > 0 else None
+    except Exception:
+        return None
+
+
+def folio_overlay_pdf(content: str, font: str = "Helvetica-Bold") -> bytes:
+    """Builds a one-page PDF carrying only the folio text, to be merged over a page.
+
+    The font (Helvetica-Bold unless told otherwise) is named /BCFolio. The page size
+    is irrelevant because the overlay is merged into a page whose size is already set.
+    """
+    body = content.encode("cp1252", errors="replace")
+    objs = [
+        b"<< /Type /Catalog /Pages 2 0 R >>",
+        b"<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+        b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /BCFolio 4 0 R >> >> /Contents 5 0 R >>",
+        b"<< /Type /Font /Subtype /Type1 /BaseFont /" + font.encode("ascii") + b" /Encoding /WinAnsiEncoding >>",
+        b"<< /Length %d >>\nstream\n" % len(body) + body + b"\nendstream",
+    ]
+    out = bytearray(b"%PDF-1.7\n")
+    offsets = []
+    for number, obj in enumerate(objs, start=1):
+        offsets.append(len(out))
+        out += b"%d 0 obj\n" % number + obj + b"\nendobj\n"
+    xref = len(out)
+    out += b"xref\n0 %d\n0000000000 65535 f \n" % (len(objs) + 1)
+    for off in offsets:
+        out += b"%010d 00000 n \n" % off
+    out += b"trailer\n<< /Size %d /Root 1 0 R >>\nstartxref\n%d\n%%%%EOF\n" % (len(objs) + 1, xref)
+    return bytes(out)
+
+
+def folio_stream(folio: int, box, rotation: int) -> str:
+    """Returns content-stream text that draws a folio at the top centre of the displayed page.
+
+    The number is Helvetica-Bold 15 pt, 32 pt below the displayed top edge, and stays
+    upright and top-centre on pages that are rotated 90, 180 or 270 degrees.
+
+    Args:
+        folio: The page number to print.
+        box: The page's media box (left, bottom, width, height are read from it).
+        rotation: The page's /Rotate value.
+    """
+    left, bottom = float(box.left), float(box.bottom)
+    width, height = float(box.width), float(box.height)
+    text = str(folio)
+    text_width = len(text) * 15 * 0.556  # Helvetica-Bold digits are 556/1000 em wide
+    rot = rotation % 360
+    if rot == 90:
+        matrix, x, y = (0, 1, -1, 0), left + 32, bottom + height / 2 - text_width / 2
+    elif rot == 180:
+        matrix, x, y = (-1, 0, 0, -1), left + width / 2 + text_width / 2, bottom + 32
+    elif rot == 270:
+        matrix, x, y = (0, -1, 1, 0), left + width - 32, bottom + height / 2 + text_width / 2
+    else:
+        matrix, x, y = (1, 0, 0, 1), left + width / 2 - text_width / 2, bottom + height - 32
+    a, b, c, d = matrix
+    return f"q\nBT\n/BCFolio 15 Tf\n{a} {b} {c} {d} {x:.2f} {y:.2f} Tm\n({escape_pdf_text(text)}) Tj\nET\nQ\n"
+
+
+def splice_original_pages(output_file: Path, originals: list) -> None:
+    """Replaces blank placeholder pages with the filings' real pages (true copies).
+
+    The placeholders were written with the right page numbers, bookmarks, index
+    links and page labels. This puts each original page's content, size, rotation
+    and annotations into the same page object, then stamps the folio on top, so
+    nothing that points at the page has to change.
+
+    Args:
+        output_file: The binder written by build_binder (modified in place).
+        originals: Tuples of (page index in the binder, source PDF path,
+            page index in the source, folio number).
+    """
+    from pypdf import PdfReader, PdfWriter
+
+    writer = PdfWriter(clone_from=PdfReader(str(output_file)))
+    sources: dict = {}
+    for page_idx, src_path, src_idx, folio in originals:
+        reader = sources.get(src_path)
+        if reader is None:
+            reader = PdfReader(str(src_path))
+            if reader.is_encrypted:
+                reader.decrypt("")
+            sources[src_path] = reader
+        source = reader.pages[src_idx]
+        target = writer.pages[page_idx]
+        target.mediabox = source.mediabox
+        if "/CropBox" in source:
+            target.cropbox = source.cropbox
+        rotation = int(source.rotation or 0)
+        if rotation:
+            target.rotate(rotation)
+        target.merge_page(source)
+        overlay = PdfReader(io.BytesIO(folio_overlay_pdf(folio_stream(folio, source.mediabox, rotation)))).pages[0]
+        target.merge_page(overlay)
+    with open(output_file, "wb") as handle:
+        writer.write(handle)
+
+
 def clean_display_title(text: str) -> str:
     """Cleans up document title for the Index table."""
     m = re.match(r'^(.*?)\s+(?:sworn|filed|dated)\s+[A-Za-z]+\s+\d{1,2},?\s+\d{4}', text, re.IGNORECASE)
@@ -257,13 +410,14 @@ def detect_exhibits(doc_pages: list[dict]) -> list[dict]:
     found: list[dict] = []
     seen: set[str] = set()
     for rel_page, page in enumerate(doc_pages, start=1):
-        stamp = EXHIBIT_STAMP.search(" ".join(line.strip() for line in page["lines"]))
+        page_lines = page.get("detect_lines", page["lines"])
+        stamp = EXHIBIT_STAMP.search(" ".join(line.strip() for line in page_lines))
         if not stamp or stamp.group(1).upper() in seen:
             continue
         letter = stamp.group(1).upper()
         seen.add(letter)
         description = ""
-        for line in page["lines"]:
+        for line in page_lines:
             header = EXHIBIT_HEADER.match(line.strip())
             if header and header.group(1).upper() == letter:
                 description = header.group(2).strip()
@@ -425,7 +579,19 @@ def infer_manifest_from_files(inputs_dir: Path) -> dict:
         "documents": documents
     }
 
-def build_binder(inputs_dir: Path, output_file: Path) -> Path:
+def build_binder(inputs_dir: Path, output_file: Path, use_originals: bool = True) -> Path:
+    """Assembles a court binder PDF from a folder of filings.
+
+    Args:
+        inputs_dir: Folder of filings (and optionally manifest.json).
+        output_file: Where to write the binder.
+        use_originals: When True (the default), a filing that is a readable PDF
+            goes into the binder as its original pages (a true copy, as CSO
+            requires). Filings that exist only as text are typeset from the text.
+
+    Returns:
+        The path of the written binder.
+    """
     manifest_file = inputs_dir / "manifest.json"
     if manifest_file.exists():
         manifest = json.loads(manifest_file.read_text(encoding="utf-8"))
@@ -457,31 +623,52 @@ def build_binder(inputs_dir: Path, output_file: Path) -> Path:
     lines_per_page = 28
     doc_pages_map = [] # list of lists of page_dicts for each doc
 
+    original_count = 0
     for d_idx, d in enumerate(docs):
-        lines = load_document_lines(inputs_dir, d["filename"])
-        # Partition into chunks
-        total_chunks = max(1, (len(lines) + lines_per_page - 1) // lines_per_page)
-        
+        page_title = d.get("short_title", d.get("title", f"Document {d['item_num']}"))
+        original = open_original_pdf(inputs_dir, d["filename"]) if use_originals else None
         doc_pages = []
-        for p_idx in range(total_chunks):
-            chunk = lines[p_idx * lines_per_page : (p_idx + 1) * lines_per_page]
-            page_title = d.get("short_title", d.get("title", f"Document {d['item_num']}"))
-            doc_pages.append({
-                "header": f"{page_title} (Page {p_idx + 1} of {total_chunks})",
-                "subtitle": subtitle_bar,
-                "lines": chunk,
-                "doc_idx": d_idx,
-                "page_in_doc": p_idx + 1,
-                "total_pages_in_doc": total_chunks,
-                "title": f"{page_title} (Part {p_idx + 1})" if p_idx > 0 else page_title
-            })
+        if original is not None:
+            # True copy: one blank placeholder per original page; the real page is
+            # spliced in after the binder skeleton is written.
+            original_count += 1
+            path, reader = original
+            total_chunks = len(reader.pages)
+            for p_idx, source_page in enumerate(reader.pages):
+                try:
+                    text = source_page.extract_text() or ""
+                except Exception:
+                    text = ""
+                doc_pages.append({
+                    "header": "", "subtitle": "", "lines": [],
+                    "detect_lines": text.splitlines(),
+                    "original": (str(path), p_idx),
+                    "doc_idx": d_idx, "page_in_doc": p_idx + 1, "total_pages_in_doc": total_chunks,
+                    "title": page_title if p_idx == 0 else None,
+                })
+        else:
+            lines = load_document_lines(inputs_dir, d["filename"])
+            print(f"WARNING: {d['filename']} has no source PDF, so its text was typeset again "
+                  "(not a true copy of the original).")
+            total_chunks = max(1, (len(lines) + lines_per_page - 1) // lines_per_page)
+            for p_idx in range(total_chunks):
+                chunk = lines[p_idx * lines_per_page : (p_idx + 1) * lines_per_page]
+                doc_pages.append({
+                    "header": f"{page_title} (Page {p_idx + 1} of {total_chunks})",
+                    "subtitle": subtitle_bar,
+                    "lines": chunk,
+                    "doc_idx": d_idx,
+                    "page_in_doc": p_idx + 1,
+                    "total_pages_in_doc": total_chunks,
+                    "title": page_title if p_idx == 0 else None,
+                })
 
         # Without a manifest exhibit list, find exhibits from their stamps
         # ("This is Exhibit "A" referred to in ...") so they are still bookmarked.
         if not d.get("exhibits"):
             d["exhibits"] = detect_exhibits(doc_pages)
 
-        # Apply Exhibit Sub-Bookmark Titles to Exhibit starting pages
+        # Exhibits become child bookmarks under their document's bookmark.
         for ex in d.get("exhibits", []):
             rel_p = ex.get("rel_page") or ex.get("page_offset", 1)
             if 1 <= rel_p <= len(doc_pages):
@@ -489,9 +676,13 @@ def build_binder(inputs_dir: Path, output_file: Path) -> Path:
                 if not ex_name.upper().startswith("EXHIBIT"):
                     ex_name = f"Exhibit {ex_name}"
                 desc = ex.get("description", "")
-                doc_pages[rel_p - 1]["title"] = f"   - {ex_name}: {desc}" if desc else f"   - {ex_name}"
+                doc_pages[rel_p - 1].setdefault("exhibit_titles", []).append(
+                    f"{ex_name}: {desc}" if desc else ex_name)
 
         doc_pages_map.append(doc_pages)
+
+    if original_count:
+        print(f"Using the original PDF pages for {original_count} of {len(docs)} filings (true copies).")
 
     bad_chars = unsupported_characters([line for pages in doc_pages_map for pg in pages for line in pg["lines"]])
     if bad_chars:
@@ -512,7 +703,7 @@ def build_binder(inputs_dir: Path, output_file: Path) -> Path:
     total_pages = total_content_pages + 2 # +1 Cover, +1 Index
 
     print(f"Pass 1: Computed {total_content_pages} content folios across {len(docs)} substantive documents.")
-    print(f"Pass 1: Total binder size: {total_pages} pages (Cover + Index + Substantive Content).")
+    print(f"Pass 1: {total_content_pages} content pages plus the cover and the index.")
 
     # -------------------------------------------------------------------------
     # Pass 2: Synthesize PDF objects with Bookmarks, Links, PageLabels & InitialView
@@ -589,7 +780,6 @@ def build_binder(inputs_dir: Path, output_file: Path) -> Path:
 
         doc_title = clean_display_title(title)
         doc_date = d.get("date") or extract_date_str(title, app_date)
-        target_page_1based = folio + 2 # +1 cover, +1 index
 
         index_rows.append({
             "type": "item",
@@ -597,7 +787,7 @@ def build_binder(inputs_dir: Path, output_file: Path) -> Path:
             "doc": doc_title,
             "date": doc_date,
             "folio": str(folio),
-            "target_page_1based": target_page_1based
+            "_folio": folio
         })
 
         # Handle exhibits under affidavits
@@ -613,7 +803,6 @@ def build_binder(inputs_dir: Path, output_file: Path) -> Path:
             ex_label = f"- {ex_name}: {clean_ex_desc}" if clean_ex_desc else f"- {ex_name}"
             if len(ex_label) > 44:
                 ex_label = ex_label[:41] + "..."
-            ex_target_page = ex_folio + 2
 
             index_rows.append({
                 "type": "exhibit",
@@ -621,23 +810,32 @@ def build_binder(inputs_dir: Path, output_file: Path) -> Path:
                 "doc": ex_label,
                 "date": ex_date,
                 "folio": str(ex_folio),
-                "target_page_1based": ex_target_page
+                "_folio": ex_folio
             })
 
-    # Total link annotations to construct
+    # Split the index over as many pages as it needs, then point every row at its
+    # page: cover (1) + index pages, then the content folio.
+    index_pages = paginate_index_rows(index_rows)
+    index_page_count = len(index_pages)
+    for row in index_rows:
+        if "_folio" in row:
+            row["target_page_1based"] = row["_folio"] + 1 + index_page_count
+
     clickable_rows = [r for r in index_rows if "target_page_1based" in r]
     num_annots = len(clickable_rows)
 
-    page_entries.append({
-        "header": "INDEX TO APPLICATION RECORD",
-        "subtitle": "Required under Supreme Court Civil Rule 8-1(15) and PD-72 Appendix A",
-        "lines": [],
-        "index_rows": index_rows,
-        "stamp": None,
-        "is_index": True,
-        "title": "001 - Application Record Index",
-        "parent": None
-    })
+    for part, page_rows in enumerate(index_pages, start=1):
+        page_entries.append({
+            "header": "INDEX TO APPLICATION RECORD",
+            "subtitle": "Required under Supreme Court Civil Rule 8-1(15) and PD-72 Appendix A",
+            "lines": [],
+            "index_rows": page_rows,
+            "index_part": part,
+            "stamp": None,
+            "is_index": True,
+            "title": "001 - Application Record Index" if part == 1 else None,
+            "parent": None
+        })
 
     # Record actual front matter page count for dynamic /PageLabels synchronization
     front_matter_page_count = len(page_entries)
@@ -695,10 +893,27 @@ def build_binder(inputs_dir: Path, output_file: Path) -> Path:
     font_bold_str = "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>"
     font_reg_str = "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>"
 
+    # Bookmark tree: the cover, index and each document are top-level items, and a
+    # document's exhibits are its children.
+    outline_nodes: list[dict] = []
+    for p_idx, p_data in enumerate(page_entries):
+        if p_data.get("title"):
+            outline_nodes.append({"title": p_data["title"], "page_idx": p_idx, "children": []})
+        for ex_title in p_data.get("exhibit_titles", []):
+            outline_nodes[-1]["children"].append({"title": ex_title, "page_idx": p_idx, "children": []})
+
+    next_outline_id = outline_item_start
+    for node in outline_nodes:
+        node["id"] = next_outline_id
+        next_outline_id += 1
+        for child in node["children"]:
+            child["id"] = next_outline_id
+            next_outline_id += 1
+    outlines_count = next_outline_id - outline_item_start
+
     # Outlines Root Object
-    outlines_count = len(page_entries)
-    first_outline_id = outline_item_start
-    last_outline_id = outline_item_start + outlines_count - 1
+    first_outline_id = outline_nodes[0]["id"]
+    last_outline_id = outline_nodes[-1]["id"]
     outlines_root_str = (
         f"<< /Type /Outlines /First {first_outline_id} 0 R /Last {last_outline_id} 0 R /Count {outlines_count} >>"
     )
@@ -719,13 +934,14 @@ def build_binder(inputs_dir: Path, output_file: Path) -> Path:
         stream_text = ""
 
         # Top-center page number (14-16pt Arial/Helvetica Bold)
-        if p_data["stamp"] is not None:
+        if p_data["stamp"] is not None and not p_data.get("original"):
             stamp_s = str(p_data["stamp"])
             stream_text += f"BT\n/F1 15 Tf\n290 760 Td\n({stamp_s}) Tj\nET\n"
 
         if p_data.get("is_index"):
             # Render authentic, professional Legal Table Index (Karen's Video 836310097)
-            esc_header = escape_pdf_text("APPLICATION RECORD INDEX")
+            esc_header = escape_pdf_text(
+                "APPLICATION RECORD INDEX" + (" (continued)" if p_data.get("index_part", 1) > 1 else ""))
             esc_sub = escape_pdf_text("Required under Supreme Court Civil Rule 8-1(15) and PD-72 Appendix A")
 
             stream_text += (
@@ -802,6 +1018,8 @@ def build_binder(inputs_dir: Path, output_file: Path) -> Path:
                 current_annot_id += 1
 
             annots_attr = f"/Annots [{' '.join(these_annot_ids)}] "
+        elif p_data.get("original"):
+            annots_attr = ""  # blank placeholder; the original page replaces it afterwards
         else:
             annots_attr = ""
             esc_header = escape_pdf_text(p_data["header"])
@@ -834,21 +1052,24 @@ def build_binder(inputs_dir: Path, output_file: Path) -> Path:
         )
         page_objects.append((p_obj_id, page_str))
 
-    # Construct Bookmarks Outline Items Tree
-    for o_idx in range(outlines_count):
-        this_id = outline_item_start + o_idx
-        prev_str = f"/Prev {this_id - 1} 0 R " if o_idx > 0 else ""
-        next_str = f"/Next {this_id + 1} 0 R " if o_idx < outlines_count - 1 else ""
-        target_page_obj = page_obj_start + o_idx
-        title_str = pdf_title_string(page_entries[o_idx]["title"])
+    # Write the bookmark items (siblings are linked with /Prev and /Next)
+    def write_outline_level(siblings: list[dict], parent_id: int) -> None:
+        for pos, node in enumerate(siblings):
+            prev_str = f"/Prev {siblings[pos - 1]['id']} 0 R " if pos > 0 else ""
+            next_str = f"/Next {siblings[pos + 1]['id']} 0 R " if pos < len(siblings) - 1 else ""
+            kids = node["children"]
+            kids_str = (f"/First {kids[0]['id']} 0 R /Last {kids[-1]['id']} 0 R /Count {len(kids)} " if kids else "")
+            target_page_obj = page_obj_start + node["page_idx"]
+            outline_objects.append((node["id"], (
+                f"<< /Title {pdf_title_string(node['title'])} "
+                f"/Parent {parent_id} 0 R "
+                f"{prev_str}{next_str}{kids_str}"
+                f"/Dest [{target_page_obj} 0 R /Fit] >>"
+            )))
+            write_outline_level(kids, node["id"])
 
-        outline_item_str = (
-            f"<< /Title {title_str} "
-            f"/Parent {outlines_root_idx} 0 R "
-            f"{prev_str}{next_str}"
-            f"/Dest [{target_page_obj} 0 R /Fit] >>"
-        )
-        outline_objects.append((this_id, outline_item_str))
+    write_outline_level(outline_nodes, outlines_root_idx)
+    outline_objects.sort(key=lambda item: item[0])
 
     # Combine all parts in exact ascending object order
     ordered_objects = [
@@ -895,11 +1116,18 @@ def build_binder(inputs_dir: Path, output_file: Path) -> Path:
     output_file.parent.mkdir(parents=True, exist_ok=True)
     output_file.write_bytes(bytes(out))
 
-    file_size_bytes = len(out)
+    originals = [
+        (idx, Path(pd["original"][0]), pd["original"][1], pd["stamp"])
+        for idx, pd in enumerate(page_entries) if pd.get("original")
+    ]
+    if originals:
+        splice_original_pages(output_file, originals)
+
+    file_size_bytes = output_file.stat().st_size
     file_size_mb = file_size_bytes / (1024.0 * 1024.0)
     print(f"\nSUCCESS: Generated authentic, fully-detailed Court Binder -> {output_file.resolve()}")
     print("Binder Statistics:")
-    print(f"  - Total Pages: {num_pages}")
+    print(f"  - Total Pages: {num_pages} (cover, {index_page_count} index page{'s' if index_page_count != 1 else ''}, {total_content_pages} content)")
     print(f"  - Bookmarks Created: {outlines_count}")
     print(f"  - Index Hyperlinks: {num_annots}")
     print(f"  - File Size: {file_size_bytes:,} bytes ({file_size_mb:.4f} MB)")
@@ -911,6 +1139,7 @@ def main():
     parser = argparse.ArgumentParser(description="Assemble authentic BC Supreme Court Application Record.")
     parser.add_argument("--inputs", default="poc/court-binder/inputs/01-commercial-discovery", help="Folder containing manifest.json and documents")
     parser.add_argument("--output", default="poc/court-binder/output/01-commercial-discovery/Application_Record_Commercial_Document_Discovery_Rule_7-1_15Nov2026.pdf", help="Output PDF destination")
+    parser.add_argument("--retypeset", action="store_true", help="Typeset filings from their text instead of using their original PDF pages")
     args = parser.parse_args()
 
     inputs_dir = Path(args.inputs)
@@ -927,7 +1156,7 @@ def main():
         output_file = poc_dir / args.output
 
     try:
-        build_binder(inputs_dir, output_file)
+        build_binder(inputs_dir, output_file, use_originals=not args.retypeset)
     except Exception as e:
         print(f"ERROR: Court Binder assembly failed: {e}", file=sys.stderr)
         import traceback
