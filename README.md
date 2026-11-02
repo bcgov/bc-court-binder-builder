@@ -214,7 +214,7 @@ Prefer a window to a chat? The **Court binder builder** desktop app (`app/`) wra
 | Step | What it does |
 | :--- | :--- |
 | **1. Create sample filings** | Generates synthetic Rule 7-1 filings, builds a binder from them, and audits it against the 20 gates. Use it to try the full cycle without client documents. |
-| **2. Build a binder** | Choose a folder of filings, optionally add **Title page details** (court file number, registry, parties, hearing date; blanks are marked as placeholders with a warning), and the app suggests a file name and builds one foliated, bookmarked, hyperlinked binder PDF in a folder you choose. Exhibits are bookmarked automatically from their exhibit stamps. |
+| **2. Build a binder** | Choose a folder of filings, optionally add **Title page details** (court file number, registry, parties, hearing date; blanks are marked as placeholders with a warning), and the app suggests a file name and builds one foliated, bookmarked, hyperlinked binder PDF in a folder you choose. Your original PDF pages go into the binder unchanged (true copies, as CSO requires) with the folio stamped on top; exhibits are nested under their affidavit automatically, and a long index continues onto more pages. |
 | **3. Check a binder** | Choose any binder PDF and get a 20-gate scorecard with failures first and how to fix them. |
 | **4. File with CSO** | Asks whether you have a Court Services Online account, are logged on, and have a credit card registered, then opens the right CSO page (register, log on, register card, E-file home) in your own browser. Also shows the upload route for your binder's size and a filing checklist. You do every CSO step yourself; the app never sees credentials or card details. |
 

@@ -137,6 +137,10 @@ The consolidated skill maintains a comprehensive library of domain knowledge tha
 
 ---
 
+### 3.4 True copies
+
+The assembler builds the cover, a paginated index, a nested bookmark tree, link annotations and `/PageLabels` with its own PDF writer, around **blank placeholder pages** for every page of every filing. After the skeleton is written, `splice_original_pages` (using `pypdf`) copies each original page's content, size, rotation and annotations into its placeholder and stamps the folio on top. Because the page objects never change identity, nothing that points at them has to be rewritten. Filings with no PDF are typeset from their text (with a warning). PdfCraft's own `merge` was tested on the sample filings and preserves all 14 pages' text and page boxes, so it could replace the combining step later. Its `doc_header_footer` works in display space (after `/Rotate`), so numbers stay upright on rotated pages, but it offers only Helvetica, Times and Courier (no bold), and the Python `call_tool` cannot stage files into the engine's temporary sandbox, so folios, nested bookmarks and page labels stay in `pypdf` for now.
+
 ## ⚖️ 4. The 20 Mandatory Court Quality Gates
 
 ```text
