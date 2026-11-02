@@ -209,4 +209,21 @@ flowchart LR
 - **Engine adapter, not a fork.** A gate fix in the skill reaches the app automatically.
 - **Manifest.** `generate_discovery_preset()` returns the manifest but does not write it. Both `managing_court_binders.py --mode all` and the app adapter now write `manifest.json` themselves, so exhibit sub-bookmarks are built and the sample cycle scores 20 / 20.
 - **Rust POC.** `src/main.rs` is an earlier, separate prototype and is not used by the app.
-- **Packaging (planned).** PyInstaller plus `create-dmg` for macOS and Inno Setup for Windows, built per OS in CI.
+- **Packaging.** See [6.1 macOS installer](#61-macos-installer). Windows (Inno Setup) is planned; both are meant to be built per OS in CI.
+
+### 6.1 macOS installer
+
+`packaging/macos/build_dmg.sh` turns the app into **Court binder builder.app** and a drag-to-Applications `.dmg`, using PyInstaller and the built-in `hdiutil`. The app is self-contained, so end users need no Python.
+
+| In the bundle | Comes from | Why |
+| :--- | :--- | :--- |
+| `binder_app` (Python) and `binder_app/ui/` | `app/` | The window and screens, including BC Sans and the design tokens |
+| `engine_scripts/` | `.apm/skills/managing-court-binders/scripts/` | The skill's generator, assembler and validator, imported by `engine.py` exactly as in development |
+| `references/cso_links.json` | the skill's `references/` | The official CSO addresses the File with CSO screen may open |
+| Python, `pypdf`, `pywebview` | the build environment | Runtime |
+| `pdfcraft` (Python wrappers + `_native` Rust library) and `pillow` | the pinned wheel (v0.16.1, SHA-256 checked) | The PdfCraft native engine, bundled and self-tested. **The binder engine does not call it yet**: the generator, assembler and validator write PDFs themselves and read them with `pypdf`. |
+
+- **Frozen-app paths.** `engine.locate_scripts_dir()` finds `engine_scripts/` inside the bundle; `load_cso_links()` reads `references/` beside it. With no repository checkout around it, the app's defaults become `~/Documents/BC Court Binder` and `.../Output`.
+- **Self-test.** `Court binder builder --selftest` runs a full sample cycle in a temporary folder, requires 20 / 20 gates, loads the CSO links file and (with `--require-pdfcraft`) merges two PDFs with the bundled native engine, then exits without opening a window. The build script runs it on the packaged app, so a missing script, reference file or dependency fails the build.
+- **Signing.** The app is ad-hoc signed by default. `SIGN_IDENTITY` and `NOTARY_PROFILE` enable Developer ID signing and notarization (untested here). One build per processor type (`arm64` or Intel).
+- **Keeping it working.** A file the app loads at run time must be listed in `packaging/macos/binder_app.spec`; the self-test catches omissions. Built images are git-ignored and published as release assets, never committed.

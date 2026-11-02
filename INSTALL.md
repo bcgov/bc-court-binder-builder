@@ -7,7 +7,7 @@ It supports:
 2. **Standard Python Runtime (Zero-Compiler Setup):** Running the interactive terminal wizard, automated assembly, and 20-gate compliance validator directly with Python (`pypdf`, `pdfplumber`).
 3. **Native Acceleration (Optional):** Pre-compiled PyO3 native wheels (`pdfcraft-pyo3`) for high-throughput batch processing.
 4. **Rust Reference Implementation (Optional):** Compiling and executing the native in-process engine (`pdfcraft-sdk`).
-5. **Desktop App (POC):** A native window with three screens (create sample filings, build a binder, check a binder) that reuses the same Python engine. See [Option 4](#option-4-desktop-app).
+5. **Desktop App (POC):** A native window with four screens (create sample filings, build a binder, check a binder, file with CSO) that reuses the same Python engine. Run it from source, or build a drag-to-Applications Mac installer (`.dmg`) that needs no Python. See [Option 4](#option-4-desktop-app).
 
 ---
 
@@ -354,13 +354,16 @@ pip install -r requirements.txt
 > [!NOTE]
 > `requirements.txt` contains only `pypdf` and `pdfplumber` (the desktop app adds `pywebview` through `app/requirements-app.txt`). This lightweight footprint provides 100% of the functionality needed to synthesize filings, assemble binders, stamp folios, inject GoTo links, and execute the 20-gate compliance audit.
 
-### Step 4 (Optional): High-Performance Native PyO3 Wheel Acceleration
-To enable native Rust acceleration via PyO3 without compiling from source, install the pre-built wheel from GitHub Releases:
+### Step 4 (Optional): The PdfCraft native wheel
+The PdfCraft Python package is a thin Python layer over the compiled Rust engine (`pdfcraft._native`). You can install the pre-built wheel from GitHub Releases:
 ```bash
-# macOS Apple Silicon (ARM64):
+# macOS Apple Silicon, Python 3.13 only (the wheel's tag is cp313-cp313-macosx_11_0_arm64):
 pip install "https://github.com/richfrem/pdfcraft/releases/download/v0.16.1/pdfcraft-0.5.0-cp313-cp313-macosx_11_0_arm64.whl"
 ```
-*(If no native wheel is installed, the pipeline automatically falls back to standard Python vector serialization with zero degradation in compliance).*
+The wheel only copies files into `site-packages` (no install scripts) and pulls in `pypdf` and `pillow`. Its SHA-256 is `53f52d2f154d723c50836c2820f9ce19fb4bc9f0c2bd88c48f1b8e3b2a364f46`.
+
+> [!NOTE]
+> **The binder engine does not call PdfCraft yet.** Today the generator, assembler and validator write PDFs themselves and read them with `pypdf`, so installing the wheel changes nothing about the output, and every compliance check works without it. The [Mac installer](#mac-app) still bundles the wheel so the native engine is ready when the engine starts to use it (for example, to merge original PDFs as true copies).
 
 ---
 
@@ -451,6 +454,29 @@ output/01-commercial-discovery/Application_Record_Commercial_Document_Discovery_
 
 The desktop app is an alternative to chatting with an agent. It calls the same `managing-court-binders` scripts, so results match the skill exactly. Everything runs locally. It needs this repository checkout (the app finds the skill at `.apm/skills/managing-court-binders/scripts/`).
 
+<a id="mac-app"></a>
+### 📦 Install the Mac app (no Python needed)
+
+A Mac disk image (`.dmg`) bundles the app, the skill scripts, Python, `pypdf` and the PdfCraft native engine, so users only drag the app to **Applications**. A downloadable release is not published yet, so build it once on a Mac:
+
+```bash
+git clone https://github.com/bcgov/bc-court-binder-builder.git
+cd bc-court-binder-builder
+packaging/macos/build_dmg.sh
+```
+
+The script creates its own build environment (`packaging/macos/.venv-build`, nothing is installed into `app/.venv`), downloads the PdfCraft wheel from the release URL in [Step 4](#step-4-optional-the-pdfcraft-native-wheel) and refuses to continue unless its SHA-256 matches the pinned hash. That is the build-time equivalent of the `pip install` above, so users never run `pip`. It then builds the app and runs a self-test on the packaged app: a sample binder must pass all 20 gates and the native PdfCraft engine must merge two PDFs, otherwise the build fails. The image is written to `packaging/macos/dist/Court-binder-builder-<version>-macos-<arch>.dmg` (about 40 MB).
+
+**Install:** open the `.dmg`, drag **Court binder builder** onto **Applications**, then open it from Applications or Launchpad.
+
+**Things to know**
+- **Unsigned.** On the Mac that built it, the app opens normally. A copy downloaded from the internet triggers a Gatekeeper warning: right-click the app, choose **Open**, then **Open** again (or run `xattr -dr com.apple.quarantine "/Applications/Court binder builder.app"`). Signed and notarized builds need an Apple Developer ID; see [`packaging/macos/README.md`](packaging/macos/README.md) (untested here).
+- **One architecture and one Python per build.** A build made on Apple Silicon (`arm64`) does not run on Intel Macs, and the other way round. The pinned PdfCraft wheel is for Python 3.13 on Apple Silicon only; set `PDFCRAFT_WHEEL` to another wheel, or `WITH_PDFCRAFT=0` to build without it.
+- **Folders.** An installed app saves to `~/Documents/BC Court Binder` (sample filings) and `~/Documents/BC Court Binder/Output` (binders) until you change them in the sidebar. Choices are kept in `~/.bc_court_binder_settings.json`, shared with a copy run from source on the same Mac.
+- A **Windows installer** is planned and not built yet.
+
+### 🐍 Run from source
+
 **Requirements:** Python **3.10 or newer** (3.11–3.13 recommended), Git, and the dependencies in [`app/requirements-app.txt`](app/requirements-app.txt) (`pywebview`, plus `pypdf` and `pdfplumber` from the root [`requirements.txt`](requirements.txt)). No compiler is needed.
 
 ### 🍎 macOS
@@ -497,7 +523,7 @@ Install GTK and WebKit first, for example on Debian or Ubuntu: `sudo apt install
 
 1. **Working folder and Output folder** (sidebar): the working folder (default `inputs/` in the repo) is where sample filings are created; the output folder (default `output/`) is where finished binders go. **Change…** remembers your choice in `~/.bc_court_binder_settings.json`.
 2. **Create sample filings → Run full test cycle:** writes the filings to `Sample run <timestamp>/filings/` in the working folder and the binder to `Sample run <timestamp>/Application_Record_Sample.pdf` in the output folder, then shows the scorecard (expect 20 / 20).
-3. **Build a binder:** choose a folder of filings, fill in the **Case details** (court file number, registry, parties and hearing date are required; time estimate and counsel are optional; they are saved as `manifest.json` in the filings folder and prefilled next time), check the suggested file name, press **Build binder**. The PDF is saved in the folder shown under **Save binder in** (by default a subfolder of the output folder named after your filings folder; use **Choose folder…** to pick another). Existing files are never overwritten. **Check this binder** jumps to step 3.
+3. **Build a binder:** choose a folder of filings. Optionally open **Title page details** (court file number, registry, parties, hearing date, time estimate, counsel). They print on the binder's own title page, are saved as `manifest.json` in the filings folder and are prefilled next time. Anything left blank is marked as a placeholder, and the result tells you what to complete before filing. If your folder contains `000_Application_Record_Title_Page.txt`, that is used as the title page instead. Check the suggested file name and press **Build binder**. The PDF is saved in the folder shown under **Save binder in** (by default a subfolder of the output folder named after your filings folder; use **Choose folder…** to pick another). Existing files are never overwritten. **Check this binder** jumps to step 3.
 4. **Check a binder:** choose any PDF to audit it.
 5. **File with CSO:** answer three questions (CSO account? logged on? card registered?) and use the buttons to open the right CSO page in your browser. Choose a binder to see whether it can be uploaded directly (up to 20 MB), needs **Upload Large Files** first (20 to 50 MB) or is too large. You log on, add your card and submit yourself; nothing you type on CSO passes through the app.
 
@@ -516,7 +542,7 @@ python -m unittest discover -s tests -t .
 | Blank window on Windows | Install the WebView2 runtime (see above). |
 | `Could not find the managing-court-binders scripts` | Run from a full clone, or set `BC_BINDER_SCRIPTS` to the skill's `scripts` folder. |
 
-Packaged installers (`.dmg`, Windows `.exe`) are planned and not built yet.
+To avoid installing Python at all on a Mac, build the [Mac installer](#mac-app) from [`packaging/macos/`](packaging/macos/README.md). A Windows installer is planned and not built yet.
 
 ---
 
