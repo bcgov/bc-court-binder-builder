@@ -42,6 +42,21 @@ def ui_index() -> Path:
     return ui_dir / "index.html"
 
 
+SELFTEST_LOG: Path | None = None
+
+
+# Print a self-test line, and also append it to the log file when one was requested.
+def say(message: str) -> None:
+    """Print message and, if --selftest-log was given, append it to that file.
+
+    A windowed Windows app has no console, so the file is how a build script reads the result.
+    """
+    print(message)
+    if SELFTEST_LOG is not None:
+        with SELFTEST_LOG.open("a", encoding="utf-8") as handle:
+            handle.write(message + "\n")
+
+
 # Check the optional PdfCraft native engine by merging two tiny PDFs with it.
 def pdfcraft_check(required: bool) -> bool:
     """Merge two generated PDFs with the pdfcraft wheel's native engine.
@@ -57,7 +72,7 @@ def pdfcraft_check(required: bool) -> bool:
     try:
         from pdfcraft import LocalClient, MergeOptions
     except ImportError:
-        print("  pdfcraft native engine: not included" + (" (REQUIRED)" if required else ""))
+        say("  pdfcraft native engine: not included" + (" (REQUIRED)" if required else ""))
         return not required
 
     import pypdf
@@ -77,7 +92,7 @@ def pdfcraft_check(required: bool) -> bool:
         if result.path is not None:
             Path(result.path).unlink(missing_ok=True)
         pages = len(pypdf.PdfReader(__import__("io").BytesIO(data)).pages)
-    print(f"  pdfcraft native engine: {'OK' if pages == 2 else 'FAILED'} (merged {pages} pages)")
+    say(f"  pdfcraft native engine: {'OK' if pages == 2 else 'FAILED'} (merged {pages} pages)")
     return pages == 2
 
 
@@ -101,11 +116,11 @@ def selftest() -> int:
         validation = result["validation"]
         links = engine.load_cso_links()
     gates_ok = validation["total"] == 20 and validation["passed_count"] == 20
-    print(f"SELFTEST engine: {validation['passed_count']}/{validation['total']} gates, {len(links['pages'])} CSO links")
+    say(f"SELFTEST engine: {validation['passed_count']}/{validation['total']} gates, {len(links['pages'])} CSO links")
     ok = pdfcraft_check("--require-pdfcraft" in sys.argv) and gates_ok
-    print(f"SELFTEST {'OK' if ok else 'FAILED'}")
-    print(f"  default working folder: {engine.default_workspace()}")
-    print(f"  default output folder:  {engine.default_output_dir()}")
+    say(f"SELFTEST {'OK' if ok else 'FAILED'}")
+    say(f"  default working folder: {engine.default_workspace()}")
+    say(f"  default output folder:  {engine.default_output_dir()}")
     return 0 if ok else 1
 
 
@@ -113,6 +128,10 @@ def selftest() -> int:
 def main() -> None:
     """Create the native window and run the app (or the self-test with --selftest)."""
     if "--selftest" in sys.argv:
+        global SELFTEST_LOG
+        if "--selftest-log" in sys.argv:
+            SELFTEST_LOG = Path(sys.argv[sys.argv.index("--selftest-log") + 1])
+            SELFTEST_LOG.unlink(missing_ok=True)
         raise SystemExit(selftest())
     api = Api()
     window = webview.create_window(

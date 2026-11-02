@@ -213,11 +213,11 @@ flowchart LR
 - **Engine adapter, not a fork.** A gate fix in the skill reaches the app automatically.
 - **Manifest.** `generate_discovery_preset()` returns the manifest but does not write it. Both `managing_court_binders.py --mode all` and the app adapter now write `manifest.json` themselves, so exhibit sub-bookmarks are built and the sample cycle scores 20 / 20.
 - **Rust POC.** `src/main.rs` is an earlier, separate prototype and is not used by the app.
-- **Packaging.** See [6.1 macOS installer](#61-macos-installer). Windows (Inno Setup) is planned; both are meant to be built per OS in CI.
+- **Packaging.** See [6.1 macOS installer](#61-macos-installer) and [6.2 Windows installer](#62-windows-installer). Installers follow the PdfCraft packaging and are built and published by CI ([`docs/releasing.md`](docs/releasing.md)).
 
 ### 6.1 macOS installer
 
-`packaging/macos/build_dmg.sh` turns the app into **Court binder builder.app** and a drag-to-Applications `.dmg`, using PyInstaller and the built-in `hdiutil`. The app is self-contained, so end users need no Python.
+`packaging/macos/package.sh` turns the app into **Court binder builder.app** and a drag-to-Applications `.dmg` (`dist/release/court-binder-builder-<version>-macos-<arch>.dmg`) using PyInstaller and the built-in `hdiutil`. The app is self-contained, so end users need no Python. The structure follows the PdfCraft packaging (`packaging/macos/` in the PdfCraft fork) and its release process; installers are never committed, they are built by CI and published as GitHub Release assets with `SHA256SUMS.txt`.
 
 | In the bundle | Comes from | Why |
 | :--- | :--- | :--- |
@@ -225,9 +225,23 @@ flowchart LR
 | `engine_scripts/` | `.apm/skills/managing-court-binders/scripts/` | The skill's generator, assembler and validator, imported by `engine.py` exactly as in development |
 | `references/cso_links.json` | the skill's `references/` | The official CSO addresses the File with CSO screen may open |
 | Python, `pypdf`, `pywebview` | the build environment | Runtime |
-| `pdfcraft` (Python wrappers + `_native` Rust library) and `pillow` | the pinned wheel (v0.16.1, SHA-256 checked) | The PdfCraft native engine, bundled and self-tested. **The binder engine does not call it yet**: the generator, assembler and validator write PDFs themselves and read them with `pypdf`. |
+| `pdfcraft` (Python wrappers + `_native` Rust library) and `pillow` | the pinned wheel (v0.16.1, SHA-256 checked) | The PdfCraft native engine, bundled and self-tested. **The binder engine does not call it yet**: the generator and assembler write the cover, index and bookmarks themselves and use `pypdf` to copy in the original pages, and the validator reads PDFs with `pypdf`. |
 
+- **Signing inside out.** `package.sh` signs every Mach-O file in the bundle with the hardened runtime and `entitlements.plist` (library validation off, because a PyInstaller bundle loads its own libraries), deepest first, then the bundle, with no `--deep` on the final signature. Ad hoc without a Developer ID; with one plus `APPLE_ID`, `APPLE_PASSWORD` and `APPLE_TEAM_ID` it notarizes the app and the DMG and staples the tickets, retrying Apple's flaky ticket fetch.
+- **Self-test.** `Court binder builder --selftest` runs a full sample cycle in a temporary folder, requires 20 / 20 gates, loads the CSO links file and (with `--require-pdfcraft`) merges two PDFs with the bundled native engine, then exits without opening a window.
+- **DMG.** Built from a staging folder with `ditto` and a plain `hdiutil create -srcfolder` (retried; `makehybrid` leaves Finder metadata that breaks `codesign --strict`), with a branded window from static files in `packaging/macos/dmg/`. After building, the script mounts the image and verifies the app **inside** it with `codesign --verify --strict`.
 - **Frozen-app paths.** `engine.locate_scripts_dir()` finds `engine_scripts/` inside the bundle; `load_cso_links()` reads `references/` beside it. With no repository checkout around it, the app's defaults become `~/Documents/BC Court Binder` and `.../Output`.
-- **Self-test.** `Court binder builder --selftest` runs a full sample cycle in a temporary folder, requires 20 / 20 gates, loads the CSO links file and (with `--require-pdfcraft`) merges two PDFs with the bundled native engine, then exits without opening a window. The build script runs it on the packaged app, so a missing script, reference file or dependency fails the build.
-- **Signing.** The app is ad-hoc signed by default. `SIGN_IDENTITY` and `NOTARY_PROFILE` enable Developer ID signing and notarization (untested here). One build per processor type (`arm64` or Intel).
-- **Keeping it working.** A file the app loads at run time must be listed in `packaging/macos/binder_app.spec`; the self-test catches omissions. Built images are git-ignored and published as release assets, never committed.
+- **Keeping it working.** A file the app loads at run time must be listed in `packaging/macos/binder_app.spec`; the self-test catches omissions. One build per processor type (`arm64` or Intel).
+
+### 6.2 Windows installer
+
+`packaging/windows/package.ps1` builds the same app for Windows and packages it as a **WiX v5 MSI** (`court-binder-builder-<version>-windows-x64.msi`) and a portable zip, following the PdfCraft Windows packaging: it reads the version from one place, checks the executable's PE header (x64, GUI subsystem), self-tests the packaged app, signs the executable, builds the MSI, **inspects the built MSI** (`test-msi.ps1`), signs it, and zips the app folder.
+
+- **Dual-scope MSI.** Per-user by default (`%LOCALAPPDATA%\Programs\Court binder builder`, no administrator rights), per-machine on request. The scope rules (`install-policy.wxi`) and dialogs (`installer-ui.wxs`) are adapted from the PdfCraft fork; `court-binder-builder.wxs` is a smaller package definition (shortcuts, App Paths, a harvest of the PyInstaller folder). See `packaging/windows/INSTALLATION.md`.
+- **Self-test without a console.** A windowed Windows app has no console, so `--selftest --selftest-log <file>` writes the result to a file that `package.ps1` and `test-install.ps1` read.
+- **Verification.** The **Packaging build** workflow builds on a clean `windows-latest` runner, runs `test-install.ps1` (install silently, self-test the *installed* app, reinstall as a same-version upgrade, uninstall) and uploads the artifacts. Nothing here has been run on Windows yet; on a Mac only the scripts' syntax, the XML and the PyInstaller spec (built into a scratch folder) could be checked.
+- **PdfCraft.** No Windows wheel is published for the pinned release, so the Windows build omits the native engine unless a `win_amd64` wheel is supplied (hash-checked) through `PDFCRAFT_WHEEL` or `PDFCRAFT_WHEEL_URL`.
+
+### 6.3 Release pipeline
+
+`.github/workflows/release.yml` (push to the `release` branch, or a manual run) builds and tests both installers on clean runners, then creates a **draft** GitHub Release with every artifact and `SHA256SUMS.txt`; nothing is published until a person publishes the draft. Signing secrets live in a protected `release` environment and are optional (missing ones give unsigned artifacts and a warning). `packaging-lint.yml` (actionlint, shellcheck, PowerShell parse, xmllint, the MSI icon check) and `packaging-build.yml` (unsigned builds on pull requests) run before a release does. Process, secrets and the guidance for antivirus detections of PyInstaller programs are in [`docs/releasing.md`](docs/releasing.md).

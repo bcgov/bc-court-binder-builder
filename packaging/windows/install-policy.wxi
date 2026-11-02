@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Adapted from the PdfCraft packaging (https://github.com/richfrem/pdfcraft, packaging/windows/
+     install-policy.wxi), dual-licensed MIT OR Apache-2.0: the same per-user / per-machine scope
+     rules, with names changed for Court binder builder. -->
+<Include xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <!-- Choose scope before launch checks and directory costing. Never move an existing copy. -->
+  <!-- Only for me leaves ALLUSERS unset. Publishing ALLUSERS=2 here makes FindRelatedProducts treat the run as
+       per-machine and skip the existing per-user copy, so an interactive upgrade installs beside it
+       (two registered products, and uninstall leaves files behind). Checked with real msiexec runs. -->
+  <Property Id="INSTALLFOLDER" Secure="yes" />
+  <Property Id="CBB_SCOPE" Value="user" Secure="yes" />
+  <Property Id="CBB_U_DIR" Secure="yes"><RegistrySearch Id="CBB_U_DIRSearch" Root="HKCU" Key="Software\PdfCbb" Name="InstallDir" Type="raw" /></Property>
+  <SetProperty Id="CBB_USER_DIR" Action="CbbUFromDIR" Value="[CBB_U_DIR]" After="AppSearch" Sequence="both" Condition="NOT CBB_USER_DIR AND CBB_U_DIR" />
+  <Property Id="CBB_U_FOLDER" Secure="yes"><RegistrySearch Id="CBB_U_FOLDERSearch" Root="HKCU" Key="Software\PdfCbb" Name="InstallFolder" Type="raw" /></Property>
+  <SetProperty Id="CBB_USER_DIR" Action="CbbUFromFOLDER" Value="[CBB_U_FOLDER]" After="CbbUFromDIR" Sequence="both" Condition="NOT CBB_USER_DIR AND CBB_U_FOLDER" />
+  <Property Id="CBB_U_PATH" Secure="yes"><RegistrySearch Id="CBB_U_PATHSearch" Root="HKCU" Key="Software\Microsoft\Windows\CurrentVersion\App Paths\Court binder builder.exe" Name="Path" Type="raw" /></Property>
+  <SetProperty Id="CBB_USER_DIR" Action="CbbUFromPATH" Value="[CBB_U_PATH]" After="CbbUFromFOLDER" Sequence="both" Condition="NOT CBB_USER_DIR AND CBB_U_PATH" />
+  <Property Id="CBB_U_EXEFOLDER" Secure="yes"><RegistrySearch Id="CBB_ULegacyFolder" Root="HKCU" Key="Software\Microsoft\Windows\CurrentVersion\App Paths\Court binder builder.exe" Type="file" /></Property>
+  <Property Id="CBB_U_EXE" Secure="yes"><RegistrySearch Id="CBB_ULegacyExe" Root="HKCU" Key="Software\Microsoft\Windows\CurrentVersion\App Paths\Court binder builder.exe" Type="file"><FileSearch Id="CBB_ULegacyFile" Name="Court binder builder.exe" /></RegistrySearch></Property>
+  <SetProperty Id="CBB_USER_DIR" Action="CbbUFromLegacyExe" Value="[CBB_U_EXEFOLDER]" After="CbbUFromPATH" Sequence="both" Condition="NOT CBB_USER_DIR AND CBB_U_EXEFOLDER AND CBB_U_EXE" />
+  <Property Id="CBB_USER_DIR" Secure="yes" />
+  <Property Id="CBB_M_DIR" Secure="yes"><RegistrySearch Id="CBB_M_DIRSearch" Root="HKLM" Key="Software\PdfCbb" Name="InstallDir" Type="raw" /></Property>
+  <SetProperty Id="CBB_MACHINE_DIR" Action="CbbMFromDIR" Value="[CBB_M_DIR]" After="CbbUFromLegacyExe" Sequence="both" Condition="NOT CBB_MACHINE_DIR AND CBB_M_DIR" />
+  <Property Id="CBB_M_FOLDER" Secure="yes"><RegistrySearch Id="CBB_M_FOLDERSearch" Root="HKLM" Key="Software\PdfCbb" Name="InstallFolder" Type="raw" /></Property>
+  <SetProperty Id="CBB_MACHINE_DIR" Action="CbbMFromFOLDER" Value="[CBB_M_FOLDER]" After="CbbMFromDIR" Sequence="both" Condition="NOT CBB_MACHINE_DIR AND CBB_M_FOLDER" />
+  <Property Id="CBB_M_PATH" Secure="yes"><RegistrySearch Id="CBB_M_PATHSearch" Root="HKLM" Key="Software\Microsoft\Windows\CurrentVersion\App Paths\Court binder builder.exe" Name="Path" Type="raw" /></Property>
+  <SetProperty Id="CBB_MACHINE_DIR" Action="CbbMFromPATH" Value="[CBB_M_PATH]" After="CbbMFromFOLDER" Sequence="both" Condition="NOT CBB_MACHINE_DIR AND CBB_M_PATH" />
+  <Property Id="CBB_M_EXEFOLDER" Secure="yes"><RegistrySearch Id="CBB_MLegacyFolder" Root="HKLM" Key="Software\Microsoft\Windows\CurrentVersion\App Paths\Court binder builder.exe" Type="file" /></Property>
+  <Property Id="CBB_M_EXE" Secure="yes"><RegistrySearch Id="CBB_MLegacyExe" Root="HKLM" Key="Software\Microsoft\Windows\CurrentVersion\App Paths\Court binder builder.exe" Type="file"><FileSearch Id="CBB_MLegacyFile" Name="Court binder builder.exe" /></RegistrySearch></Property>
+  <SetProperty Id="CBB_MACHINE_DIR" Action="CbbMFromLegacyExe" Value="[CBB_M_EXEFOLDER]" After="CbbMFromPATH" Sequence="both" Condition="NOT CBB_MACHINE_DIR AND CBB_M_EXEFOLDER AND CBB_M_EXE" />
+  <Property Id="CBB_MACHINE_DIR" Secure="yes" />
+  <SetProperty Id="CBB_SCOPE" Action="CbbPreferMachineScope" Value="machine" After="CbbMFromLegacyExe" Sequence="ui" Condition="ALLUSERS = 1 OR (CBB_MACHINE_DIR AND NOT CBB_USER_DIR)" />
+  <SetProperty Id="INSTALLFOLDER" Action="CbbRestoreUserFolder" Value="[CBB_USER_DIR]" Before="CostInitialize" Sequence="both" Condition="NOT INSTALLFOLDER AND ALLUSERS &lt;&gt; 1 AND CBB_USER_DIR" />
+  <!-- The wizard can change the context after Windows Installer has already resolved Program Files for the first one.
+       Give the new-install folder explicitly so Everyone never lands in the profile and Only for me never lands in Program Files. -->
+  <?if $(sys.BUILDARCH) = x86 ?>
+  <SetProperty Id="INSTALLFOLDER" Action="CbbDefaultMachineFolder" Value="[%ProgramFiles(x86)]\ArtCbb\PdfCbb\" After="CbbRestoreUserFolder" Sequence="ui" Condition="NOT INSTALLFOLDER AND ALLUSERS = 1 AND VersionNT64" />
+  <SetProperty Id="INSTALLFOLDER" Action="CbbDefaultMachineFolder32" Value="[%ProgramFiles]\ArtCbb\PdfCbb\" After="CbbDefaultMachineFolder" Sequence="ui" Condition="NOT INSTALLFOLDER AND ALLUSERS = 1 AND NOT VersionNT64" />
+  <SetProperty Id="INSTALLFOLDER" Action="CbbDefaultUserFolder" Value="[LocalAppDataFolder]Programs\ArtCbb\PdfCbb\" After="CbbDefaultMachineFolder32" Sequence="ui" Condition="NOT INSTALLFOLDER AND ALLUSERS &lt;&gt; 1" />
+  <?else?>
+  <SetProperty Id="INSTALLFOLDER" Action="CbbDefaultMachineFolder" Value="[%ProgramW6432]\ArtCbb\PdfCbb\" After="CbbRestoreUserFolder" Sequence="ui" Condition="NOT INSTALLFOLDER AND ALLUSERS = 1" />
+  <SetProperty Id="INSTALLFOLDER" Action="CbbDefaultUserFolder" Value="[LocalAppDataFolder]Programs\ArtCbb\PdfCbb\" After="CbbDefaultMachineFolder" Sequence="ui" Condition="NOT INSTALLFOLDER AND ALLUSERS &lt;&gt; 1" />
+  <?endif?>
+  <SetProperty Id="INSTALLFOLDER" Action="CbbRestoreMachineFolder" Value="[CBB_MACHINE_DIR]" Before="CbbRestoreUserFolder" Sequence="both" Condition="NOT INSTALLFOLDER AND ALLUSERS = 1 AND CBB_MACHINE_DIR" />
+  <Launch Condition="Installed OR ALLUSERS &lt;&gt; 1 OR NOT CBB_USER_DIR" Message="Court binder builder is already installed for your account. Choose Only for me to update it, or uninstall that copy before changing who it is installed for." />
+  <Launch Condition="Installed OR ALLUSERS = 1 OR NOT CBB_MACHINE_DIR" Message="Court binder builder is already installed for everyone. Choose Everyone to update it, or pass ALLUSERS=1 to msiexec. Uninstall that copy before changing who it is installed for." />
+  <UI>
+    <TextStyle Id="CbbScopeText" FaceName="Segoe UI" Size="9" />
+    <TextStyle Id="CbbScopeTitle" FaceName="Segoe UI" Size="12" Bold="yes" />
+    <Dialog Id="CbbScopeDlg" Width="370" Height="220" Title="[ProductName] Setup" NoMinimize="yes">
+      <Control Id="Title" Type="Text" X="20" Y="15" Width="330" Height="30" Text="{\CbbScopeTitle}Who should use [ProductName]?" />
+      <Control Id="Info" Type="Text" X="20" Y="50" Width="330" Height="30" Text="{\CbbScopeText}An update keeps the existing folder. New copies use the ArtCbb folder under Programs." />
+      <Control Id="Scope" Type="RadioButtonGroup" X="20" Y="88" Width="330" Height="60" Property="CBB_SCOPE">
+        <RadioButtonGroup Property="CBB_SCOPE">
+          <RadioButton Value="user" X="0" Y="0" Width="330" Height="20" Text="Only for me (no administrator permission needed)" />
+          <RadioButton Value="machine" X="0" Y="30" Width="330" Height="20" Text="Everyone on this computer (asks an administrator)" />
+        </RadioButtonGroup>
+      </Control>
+      <Control Id="Next" Type="PushButton" X="214" Y="182" Width="66" Height="20" Default="yes" Text="Next">
+        <Publish Property="ALLUSERS" Value="1" Order="1" Condition="CBB_SCOPE = &quot;machine&quot;" />
+        <Publish Property="ALLUSERS" Value="{}" Order="2" Condition="CBB_SCOPE = &quot;user&quot;" />
+        <Publish Property="MSIINSTALLPERUSER" Value="{}" Order="3" Condition="CBB_SCOPE = &quot;machine&quot;" />
+        <Publish Property="MSIINSTALLPERUSER" Value="1" Order="4" Condition="CBB_SCOPE = &quot;user&quot;" />
+        <Publish Event="EndDialog" Value="Return" Order="5" />
+      </Control>
+      <Control Id="Cancel" Type="PushButton" X="290" Y="182" Width="60" Height="20" Cancel="yes" Text="Cancel"><Publish Event="EndDialog" Value="Exit" /></Control>
+    </Dialog>
+  </UI>
+  <InstallUISequence>
+    <Show Dialog="CbbScopeDlg" After="CbbPreferMachineScope" Condition="NOT Installed AND NOT REMOVE AND UILevel = 5" />
+    <!-- Related-product discovery runs once, so full UI must choose its context first. -->
+    <FindRelatedProducts After="CbbScopeDlg" />
+  </InstallUISequence>
+</Include>

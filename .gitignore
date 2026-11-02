@@ -25,3 +25,7 @@ packaging/macos/build/
 packaging/macos/dist/
 *.dmg
 packaging/macos/.venv-build/
+packaging/windows/build/
+packaging/windows/dist/
+packaging/windows/.venv-build/
+dist/

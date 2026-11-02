@@ -1,0 +1,4 @@
+# Shellcheck settings for the packaging scripts (see .github/workflows/packaging-lint.yml).
+# Scripts source env.sh by a computed path, so follow sources.
+external-sources=true
+source-path=SCRIPTDIR
