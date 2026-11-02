@@ -6,8 +6,15 @@
  * Layer:   Application / UI
  */
 
-const $ = (id) => document.getElementById(id);
+const byId = (id) => document.getElementById(id);
 const state = { buildFolder: "", checkFile: "", workspace: "", outputDir: "", saveDir: "", lastSuggested: "", createWork: "", createOut: "" };
+// Which panel each navigation tab shows (fixed, so no DOM text is ever used as an id).
+const PANEL_FOR_TAB = {
+  "tab-create": "panel-create",
+  "tab-build": "panel-build",
+  "tab-check": "panel-check",
+  "tab-file": "panel-file",
+};
 const SVG_NS = "http://www.w3.org/2000/svg";
 const ICONS = {
   success: "M5 13l4 4L19 7",
@@ -149,7 +156,7 @@ function renderValidation(v, actions = []) {
 
 // Feature 1: generate sample filings and run the full cycle.
 async function runCreate() {
-  const target = $("result-create");
+  const target = byId("result-create");
   const res = await window.pywebview.api.run_full_cycle(state.createWork, state.createOut);
   if (!res.ok) return show(target, verdict("danger", "Could not create sample filings", res.error));
   const pdf = res.assembled.output_pdf;
@@ -166,7 +173,7 @@ const CASE_INPUTS = {
 // Read the case details form.
 function collectCaseDetails() {
   const details = {};
-  Object.entries(CASE_INPUTS).forEach(([field, id]) => { details[field] = $(id).value; });
+  Object.entries(CASE_INPUTS).forEach(([field, id]) => { details[field] = byId(id).value; });
   return details;
 }
 
@@ -174,29 +181,29 @@ function collectCaseDetails() {
 async function loadCaseDetails(folder) {
   const res = await window.pywebview.api.case_details(folder);
   if (!res.ok) return;
-  Object.entries(CASE_INPUTS).forEach(([field, id]) => { $(id).value = res[field] || ""; });
+  Object.entries(CASE_INPUTS).forEach(([field, id]) => { byId(id).value = res[field] || ""; });
   document.querySelectorAll("[data-title-only]").forEach((node) => { node.hidden = Boolean(res.has_cover_file); });
-  $("cover-note").hidden = !res.has_cover_file;
-  $("case-details").hidden = false;
+  byId("cover-note").hidden = !res.has_cover_file;
+  byId("case-details").hidden = false;
 }
 
 // Keep the suggested file name in step with the hearing date until the user edits the name.
 async function refreshSuggestedName() {
-  if (!state.buildFolder || $("build-name").value !== state.lastSuggested) return;
-  state.lastSuggested = await window.pywebview.api.suggest_binder_name(state.buildFolder, $("cd-date").value);
-  $("build-name").value = state.lastSuggested;
+  if (!state.buildFolder || byId("build-name").value !== state.lastSuggested) return;
+  state.lastSuggested = await window.pywebview.api.suggest_binder_name(state.buildFolder, byId("cd-date").value);
+  byId("build-name").value = state.lastSuggested;
 }
 
 // Feature 2: build a binder from the chosen folder.
 async function runBuild() {
-  const target = $("result-build");
-  const res = await window.pywebview.api.assemble(state.buildFolder, $("build-name").value, state.saveDir, collectCaseDetails());
+  const target = byId("result-build");
+  const res = await window.pywebview.api.assemble(state.buildFolder, byId("build-name").value, state.saveDir, collectCaseDetails());
   if (!res.ok) return show(target, verdict("danger", "Could not build the binder", res.error));
   const sub = `${res.output_pdf} (${formatSize(res.size_bytes)})`;
   const checkNow = button("Check this binder", "btn-primary btn-sm", () => {
     setPicked("check", res.output_pdf);
-    selectTab($("tab-check"));
-    $("run-check").click();
+    selectTab(byId("tab-check"));
+    byId("run-check").click();
   });
   const notices = (res.warnings || []).map((w) => verdict("warning", "Review before filing", w));
   show(target, verdict("success", "Binder built", sub, [...fileActions(res.output_pdf), checkNow]), ...notices);
@@ -204,7 +211,7 @@ async function runBuild() {
 
 // Feature 3: validate the chosen PDF.
 async function runCheck() {
-  const target = $("result-check");
+  const target = byId("result-check");
   const res = await window.pywebview.api.validate(state.checkFile);
   if (!res.ok) return show(target, verdict("danger", "Could not check the binder", res.error));
   show(target, ...renderValidation(res, fileActions(res.file)));
@@ -214,14 +221,14 @@ async function runCheck() {
 function setPicked(kind, path) {
   const isBuild = kind === "build";
   state[isBuild ? "buildFolder" : "checkFile"] = path;
-  $(isBuild ? "build-folder" : "check-file").textContent = path;
-  $(isBuild ? "build-picker" : "check-picker").classList.add("has-value");
-  $(isBuild ? "run-build" : "run-check").disabled = false;
+  byId(isBuild ? "build-folder" : "check-file").textContent = path;
+  byId(isBuild ? "build-picker" : "check-picker").classList.add("has-value");
+  byId(isBuild ? "run-build" : "run-check").disabled = false;
 }
 
 // Show what the chosen folder contains.
 async function previewFolder(path) {
-  const meta = $("build-meta");
+  const meta = byId("build-meta");
   const res = await window.pywebview.api.inspect_folder(path);
   if (!res.ok) return (meta.textContent = res.error);
   const parts = [`${res.pdf_count} PDF${res.pdf_count === 1 ? "" : "s"}`];
@@ -238,10 +245,10 @@ async function pickFolder() {
   setPicked("build", chosen);
   state.saveDir = "";
   state.lastSuggested = await window.pywebview.api.suggest_binder_name(chosen);
-  $("build-name").value = state.lastSuggested;
+  byId("build-name").value = state.lastSuggested;
   await loadCaseDetails(chosen);
-  $("save-folder").textContent = await window.pywebview.api.default_binder_dir(chosen);
-  $("save-picker").classList.add("has-value");
+  byId("save-folder").textContent = await window.pywebview.api.default_binder_dir(chosen);
+  byId("save-picker").classList.add("has-value");
   await previewFolder(chosen);
 }
 
@@ -250,8 +257,8 @@ async function pickSaveDir() {
   const chosen = await window.pywebview.api.pick_folder();
   if (!chosen) return;
   state.saveDir = chosen;
-  $("save-folder").textContent = chosen;
-  $("save-picker").classList.add("has-value");
+  byId("save-folder").textContent = chosen;
+  byId("save-picker").classList.add("has-value");
 }
 
 // Choose a different folder for this run's sample filings.
@@ -259,7 +266,7 @@ async function pickCreateWork() {
   const chosen = await window.pywebview.api.pick_folder();
   if (!chosen) return;
   state.createWork = chosen;
-  $("create-work-folder").textContent = chosen;
+  byId("create-work-folder").textContent = chosen;
 }
 
 // Choose a different folder for this run's binder.
@@ -267,7 +274,7 @@ async function pickCreateOut() {
   const chosen = await window.pywebview.api.pick_folder();
   if (!chosen) return;
   state.createOut = chosen;
-  $("create-out-folder").textContent = chosen;
+  byId("create-out-folder").textContent = chosen;
 }
 
 // Choose and save a new output folder.
@@ -277,12 +284,12 @@ async function changeOutput() {
   const res = await window.pywebview.api.set_output_dir(chosen);
   if (res.ok) {
     state.outputDir = res.output_dir;
-    $("output-path").textContent = res.output_dir;
-    if (!state.createOut) $("create-out-folder").textContent = res.output_dir;
-    $("output-hint").textContent = "Saved. New binders go here, in a subfolder named after your filings.";
-    if (state.buildFolder && !state.saveDir) $("save-folder").textContent = await window.pywebview.api.default_binder_dir(state.buildFolder);
+    byId("output-path").textContent = res.output_dir;
+    if (!state.createOut) byId("create-out-folder").textContent = res.output_dir;
+    byId("output-hint").textContent = "Saved. New binders go here, in a subfolder named after your filings.";
+    if (state.buildFolder && !state.saveDir) byId("save-folder").textContent = await window.pywebview.api.default_binder_dir(state.buildFolder);
   } else {
-    $("output-hint").textContent = `Could not use that folder: ${res.error}`;
+    byId("output-hint").textContent = `Could not use that folder: ${res.error}`;
   }
 }
 
@@ -299,11 +306,11 @@ async function changeWorkspace() {
   const res = await window.pywebview.api.set_workspace(chosen);
   if (res.ok) {
     state.workspace = res.workspace;
-    $("workspace-path").textContent = res.workspace;
-    if (!state.createWork) $("create-work-folder").textContent = res.workspace;
-    $("workspace-hint").textContent = "Saved. New files go here.";
+    byId("workspace-path").textContent = res.workspace;
+    if (!state.createWork) byId("create-work-folder").textContent = res.workspace;
+    byId("workspace-hint").textContent = "Saved. New files go here.";
   } else {
-    $("workspace-hint").textContent = `Could not use that folder: ${res.error}`;
+    byId("workspace-hint").textContent = `Could not use that folder: ${res.error}`;
   }
 }
 
@@ -313,7 +320,7 @@ function selectTab(tab) {
     const active = t === tab;
     t.setAttribute("aria-selected", String(active));
     t.tabIndex = active ? 0 : -1;
-    $(t.getAttribute("aria-controls")).hidden = !active;
+    byId(PANEL_FOR_TAB[t.id]).hidden = !active;
   });
   tab.focus();
 }
@@ -331,20 +338,20 @@ function wireTabs() {
 
 function wireActions() {
   const busy = (id, resultId, message, fn) =>
-    $(id).addEventListener("click", (e) => withBusy(e.currentTarget, $(resultId), message, fn));
+    byId(id).addEventListener("click", (e) => withBusy(e.currentTarget, byId(resultId), message, fn));
   busy("run-create", "result-create", "Generating filings, building the binder and checking 20 gates…", runCreate);
   busy("run-build", "result-build", "Building your binder…", runBuild);
   busy("run-check", "result-check", "Checking 20 gates…", runCheck);
-  $("pick-folder").addEventListener("click", pickFolder);
-  $("pick-pdf").addEventListener("click", pickPdf);
-  $("pick-workspace").addEventListener("click", changeWorkspace);
-  $("pick-save-dir").addEventListener("click", pickSaveDir);
-  $("pick-create-work").addEventListener("click", pickCreateWork);
-  $("pick-create-out").addEventListener("click", pickCreateOut);
-  $("cd-date").addEventListener("change", refreshSuggestedName);
-  $("pick-output").addEventListener("click", changeOutput);
-  $("show-output").addEventListener("click", () => window.pywebview.api.reveal(state.outputDir));
-  $("show-workspace").addEventListener("click", () => window.pywebview.api.reveal(state.workspace));
+  byId("pick-folder").addEventListener("click", pickFolder);
+  byId("pick-pdf").addEventListener("click", pickPdf);
+  byId("pick-workspace").addEventListener("click", changeWorkspace);
+  byId("pick-save-dir").addEventListener("click", pickSaveDir);
+  byId("pick-create-work").addEventListener("click", pickCreateWork);
+  byId("pick-create-out").addEventListener("click", pickCreateOut);
+  byId("cd-date").addEventListener("change", refreshSuggestedName);
+  byId("pick-output").addEventListener("click", changeOutput);
+  byId("show-output").addEventListener("click", () => window.pywebview.api.reveal(state.outputDir));
+  byId("show-workspace").addEventListener("click", () => window.pywebview.api.reveal(state.workspace));
 }
 
 
@@ -425,17 +432,17 @@ const RENDERERS = { "q-account": ["answer-account", renderAccount], "q-logon": [
 function onQuestionChange(event) {
   const radio = event.target;
   const entry = RENDERERS[radio.name];
-  if (entry) show($(entry[0]), ...entry[1](radio.value));
+  if (entry) show(byId(entry[0]), ...entry[1](radio.value));
 }
 
 // Pick the binder and show how it must be uploaded.
 async function pickFilePdf() {
   const chosen = await window.pywebview.api.pick_pdf();
   if (!chosen) return;
-  $("file-pdf").textContent = chosen;
-  $("file-picker").classList.add("has-value");
+  byId("file-pdf").textContent = chosen;
+  byId("file-picker").classList.add("has-value");
   const res = await window.pywebview.api.filing_route(chosen);
-  const target = $("answer-binder");
+  const target = byId("answer-binder");
   if (!res.ok) return show(target, verdict("danger", "Could not read the file", res.error));
   const titles = { direct: "Upload it directly", large_file: "Use Upload Large Files first", too_large: "Too large to file" };
   show(target, verdict(res.level, titles[res.route], res.message));
@@ -444,12 +451,12 @@ async function pickFilePdf() {
 // Show when the CSO addresses were last verified.
 async function showCsoVerified() {
   const res = await window.pywebview.api.cso_pages();
-  if (res.ok) $("cso-verified").textContent = `CSO page addresses last verified ${res.verified_on}. If a page does not match what is described here, check the CSO website.`;
+  if (res.ok) byId("cso-verified").textContent = `CSO page addresses last verified ${res.verified_on}. If a page does not match what is described here, check the CSO website.`;
 }
 
 function wireCso() {
   document.querySelectorAll(".stage input[type=radio]").forEach((r) => r.addEventListener("change", onQuestionChange));
-  $("pick-file-pdf").addEventListener("click", pickFilePdf);
+  byId("pick-file-pdf").addEventListener("click", pickFilePdf);
   showCsoVerified();
 }
 
@@ -458,9 +465,9 @@ window.addEventListener("pywebviewready", async () => {
   wireActions();
   wireCso();
   state.workspace = await window.pywebview.api.workspace();
-  $("workspace-path").textContent = state.workspace;
+  byId("workspace-path").textContent = state.workspace;
   state.outputDir = await window.pywebview.api.output_dir();
-  $("output-path").textContent = state.outputDir;
-  $("create-work-folder").textContent = state.workspace;
-  $("create-out-folder").textContent = state.outputDir;
+  byId("output-path").textContent = state.outputDir;
+  byId("create-work-folder").textContent = state.workspace;
+  byId("create-out-folder").textContent = state.outputDir;
 });
