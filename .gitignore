@@ -21,3 +21,7 @@ apm.lock.yaml
 .gemini/
 .codex/
 .venv/
+packaging/macos/build/
+packaging/macos/dist/
+*.dmg
+packaging/macos/.venv-build/
