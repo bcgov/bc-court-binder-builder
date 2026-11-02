@@ -77,8 +77,8 @@ class SecurityRegressionTest(unittest.TestCase):
             self.assertIn("ZEBRA-MARKER-123", text)
             self.assertNotIn("Substantive legal content filed with court", text)
 
-    def test_unreadable_source_fails_instead_of_placeholder(self) -> None:
-        """F1: a filing with no recoverable text must raise, never be replaced."""
+    def test_textless_pdf_is_kept_as_a_true_copy_and_flagged_by_the_validator(self) -> None:
+        """A page with no text (a scan) is not replaced by placeholder text; the validator flags it."""
         with tempfile.TemporaryDirectory() as tmp:
             folder = Path(tmp) / "in"
             folder.mkdir()
@@ -86,8 +86,11 @@ class SecurityRegressionTest(unittest.TestCase):
             writer.add_blank_page(612, 792)
             with (folder / "Tab01_Scan_15Nov2026.pdf").open("wb") as fh:
                 writer.write(fh)
-            with self.assertRaises(ValueError):
-                engine.assemble(folder, Path(tmp) / "out.pdf")
+            result = engine.assemble(folder, Path(tmp) / "out.pdf")
+            text = _binder_text(Path(result["output_pdf"]))
+            self.assertNotIn("Substantive legal content filed with court", text)
+            checks = {c["rule"]: c for c in engine.validate(Path(result["output_pdf"]))["checks"]}
+            self.assertFalse(checks["RULE-18"]["passed"])
 
     def test_inferred_manifest_never_invents_court_details(self) -> None:
         """F2: without manifest.json the title page must not carry the sample file number."""
@@ -159,12 +162,15 @@ class ValidatorAccuracyTest(unittest.TestCase):
 
     def test_wrong_folio_font_and_size_are_caught(self) -> None:
         """Gates 12-13 must inspect the folio (regular 10 pt), not any text in the file."""
-        raw = self.good_pdf.read_bytes()
-        stamp = b"/F1 15 Tf\n290 760 Td"
-        self.assertIn(stamp, raw)
-        bad = self.workspace / "bad_folio.pdf"
-        bad.write_bytes(raw.replace(stamp, b"/F2 10 Tf\n290 760 Td"))
-        failing = self._failing(engine.validate(bad))
+        assembler = engine._load_module("assembling_court_binders")
+        real_stream, real_overlay = assembler.folio_stream, assembler.folio_overlay_pdf
+        folder = self.workspace / "badfolio"
+        folder.mkdir()
+        _make_filing_pdf(folder, "Tab01_Notice_15Nov2026.pdf", "BAD-FOLIO")
+        with mock.patch.object(assembler, "folio_stream", lambda f, b, r: real_stream(f, b, r).replace("15 Tf", "10 Tf")), \
+                mock.patch.object(assembler, "folio_overlay_pdf", lambda c: real_overlay(c, "Helvetica")):
+            result = engine.assemble(folder, self.workspace / "bad_folio.pdf")
+        failing = self._failing(engine.validate(Path(result["output_pdf"])))
         for rule in ("RULE-12", "RULE-13"):
             self.assertIn(rule, failing)
 
@@ -568,6 +574,112 @@ class EncodingAndExhibitTest(unittest.TestCase):
             self.assertTrue(any("Exhibit A" in t and "Joint Venture Agreement" in t for t in titles), titles)
             check = next(c for c in engine.validate(pdf)["checks"] if c["rule"] == "RULE-18")
             self.assertTrue(check["passed"], check["details"])
+
+
+class TrueCopyTest(unittest.TestCase):
+    """Tests for true copies, nested bookmarks and the multi-page index."""
+
+    def _pdf(self, folder: Path, name: str, marker: str, size=(612, 792), rotate: int = 0, pages: int = 1) -> None:
+        """Writes a text PDF of the given size and rotation (via pypdf) into folder."""
+        generator = engine._load_module("generating_court_documents")
+        source = pypdf.PdfReader(__import__("io").BytesIO(generator.create_multipage_pdf(
+            [{"header": f"{marker} {n}", "subtitle": "s", "lines": [f"{marker} line " * 6] * 4} for n in range(1, pages + 1)])))
+        writer = pypdf.PdfWriter()
+        for page in source.pages:
+            page.mediabox = pypdf.generic.RectangleObject([0, 0, size[0], size[1]])
+            if rotate:
+                page.rotate(rotate)
+            writer.add_page(page)
+        with (folder / name).open("wb") as fh:
+            writer.write(fh)
+
+    def _build(self, tmp: str, files: int = 1, **kwargs) -> Path:
+        """Builds a binder from `files` generated PDFs and returns its path."""
+        folder = Path(tmp) / "in"
+        folder.mkdir()
+        for n in range(1, files + 1):
+            self._pdf(folder, f"Tab{n:02d}_Notice_{n}_15Nov2026.pdf", f"ORIGINAL-{n}", **kwargs)
+        result = Api().assemble(str(folder), "Binder", str(Path(tmp) / "out"))
+        self.assertTrue(result["ok"], result)
+        return Path(result["output_pdf"])
+
+    def test_original_pages_are_kept_with_their_own_size_and_text(self) -> None:
+        """A4 originals stay A4 and keep their text; the folio is added on top."""
+        with tempfile.TemporaryDirectory() as tmp:
+            pdf = self._build(tmp, size=(595, 842))
+            page = pypdf.PdfReader(str(pdf)).pages[2]
+            self.assertEqual([round(float(x)) for x in page.mediabox], [0, 0, 595, 842])
+            text = page.extract_text()
+            self.assertIn("ORIGINAL-1", text)
+            self.assertTrue(text.strip().endswith("1"), text[-20:])
+
+    def test_rotated_originals_keep_rotation_and_get_an_upright_folio(self) -> None:
+        """A landscape (rotated) page keeps its rotation and still carries the folio."""
+        with tempfile.TemporaryDirectory() as tmp:
+            pdf = self._build(tmp, rotate=90)
+            page = pypdf.PdfReader(str(pdf)).pages[2]
+            self.assertEqual(int(page.rotation), 90)
+            self.assertIn("ORIGINAL-1", page.extract_text())
+
+    def test_folio_is_found_top_centre_in_every_orientation(self) -> None:
+        """Portrait, landscape, A4 and pages rotated 90/180/270 all pass the folio gates."""
+        cases = {
+            "portrait": dict(),
+            "landscape": dict(size=(792, 612)),
+            "a4": dict(size=(595, 842)),
+            "rotated 90": dict(rotate=90),
+            "rotated 180": dict(rotate=180),
+            "rotated 270": dict(rotate=270),
+        }
+        for label, kwargs in cases.items():
+            with self.subTest(label), tempfile.TemporaryDirectory() as tmp:
+                pdf = self._build(tmp, **kwargs)
+                checks = {c["rule"]: c for c in engine.validate(pdf)["checks"]}
+                for rule in ("RULE-10", "RULE-11", "RULE-12", "RULE-13", "RULE-14"):
+                    self.assertTrue(checks[rule]["passed"], (label, rule, checks[rule]["details"]))
+
+    def test_binder_text_is_not_typeset_again(self) -> None:
+        """With originals, the typesetting warning must not appear and all pages come from the source."""
+        with tempfile.TemporaryDirectory() as tmp:
+            folder = Path(tmp) / "in"
+            folder.mkdir()
+            self._pdf(folder, "Tab01_Notice_15Nov2026.pdf", "TRUE-COPY", pages=3)
+            result = Api().assemble(str(folder), "Binder", str(Path(tmp) / "out"))
+            self.assertFalse(any("typeset again" in w for w in result["warnings"]), result["warnings"])
+            self.assertEqual(len(pypdf.PdfReader(result["output_pdf"]).pages), 2 + 3)
+
+    def test_long_index_spills_onto_more_pages_and_links_stay_correct(self) -> None:
+        """40 filings need more than one index page; every link must land on its filing's first page."""
+        with tempfile.TemporaryDirectory() as tmp:
+            pdf = self._build(tmp, files=40)
+            reader = pypdf.PdfReader(str(pdf))
+            labels = reader.trailer["/Root"]["/PageLabels"]["/Nums"]
+            front = int(labels[2])
+            self.assertGreater(front, 2, "expected the index to need more than one page")
+            self.assertEqual(len(reader.pages), front + 40)
+            targets = []
+            for index_page in reader.pages[1:front]:
+                for annot in index_page.get("/Annots") or []:
+                    targets.append(reader.get_page_number(annot.get_object()["/Dest"][0].get_object()))
+            self.assertEqual(sorted(targets), list(range(front, front + 40)))
+            checks = {c["rule"]: c for c in engine.validate(pdf)["checks"]}
+            for rule in ("RULE-04", "RULE-05", "RULE-07", "RULE-10", "RULE-14"):
+                self.assertTrue(checks[rule]["passed"], (rule, checks[rule]["details"]))
+
+    def test_exhibit_on_a_documents_first_page_is_a_child_not_a_replacement(self) -> None:
+        """An exhibit starting on page 1 keeps the document's own bookmark and nests beneath it."""
+        with tempfile.TemporaryDirectory() as tmp:
+            folder = Path(tmp) / "in"
+            folder.mkdir()
+            generator = engine._load_module("generating_court_documents")
+            page = {"header": "AFFIDAVIT", "subtitle": "s", "lines": [
+                'This is Exhibit "A" referred to in the affidavit of Jane Roe.', "Body text of the affidavit. " * 3]}
+            (folder / "Tab01_Affidavit_1_Jane_Roe_15Nov2026.pdf").write_bytes(generator.create_multipage_pdf([page]))
+            result = Api().assemble(str(folder), "Binder", str(Path(tmp) / "out"))
+            outline = pypdf.PdfReader(result["output_pdf"]).outline
+            titles = [(i.title if not isinstance(i, list) else [c.title for c in i]) for i in outline]
+            self.assertTrue(any("Affidavit" in t for t in titles if isinstance(t, str)), titles)
+            self.assertTrue(any(isinstance(t, list) and any("Exhibit A" in c for c in t) for t in titles), titles)
 
 
 class CsoGuideTest(unittest.TestCase):
