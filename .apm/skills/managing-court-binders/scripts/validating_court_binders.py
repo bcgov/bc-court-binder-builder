@@ -82,6 +82,7 @@ def evaluate_ocr_quality(text: str) -> dict:
     }
 
 FOLIO_PAGE_COUNT = 5
+EXHIBIT_STAMP = re.compile(r"this is exhibit[^A-Za-z0-9\n]{0,8}[A-Z0-9]{1,3}[^A-Za-z0-9\n]{0,8}referred to", re.IGNORECASE)
 PART_SUFFIX = re.compile(r"\(Part \d+\)\s*$")
 
 
@@ -638,6 +639,7 @@ def validate_court_binder(pdf_path: Path) -> tuple[bool, list[dict]]:
     # Substantive density & OCR garble check
     sparse_pages = []
     garbled_pages = []
+    exhibit_stamp_pages = []
     if reader and len(reader.pages) > 2:
         final_pages = document_final_pages(reader)
         for p_idx in range(2, len(reader.pages)):
@@ -653,6 +655,11 @@ def validate_court_binder(pdf_path: Path) -> tuple[bool, list[dict]]:
                     or "Substantive legal content filed with court" in txt):
                 sparse_pages.append((p_idx + 1, words, len(lines)))
             
+            # An exhibit stamp ("This is Exhibit "A" referred to in ...") means the
+            # binder contains exhibits, so they must be bookmarked.
+            if EXHIBIT_STAMP.search(txt):
+                exhibit_stamp_pages.append(p_idx + 1)
+
             # Check 2: OCR legibility heuristic
             ocr_metrics = evaluate_ocr_quality(txt)
             if ocr_metrics["is_garbled"]:
@@ -662,7 +669,10 @@ def validate_court_binder(pdf_path: Path) -> tuple[bool, list[dict]]:
     ocr_quality_ok = len(garbled_pages) == 0
     has_vector_text = ("BT" in raw_text and "ET" in raw_text and "Tj" in raw_text) or (reader and len(reader.pages) > 0 and len(reader.pages[0].extract_text().split()) > 5)
 
-    rule18_passed = has_exhibit_bookmarks and has_vector_text and content_integrity_ok and ocr_quality_ok
+    # Exhibit bookmarks are only required when exhibits are present. A binder
+    # with no exhibit stamps (and so no exhibits) is not penalised for lacking them.
+    exhibit_bookmarks_ok = has_exhibit_bookmarks or not exhibit_stamp_pages
+    rule18_passed = exhibit_bookmarks_ok and has_vector_text and content_integrity_ok and ocr_quality_ok
 
     if not content_integrity_ok:
         bad_summary = ", ".join([f"Page {p} ({w} words)" for p, w, l in sparse_pages[:5]])
@@ -674,14 +684,17 @@ def validate_court_binder(pdf_path: Path) -> tuple[bool, list[dict]]:
         garble_summary = ", ".join([f"Page {p} ({hit}% dict match)" for p, hit in garbled_pages[:3]])
         details_18 = f"Corrupted or low-quality OCR text stream detected on {garble_summary}"
         remediation_18 = "Re-OCR pages with higher DPI or clear source scans."
-    elif not has_exhibit_bookmarks:
-        details_18 = "Affidavit exhibits are not nested as child bookmarks under parent affidavits"
-        remediation_18 = "Nest Exhibit sub-bookmarks (e.g. 'Exhibit A - ...') under parent affidavits."
+    elif not exhibit_bookmarks_ok:
+        details_18 = (f"Exhibit stamps were found (page {exhibit_stamp_pages[0]}) but no exhibit bookmarks exist "
+                      "under the parent affidavits")
+        remediation_18 = "Add Exhibit sub-bookmarks (e.g. 'Exhibit A - ...') under parent affidavits."
     elif not has_vector_text:
         details_18 = "Document text is not OCR-searchable or vector-selectable"
         remediation_18 = "Run Optical Character Recognition (OCR) across all scanned pages."
     else:
-        details_18 = "Affidavit exhibits nested as child bookmarks; vector text stream provides 100% searchability; substantive pages fully populated and legible"
+        exhibit_note = ("Exhibits are bookmarked" if has_exhibit_bookmarks
+                        else "No exhibits detected, so no exhibit bookmarks are required")
+        details_18 = f"{exhibit_note}; vector text stream provides searchability; substantive pages fully populated and legible"
         remediation_18 = ""
 
     add_check(
@@ -733,6 +746,8 @@ def main():
     parser = argparse.ArgumentParser(description="Validate Electronic Court Binder against complete BC Court matrix.")
     parser.add_argument("--file", default="output/01-commercial-discovery/Application_Record_Commercial_Document_Discovery_Rule_7-1_15Nov2026.pdf", help="Path to PDF binder")
     parser.add_argument("--json", action="store_true", help="Output results as JSON")
+    parser.add_argument("--strict", action="store_true",
+                        help="Exit with an error if there is any SOFT_WARNING as well as any HARD_STOP")
     args = parser.parse_args()
 
     pdf_path = Path(args.file)
@@ -756,7 +771,7 @@ def main():
             "warnings_count": len(soft_warnings),
             "checks": checks
         }, indent=2))
-        sys.exit(0 if passed else 1)
+        sys.exit(0 if (passed and not (args.strict and soft_warnings)) else 1)
 
     print("=" * 86)
     print("      BRITISH COLUMBIA COURT ELECTRONIC RECORD AUDIT & CSO COMPLIANCE GATES      ")
@@ -790,7 +805,7 @@ def main():
         verdict = "NON-COMPLIANT - REJECTED (HARD_STOP VIOLATIONS MUST BE REMEDIATED)"
 
     print(f"\nFINAL VERDICT: {verdict}")
-    sys.exit(0 if passed else 1)
+    sys.exit(0 if (passed and not (args.strict and soft_warnings)) else 1)
 
 if __name__ == "__main__":
     main()

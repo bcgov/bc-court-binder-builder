@@ -197,6 +197,11 @@ def main():
         action="store_true",
         help="Emit structured JSON verification receipt"
     )
+    parser.add_argument(
+        "--strict",
+        action="store_true",
+        help="Treat any SOFT_WARNING as a failure when validating (exit code 1)"
+    )
     case = parser.add_argument_group(
         "case details",
         "Title-page details written to manifest.json when assembling. Never guessed: "
@@ -308,7 +313,7 @@ def main():
                 verdict = "NON-COMPLIANT - REJECTED (HARD_STOP VIOLATIONS MUST BE REMEDIATED)"
 
             print(f"\nFINAL VERDICT: {verdict}")
-        if not passed:
+        if not passed or (args.strict and any(not c["passed"] and c["severity"] == "SOFT_WARNING" for c in scorecard)):
             sys.exit(1)
 
     print("\nSUCCESS: All requested operations completed successfully.")

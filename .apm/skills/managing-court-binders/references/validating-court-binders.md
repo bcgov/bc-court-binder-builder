@@ -39,7 +39,7 @@ Evaluates the complete **20-Gate Quality & Compliance Matrix** featuring 3-tier 
 | `RULE-15` | `HARD_STOP` | **Page Labeling Synchronization (`/PageLabels`)** | Court PDF Guide 10 | Catalog contains `/PageLabels` dictionary aligning PDF reader counter with visual folios. |
 | `RULE-16` | `SOFT_WARNING` | **Unnumbered Front Matter Labels** | Court PDF Guide 10 | Title Page & Index configured with `/S /None` label scheme. |
 | `RULE-17` | `HARD_STOP` | **Descriptive Bookmark Titles & Disambiguation** | `PD-72` §A.3; Court PDF Guides 03 & 04 | Outline items name specific documents and disambiguate parties (e.g. *Jane Doe*). |
-| `RULE-18` | `HARD_STOP` | **Exhibit Sub-Bookmarks, OCR & Content Integrity** | `PD-72` §A.3, §A.4; JAG PD72-R1/R8 | Affidavits feature nested exhibit bookmarks; no pages truncated/blank; passes Shannon entropy OCR test. |
+| `RULE-18` | `HARD_STOP` | **Exhibit Sub-Bookmarks, OCR & Content Integrity** | `PD-72` §A.3, §A.4; JAG PD72-R1/R8 | Exhibits (found from their "This is Exhibit ... referred to" stamps) have exhibit bookmarks; a binder with no exhibits is not penalised; no pages truncated/blank (the last page of a filing may be short); passes Shannon entropy OCR test. |
 | `RULE-19` | `SOFT_WARNING` | **Page Geometry & Standard Dimensions** | JAG PD72-R4; Arlington Model §7.7 | $\ge 90\%$ of pages conform to standard 8.5 x 11 inch Letter boundaries ($612 \times 792$ pt). |
 
 ---

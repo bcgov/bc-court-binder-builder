@@ -76,7 +76,7 @@ If the user asks how to register for, log on to, or file on CSO, follow [cso-acc
 python3 .apm/skills/managing-court-binders/scripts/managing_court_binders.py --mode validate
 ```
 
-Routing tests live in [evals/evals.json](evals/evals.json).
+Add `--strict` to `--mode validate` to treat `SOFT_WARNING` as a failure (exit code 1). Routing tests live in [evals/evals.json](evals/evals.json).
 
 ## References
 
