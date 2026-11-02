@@ -457,23 +457,40 @@ The desktop app is an alternative to chatting with an agent. It calls the same `
 <a id="mac-app"></a>
 ### 📦 Install the Mac app (no Python needed)
 
-A Mac disk image (`.dmg`) bundles the app, the skill scripts, Python, `pypdf` and the PdfCraft native engine, so users only drag the app to **Applications**. A downloadable release is not published yet, so build it once on a Mac:
+A Mac disk image (`.dmg`) bundles the app, the skill scripts, Python, `pypdf` and the PdfCraft native engine, so users only drag the app to **Applications**. Installers are built by CI and published as GitHub Release assets (see [`docs/releasing.md`](docs/releasing.md)); they are never committed. Until a release is published, build the image once on a Mac:
 
 ```bash
 git clone https://github.com/bcgov/bc-court-binder-builder.git
 cd bc-court-binder-builder
-packaging/macos/build_dmg.sh
+packaging/macos/package.sh      # writes dist/release/court-binder-builder-<version>-macos-<arch>.dmg
 ```
 
-The script creates its own build environment (`packaging/macos/.venv-build`, nothing is installed into `app/.venv`), downloads the PdfCraft wheel from the release URL in [Step 4](#step-4-optional-the-pdfcraft-native-wheel) and refuses to continue unless its SHA-256 matches the pinned hash. That is the build-time equivalent of the `pip install` above, so users never run `pip`. It then builds the app and runs a self-test on the packaged app: a sample binder must pass all 20 gates and the native PdfCraft engine must merge two PDFs, otherwise the build fails. The image is written to `packaging/macos/dist/Court-binder-builder-<version>-macos-<arch>.dmg` (about 40 MB).
+The script follows the [PdfCraft packaging](https://github.com/richfrem/pdfcraft/tree/main/packaging/macos). It creates its own build environment (`packaging/macos/.venv-build`; nothing is installed into `app/.venv`), downloads the PdfCraft wheel from the release URL in [Step 4](#step-4-optional-the-pdfcraft-native-wheel) and refuses to continue unless its SHA-256 matches the pinned hash (the build-time equivalent of the `pip install` above, so users never run `pip`), builds the app, **signs it inside out with the hardened runtime**, and runs a self-test on the packaged app: a sample binder must pass all 20 gates and the native PdfCraft engine must merge two PDFs. It then builds the disk image with its branded window, signs it, and checks that the app inside the mounted image still passes `codesign --verify --strict`. With an Apple Developer ID and credentials it also notarizes (see [`docs/releasing.md`](docs/releasing.md)). The image is about 37 MB.
 
 **Install:** open the `.dmg`, drag **Court binder builder** onto **Applications**, then open it from Applications or Launchpad.
 
 **Things to know**
-- **Unsigned.** On the Mac that built it, the app opens normally. A copy downloaded from the internet triggers a Gatekeeper warning: right-click the app, choose **Open**, then **Open** again (or run `xattr -dr com.apple.quarantine "/Applications/Court binder builder.app"`). Signed and notarized builds need an Apple Developer ID; see [`packaging/macos/README.md`](packaging/macos/README.md) (untested here).
+- **Unsigned by default.** The script signs ad hoc without a Developer ID. On the Mac that built it, the app opens normally. A copy downloaded from the internet triggers a Gatekeeper warning: right-click the app, choose **Open**, then **Open** again (or run `xattr -dr com.apple.quarantine "/Applications/Court binder builder.app"`). Signed and notarized builds need an Apple Developer ID; that path has not been exercised.
 - **One architecture and one Python per build.** A build made on Apple Silicon (`arm64`) does not run on Intel Macs, and the other way round. The pinned PdfCraft wheel is for Python 3.13 on Apple Silicon only; set `PDFCRAFT_WHEEL` to another wheel, or `WITH_PDFCRAFT=0` to build without it.
 - **Folders.** An installed app saves to `~/Documents/BC Court Binder` (sample filings) and `~/Documents/BC Court Binder/Output` (binders) until you change them in the sidebar. Choices are kept in `~/.bc_court_binder_settings.json`, shared with a copy run from source on the same Mac.
-- A **Windows installer** is planned and not built yet.
+- Details and options: [`packaging/macos/README.md`](packaging/macos/README.md).
+
+<a id="windows-app"></a>
+### 🪟 Install the Windows app (no Python needed)
+
+**Status: written on a Mac and not yet run on Windows.** The Windows package is a **WiX MSI** (per-user by default, per-machine on request) plus a portable zip, built the way the PdfCraft packaging does it. On Windows 10/11 (64-bit), with Python 3.10+ and WiX v5 (`dotnet tool install --global wix --version 5.0.2`):
+
+```powershell
+pwsh packaging/windows/package.ps1      # writes dist/release/court-binder-builder-<version>-windows-x64.msi and -portable.zip
+pwsh packaging/windows/test-install.ps1 # silent install, self-test the installed app, upgrade, uninstall
+```
+
+`package.ps1` builds the app, checks the executable's headers, self-tests it (a sample binder must pass all 20 gates), signs if a certificate is configured, builds and inspects the MSI, and makes the zip. The **Packaging build** workflow does the same on a clean Windows runner, and the **Release** workflow publishes both installers with `SHA256SUMS.txt` as a draft GitHub Release.
+
+- **Silent install (IT):** `msiexec /i <msi> /qn` (per user), add `ALLUSERS=1` for everyone; see [`packaging/windows/INSTALLATION.md`](packaging/windows/INSTALLATION.md).
+- **SmartScreen.** An unsigned download shows "Windows protected your PC": choose **More info**, then **Run anyway**.
+- **WebView2.** The window needs the Microsoft Edge WebView2 Runtime (included with Windows 11 and current Windows 10); the MSI does not check for it.
+- **No PdfCraft native engine yet.** No Windows wheel is published, so the Windows build leaves it out; see [`packaging/windows/README.md`](packaging/windows/README.md).
 
 ### 🐍 Run from source
 

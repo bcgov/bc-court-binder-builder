@@ -43,7 +43,7 @@ All four use the same engine, so a binder built any way passes the same 20 court
 | **1** | **Install the skill with APM and ask an AI agent** (Claude, GitHub Copilot, Codex, Gemini). Say "build a court binder from this folder" and the agent runs the skill. | Paralegals and lawyers who want to work in plain language. | ✅ Available. [Install steps](#apm-installation) |
 | **2** | **Run the Python commands directly** (`assemble`, `validate`, interactive wizard). | Developers, CI/CD and automation. | ✅ Available. [Command reference](#headless-cli) |
 | **3** | **Run the desktop app from Python.** A native window with four screens: create sample filings, build a binder, check a binder, and file with CSO. | People who want a window, not a chat or a terminal. | ✅ Available from source. [Desktop app](#desktop-app) |
-| **4** | **Install a Mac application** (`.dmg`, drag to Applications) with no Python setup. A matching Windows installer is planned. | Anyone who just wants to try it. | ✅ Build it with [`packaging/macos/build_dmg.sh`](packaging/macos/README.md) (unsigned; a downloadable release is not published yet) |
+| **4** | **Install a Mac application** (`.dmg`, drag to Applications) with no Python setup. A Windows MSI is written (see below) but has not been run on Windows yet. | Anyone who just wants to try it. | ✅ Build it with [`packaging/macos/package.sh`](packaging/macos/README.md) (unsigned; a downloadable release is not published yet) |
 
 ```bash
 # 1. AI agent: install the skill once, then talk to your agent
@@ -240,12 +240,12 @@ cd app && python -m binder_app.main
 **Install the Mac app (no Python needed):**
 
 ```bash
-packaging/macos/build_dmg.sh          # writes packaging/macos/dist/Court-binder-builder-<version>-macos-<arch>.dmg
+packaging/macos/package.sh          # writes dist/release/court-binder-builder-<version>-macos-<arch>.dmg
 ```
 
 Open the `.dmg`, drag **Court binder builder** to **Applications**, and open it. The image bundles Python, `pypdf` and the PdfCraft native engine (a pinned, hash-checked wheel), and the build runs a self-test on the packaged app (a sample binder must pass all 20 gates and the native engine must merge two PDFs). The app is unsigned, so a copy downloaded from the internet needs right-click → **Open** the first time; a Mac build runs only on the same processor type (Apple Silicon or Intel). A published download is not available yet. Details: [`packaging/macos/README.md`](packaging/macos/README.md).
 
-See [`INSTALL.md`](INSTALL.md#option-4-desktop-app) for details and [`architecture.md`](architecture.md#6-desktop-app-layer) for how it reuses the skill's engine. To avoid Python altogether on a Mac, build the installer with [`packaging/macos/build_dmg.sh`](packaging/macos/README.md) (see below); a Windows installer is planned.
+See [`INSTALL.md`](INSTALL.md#option-4-desktop-app) for details and [`architecture.md`](architecture.md#6-desktop-app-layer) for how it reuses the skill's engine. To avoid Python altogether on a Mac, build the installer with [`packaging/macos/package.sh`](packaging/macos/README.md) (see below). A Windows installer (a WiX MSI plus a portable zip) is in [`packaging/windows/`](packaging/windows/README.md): it is written and a GitHub Actions workflow builds, installs and self-tests it on a clean Windows runner, but it has not been run yet. Both installers follow the [PdfCraft packaging](https://github.com/richfrem/pdfcraft/tree/main/packaging) and are built and published by CI as GitHub Release assets with checksums; see [`docs/releasing.md`](docs/releasing.md).
 
 ---
 
